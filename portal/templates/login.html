@@ -2,7 +2,7 @@
 {% block title %}Log In — Duxbury Clipper{% endblock %}
 {% block content %}
 
-<div style="max-width:980px;margin:0 auto;display:flex;gap:40px;align-items:flex-start;padding-top:10px;">
+<div style="max-width:860px;margin:0 auto;display:flex;gap:40px;align-items:flex-start;padding-top:10px;">
 
   {# Left: login card #}
   <div style="flex:1.4;min-width:340px;">
@@ -25,11 +25,16 @@
       </div>
 
       <form method="post">
-        <label for="account_num">Account Number</label>
-        <input type="text" id="account_num" name="account_num" placeholder="e.g. 47408427" autofocus required>
-
-        <label for="zipcode">Zip / Postal Code</label>
-        <input type="text" id="zipcode" name="zipcode" placeholder="e.g. 02331" required>
+        <div style="display:flex;gap:12px;">
+          <div style="flex:1.4;">
+            <label for="account_num">Account Number</label>
+            <input type="text" id="account_num" name="account_num" placeholder="e.g. 47408427" autofocus required>
+          </div>
+          <div style="flex:1;">
+            <label for="zipcode">Zip / Postal Code</label>
+            <input type="text" id="zipcode" name="zipcode" placeholder="e.g. 02331" required>
+          </div>
+        </div>
 
         <button type="submit" class="btn" style="width:100%;margin-top:18px;border-radius:4px;padding:12px;font-size:1em;">Log In</button>
       </form>
