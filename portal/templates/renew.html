@@ -1,0 +1,117 @@
+{% extends "base.html" %}
+{% block title %}Renew Your Subscription — Duxbury Clipper{% endblock %}
+{% block content %}
+
+<div class="page-header">
+  <div>
+    <h1>{{ subscriber.full_name }}</h1>
+    <span class="acct-num">#{{ subscriber.simplecirc_id or subscriber.id }}</span>
+  </div>
+  <a href="{{ url_for('account') }}" style="font-size:0.9em;color:#666;text-decoration:none;">← Back to My Account</a>
+</div>
+
+{% if issues_left > 8 %}
+<div style="background:#fff8e1;border:2px solid #f9a825;border-radius:8px;padding:18px 22px;margin-bottom:24px;display:flex;gap:16px;align-items:flex-start;">
+  <div style="font-size:2em;line-height:1;">⚠️</div>
+  <div>
+    <strong style="font-size:1em;color:#e65100;">You still have {{ issues_left }} issues remaining on your subscription.</strong>
+    <p style="margin:6px 0 0;font-size:0.9em;color:#555;line-height:1.6;">
+      Your subscription doesn't expire until
+      <strong>{{ subscriber.expiration_date.strftime('%B %d, %Y') }}</strong>.
+      Renewing now will add one full year <em>on top of</em> your current expiration date —
+      you won't lose any issues. But there's no rush if you'd prefer to wait.
+    </p>
+    <a href="{{ url_for('account') }}" style="display:inline-block;margin-top:10px;font-size:0.88em;color:#2e7d32;">← Back to my account</a>
+    &nbsp;&nbsp;
+    <span style="font-size:0.88em;color:#999;">or continue below to renew early</span>
+  </div>
+</div>
+{% endif %}
+
+<div class="two-col">
+
+  {# Left: plan summary #}
+  <div class="card">
+    <h2>Renewing Your Print Subscription</h2>
+    <p style="font-size:0.9em;color:#2e7d32;font-style:italic;margin-top:0;">Thank you for being a loyal subscriber to the Duxbury Clipper!</p>
+
+    <label style="margin-top:0;">Subscription Plan</label>
+    <select id="plan-select" style="width:100%;padding:9px 10px;margin-top:4px;border:1px solid #ccc;border-radius:4px;font-size:0.95em;">
+      {% for code, label, p in all_plans %}
+      <option value="{{ code.value }}" data-price="{{ p }}" {% if code == subscriber.plan %}selected{% endif %}>
+        {{ label }} — ${{ "%.2f"|format(p) }}/yr
+      </option>
+      {% endfor %}
+    </select>
+
+    <table style="margin-top:16px;">
+      <tr><th>Amount</th><td><strong id="price-display" style="font-size:1.1em;">${{ "%.2f"|format(price) }}</strong> / year</td></tr>
+      <tr><th>Delivery</th><td>Weekly, every Wednesday</td></tr>
+    </table>
+
+    <div style="margin-top:20px;padding:14px;background:#e8f5e9;border-radius:4px;font-size:0.88em;color:#2e7d32;">
+      ✓ Renewing adds one full year from your current expiration date.
+    </div>
+
+    <script>
+      document.getElementById('plan-select').addEventListener('change', function() {
+        var price = this.options[this.selectedIndex].dataset.price;
+        document.getElementById('price-display').textContent = '$' + parseFloat(price).toFixed(2);
+        document.querySelectorAll('.btn-price').forEach(function(el) {
+          el.textContent = el.textContent.replace(/\$[\d.]+/, '$' + parseFloat(price).toFixed(2));
+        });
+        document.querySelectorAll('input[name=plan]').forEach(function(el) {
+          el.value = document.getElementById('plan-select').value;
+        });
+      });
+    </script>
+
+    {% if not subscriber.auto_renew %}
+    <div style="margin-top:16px;padding:14px;background:#f9f9f9;border:1px solid #ddd;border-radius:4px;font-size:0.88em;">
+      <form method="post" action="/toggle-autorenew" style="display:flex;align-items:center;gap:10px;margin:0;">
+        <input type="checkbox" name="auto_renew" id="auto_renew" value="1" checked style="width:18px;height:18px;cursor:pointer;">
+        <label for="auto_renew" style="margin:0;font-weight:normal;font-size:1em;cursor:pointer;color:#444;">
+          Enroll in auto-renew — renew automatically each year, no action needed.
+        </label>
+      </form>
+    </div>
+    {% else %}
+    <div style="margin-top:16px;font-size:0.85em;color:#888;">
+      ✓ Auto-renew is enabled on your account.
+      <form method="post" action="/toggle-autorenew" style="display:inline;margin-left:8px;">
+        <button type="submit" style="background:none;border:none;color:#c0392b;cursor:pointer;font-size:0.9em;padding:0;text-decoration:underline;">Turn off</button>
+      </form>
+    </div>
+    {% endif %}
+
+  </div>
+
+  {# Right: payment options #}
+  <div class="card">
+    <h2>Choose Payment Method</h2>
+
+    <form method="post" action="{{ url_for('create_checkout') }}" style="margin-bottom:16px;">
+      <input type="hidden" name="plan" value="{{ subscriber.plan.value }}">
+      <button type="submit" class="btn btn-price" style="width:100%;padding:14px;font-size:1em;border-radius:6px;">
+        💳 &nbsp;Pay ${{ "%.2f"|format(price) }} by Credit Card
+      </button>
+    </form>
+
+    {% if paypal_client_id %}
+    <form method="post" action="{{ url_for('create_paypal_order') }}">
+      <input type="hidden" name="plan" value="{{ subscriber.plan.value }}">
+      <button type="submit" class="btn-price" style="width:100%;padding:14px;background:#FFC439;color:#003087;border:none;border-radius:6px;font-size:1em;font-weight:700;cursor:pointer;">
+        <img src="https://www.paypalobjects.com/webstatic/mktg/Logo/pp-logo-34px.png" alt="PayPal" style="height:18px;vertical-align:middle;margin-right:6px;">
+        Pay with PayPal
+      </button>
+    </form>
+    {% endif %}
+
+    <div style="margin-top:24px;border-top:1px solid #eee;padding-top:16px;font-size:0.85em;color:#888;line-height:1.7;">
+      🔒 Secure payment. Your card information is processed by Stripe and never stored on our servers.
+    </div>
+  </div>
+
+</div>
+
+{% endblock %}

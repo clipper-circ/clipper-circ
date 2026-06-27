@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "portal",
+      "runtimeExecutable": "python",
+      "runtimeArgs": ["portal/app.py"],
+      "port": 5001
+    }
+  ]
+}

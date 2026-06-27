@@ -1,0 +1,56 @@
+{
+  "prices": {
+    "LOCAL": 50.0,
+    "SENIOR": 40.0,
+    "OUT_OF_COUNTY": 90.0,
+    "SNOWBIRD": 55.0,
+    "GIFT": 50.0,
+    "COMPLIMENTARY": 0.0
+  },
+  "durations_weeks": {
+    "LOCAL": 52,
+    "SENIOR": 52,
+    "OUT_OF_COUNTY": 52,
+    "SNOWBIRD": 26,
+    "GIFT": 52,
+    "COMPLIMENTARY": 52
+  },
+  "grace_period_days": 28,
+  "reminder_days": [
+    60,
+    30
+  ],
+  "email_schedule": {
+    "reminder_35_days": 35,
+    "reminder_21_days": 21,
+    "reminder_14_days": 14,
+    "grace_14_days": 14,
+    "grace_final_days": 27
+  },
+  "email_templates": {
+    "reminder_35": {
+      "subject": "Your Duxbury Clipper subscription \u2014 time to renew soon",
+      "body": "Your subscription expires on {expiration_date} \u2014 about 5 issues from now.\n\nTo keep your weekly Clipper coming, please renew at your convenience.\n\nOr mail a check to: The Duxbury Clipper, P.O. Box 1656, Duxbury, MA 02331\n\nThank you for supporting your hometown paper!"
+    },
+    "reminder_21": {
+      "subject": "Reminder: Your Duxbury Clipper subscription expires soon",
+      "body": "Just a reminder \u2014 your subscription expires on {expiration_date} (about 3 issues away).\n\nDon't miss a single issue. Renew now.\n\nOr send a check to: The Duxbury Clipper, P.O. Box 1656, Duxbury, MA 02331"
+    },
+    "reminder_14": {
+      "subject": "2 issues left \u2014 please renew your Duxbury Clipper subscription",
+      "body": "You have about 2 issues remaining on your Duxbury Clipper subscription (expires {expiration_date}).\n\nRenew today to avoid any interruption in delivery.\n\nOr mail a check to: The Duxbury Clipper, P.O. Box 1656, Duxbury, MA 02331"
+    },
+    "expire_day": {
+      "subject": "Oh no...your Clipper subscription expires today",
+      "body": "Your Duxbury Clipper subscription expires today.\n\nGood news \u2014 we'll keep delivering your paper for up to 4 more weeks while you renew. Please don't let it lapse!\n\nOr mail a check to: The Duxbury Clipper, P.O. Box 1656, Duxbury, MA 02331"
+    },
+    "grace_14": {
+      "subject": "Action needed: Your Duxbury Clipper subscription is past due",
+      "body": "Your Duxbury Clipper subscription expired on {expiration_date}.\n\nWe've continued delivering your paper as a courtesy, but delivery will stop in about 2 weeks if we don't hear from you.\n\nOr mail a check to: The Duxbury Clipper, P.O. Box 1656, Duxbury, MA 02331"
+    },
+    "grace_final": {
+      "subject": "Final notice: Duxbury Clipper delivery stopping this week",
+      "body": "We're sorry to say that your Duxbury Clipper home delivery will stop this week unless you renew.\n\nYour subscription expired on {expiration_date} and we haven't received a renewal. We'd love to keep you on our list!\n\nOr call us at 781-934-2811 or mail a check to: The Duxbury Clipper, P.O. Box 1656, Duxbury, MA 02331\n\nWe hope to hear from you \u2014 thank you for being a loyal reader."
+    }
+  }
+}

@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+{% block title %}Log In — Duxbury Clipper{% endblock %}
+{% block content %}
+
+<div style="max-width:860px;margin:0 auto;display:flex;gap:40px;align-items:flex-start;padding-top:10px;">
+
+  {# Left: mailbox image + welcome #}
+  <div style="flex:1;text-align:center;padding-top:10px;">
+    <img src="/static/mailbox.jpg" alt="Duxbury Clipper delivered to your door"
+         style="width:90%;max-width:342px;border-radius:12px;box-shadow:0 4px 16px rgba(0,0,0,0.15);">
+    <div style="margin-top:20px;">
+      <img src="/static/logo.png" alt="Duxbury Clipper"
+           style="height:56px;border:3px solid #fff;border-radius:10px;padding:6px;background:#fff;">
+    </div>
+    <div style="font-size:2em;font-weight:900;color:#1a3a1a;margin-top:10px;letter-spacing:1px;">Welcome!</div>
+    <p style="color:#666;font-size:0.95em;margin-top:8px;line-height:1.6;">
+      Manage your print subscription,<br>update your address, or renew online.
+    </p>
+  </div>
+
+  {# Right: login card #}
+  <div style="flex:1.05;min-width:300px;">
+    <div class="card">
+      <h2 style="text-align:center;border:none;padding-bottom:0;font-size:1.05em;">
+        Please log into your Clipper Print Subscriber account
+      </h2>
+      <p style="font-size:0.88em;color:#666;text-align:center;margin-top:6px;margin-bottom:18px;">
+        Use the account number and zip code from your mailing label or renewal notice, OR get a one-click login link with your email address on file.
+      </p>
+
+      <div style="border:1px solid #ccc;border-radius:4px;padding:10px 14px;background:#f9f9f9;font-family:monospace;font-size:0.84em;margin-bottom:20px;line-height:1.9;color:#444;">
+        <span style="color:#999;">AUTO****** SCH 5-Digit</span><br>
+        <span style="color:#c0392b;font-weight:700;font-size:1.05em;">47408427</span>
+        <span style="color:#c0392b;font-size:0.78em;margin-left:6px;">← Account Number</span><br>
+        John Clipper<br>
+        123 Main Street<br>
+        Duxbury, MA <span style="color:#c0392b;font-weight:700;">02332</span>
+        <span style="color:#c0392b;font-size:0.78em;margin-left:6px;">← Zip Code</span>
+      </div>
+
+      <form method="post">
+        <label for="account_num">Account Number</label>
+        <input type="text" id="account_num" name="account_num" placeholder="e.g. 47408427" autofocus required>
+
+        <label for="zipcode">Zip / Postal Code</label>
+        <input type="text" id="zipcode" name="zipcode" placeholder="e.g. 02331" required>
+
+        <button type="submit" class="btn" style="width:100%;margin-top:18px;border-radius:4px;padding:12px;font-size:1em;">Log In</button>
+      </form>
+
+      <div style="text-align:center;margin:16px 0 0;color:#bbb;font-size:0.85em;font-weight:700;letter-spacing:1px;">— OR —</div>
+
+      <div style="margin-top:14px;padding-top:14px;border-top:1px solid #eee;">
+        <p style="font-size:0.84em;color:#888;text-align:center;margin:0 0 10px;">
+          Don't know your account number?
+        </p>
+        <form method="post" action="{{ url_for('email_lookup') }}" style="display:flex;gap:8px;">
+          <input type="email" name="email" placeholder="Your email address on file" required
+                 style="flex:1;padding:9px 10px;border:1px solid #ccc;border-radius:4px;font-size:0.88em;">
+          <button type="submit" class="btn btn-outline btn-sm" style="white-space:nowrap;border-radius:4px;">
+            Email me a link
+          </button>
+        </form>
+        <p style="font-size:0.78em;color:#bbb;text-align:center;margin-top:7px;">
+          We'll send a one-click login link to your address on file.
+        </p>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+{% endblock %}

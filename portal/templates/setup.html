@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block title %}Set Up Your Account — Duxbury Clipper{% endblock %}
+{% block content %}
+<h1>Set Up Your Account</h1>
+<div class="card">
+  <p>Welcome, <strong>{{ subscriber.full_name }}</strong>. Create a password to manage your subscription online.</p>
+  <form method="post">
+    <label>Password</label>
+    <input type="password" name="password" required minlength="8" autofocus>
+    <label>Confirm Password</label>
+    <input type="password" name="confirm" required minlength="8">
+    <button type="submit" class="btn">Create Account</button>
+  </form>
+</div>
+{% endblock %}

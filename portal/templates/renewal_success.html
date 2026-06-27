@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block title %}Thank You — Duxbury Clipper{% endblock %}
+{% block content %}
+
+<div style="max-width:520px;margin:40px auto;text-align:center;">
+  <div style="font-size:3em;margin-bottom:16px;">✅</div>
+  <h1 style="font-size:1.6em;margin-bottom:8px;">Thank you{% if subscriber %}, {{ subscriber.full_name.split()[0] }}{% endif %}!</h1>
+  <p style="color:#555;font-size:1em;margin-bottom:28px;">Your Duxbury Clipper subscription has been renewed.</p>
+
+  <div class="card" style="text-align:left;">
+    <h2>What happens next</h2>
+    <ul style="font-size:0.95em;line-height:2;padding-left:18px;color:#444;">
+      <li>Your delivery continues every Wednesday without interruption.</li>
+      <li>A receipt will be emailed to you shortly.</li>
+      <li>Your new expiration date is now updated in your account.</li>
+    </ul>
+    <a href="{{ url_for('account') }}" class="btn" style="display:block;text-align:center;margin-top:16px;">
+      View My Account
+    </a>
+  </div>
+
+  <p style="font-size:0.85em;color:#aaa;margin-top:20px;">
+    Questions? Call <strong>781-934-2811</strong> or email
+    <a href="mailto:subscribe@duxburyclipper.com" style="color:#2e7d32;">subscribe@duxburyclipper.com</a>
+  </p>
+</div>
+
+{% endblock %}

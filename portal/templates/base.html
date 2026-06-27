@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{% block title %}Duxbury Clipper{% endblock %}</title>
+<style>
+  * { box-sizing: border-box; }
+  body { font-family: Arial, sans-serif; margin: 0; padding: 0; background: #f5f5f5; color: #222; }
+
+  /* Top nav bar */
+  .topbar { background: #222; color: #fff; padding: 10px 30px; display: flex; justify-content: space-between; align-items: center; font-size: 0.9em; }
+  .topbar a { color: #ccc; text-decoration: none; margin-left: 20px; }
+  .topbar a:hover { color: #fff; }
+
+  /* Main content wrapper */
+  .page { max-width: 900px; margin: 30px auto; padding: 0 20px 60px; }
+
+  /* Page header: logo + account info */
+  .page-header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 24px; }
+  .page-header img { height: 60px; }
+  .page-header-right { text-align: right; font-size: 0.9em; color: #555; }
+  .page-header h1 { font-size: 1.8em; margin: 0 0 2px; text-transform: uppercase; letter-spacing: 1px; }
+  .page-header .acct-num { font-size: 1em; color: #888; }
+
+  /* Tabs */
+  .tabs { display: flex; border-bottom: 2px solid #ddd; margin-bottom: 24px; gap: 4px; }
+  .tab-link { padding: 10px 18px; text-decoration: none; color: #555; font-size: 0.95em; border: 1px solid transparent; border-bottom: none; border-radius: 4px 4px 0 0; }
+  .tab-link.active { background: #fff; border-color: #ddd; color: #2e7d32; font-weight: 700; margin-bottom: -2px; border-bottom: 2px solid #fff; }
+  .tab-link:hover:not(.active) { background: #f0f0f0; }
+
+  /* Cards */
+  .card { background: #fff; border: 1px solid #ddd; border-radius: 6px; padding: 24px; margin-bottom: 20px; }
+  .card h2 { margin: 0 0 16px; font-size: 1.1em; border-bottom: 1px solid #eee; padding-bottom: 10px; }
+
+  /* Two-column card layout */
+  .two-col { display: flex; gap: 20px; }
+  .two-col > * { flex: 1; }
+
+  /* Table */
+  table { width: 100%; border-collapse: collapse; }
+  td, th { padding: 9px 8px; text-align: left; border-bottom: 1px solid #eee; font-size: 0.9em; }
+  th { color: #888; font-size: 0.8em; text-transform: uppercase; font-weight: 600; }
+
+  /* Forms */
+  label { display: block; margin-top: 12px; font-weight: bold; font-size: 0.85em; color: #444; }
+  input[type=text], input[type=email], input[type=password], input[type=date] {
+    width: 100%; padding: 9px 10px; margin-top: 4px; border: 1px solid #ccc;
+    border-radius: 4px; font-size: 0.95em;
+  }
+  .row { display: flex; gap: 12px; }
+  .row > * { flex: 1; }
+
+  /* Buttons */
+  .btn { display: inline-block; padding: 10px 22px; background: #2e7d32; color: #fff;
+         border: none; border-radius: 20px; cursor: pointer; font-size: 0.95em;
+         text-decoration: none; font-weight: 700; }
+  .btn:hover { background: #1a5c1e; }
+  .btn-outline { background: transparent; color: #2e7d32; border: 2px solid #2e7d32; }
+  .btn-outline:hover { background: #e8f5e9; }
+  .btn-danger { background: #c0392b; }
+  .btn-danger:hover { background: #922b21; }
+  .btn-sm { padding: 6px 14px; font-size: 0.85em; }
+
+  /* Flash messages */
+  .flash { padding: 12px 16px; margin: 0 0 16px; border-radius: 4px;
+           background: #d4edda; border: 1px solid #c3e6cb; color: #155724; }
+  .flash.error { background: #f8d7da; border-color: #f5c6cb; color: #721c24; }
+
+  /* Status badges */
+  .badge { display: inline-block; padding: 3px 10px; border-radius: 10px; font-size: 0.8em; font-weight: 700; }
+  .badge-active  { background: #e8f5e9; color: #2e7d32; }
+  .badge-grace   { background: #fff8e1; color: #f57f17; }
+  .badge-expired { background: #fde8e8; color: #c62828; }
+
+  /* Footer */
+  footer { text-align: center; font-size: 0.85em; color: #888; margin-top: 40px; line-height: 2; }
+  footer a { color: #2e7d32; }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <span style="font-size:0.8em;opacity:0.75;letter-spacing:0.5px;">🗞️ Duxbury Clipper — Print Subscriber Account</span>
+  <div>
+    {% if session.subscriber_id %}
+    <a href="{{ url_for('account') }}">My Account Home</a>
+    <a href="{{ url_for('logout') }}">Log Out</a>
+    {% endif %}
+  </div>
+</div>
+
+<div class="page">
+  {% with messages = get_flashed_messages() %}
+    {% for msg in messages %}<div class="flash">{{ msg }}</div>{% endfor %}
+  {% endwith %}
+  {% block content %}{% endblock %}
+</div>
+
+<footer>
+  The Duxbury Clipper Inc. &nbsp;•&nbsp; P.O. Box 1656, Duxbury, MA 02331<br>
+  <a href="mailto:subscribe@duxburyclipper.net">subscribe@duxburyclipper.net</a> &nbsp;•&nbsp; 781-934-2811<br>
+  <a href="https://www.duxburyclipper.com">www.duxburyclipper.com</a>
+</footer>
+
+</body>
+</html>
