@@ -1,4 +1,6 @@
 .env
+.project-status.md
+.claude/
 venv/
 __pycache__/
 *.pyc
