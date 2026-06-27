@@ -2,24 +2,10 @@
 {% block title %}Log In — Duxbury Clipper{% endblock %}
 {% block content %}
 
-<div style="max-width:860px;margin:0 auto;display:flex;gap:40px;align-items:flex-start;padding-top:10px;">
+<div style="max-width:980px;margin:0 auto;display:flex;gap:40px;align-items:flex-start;padding-top:10px;">
 
-  {# Left: mailbox image + welcome #}
-  <div style="flex:1;text-align:center;padding-top:10px;">
-    <img src="/static/mailbox.jpg" alt="Duxbury Clipper delivered to your door"
-         style="width:90%;max-width:342px;border-radius:12px;box-shadow:0 4px 16px rgba(0,0,0,0.15);">
-    <div style="margin-top:20px;">
-      <img src="/static/logo.png" alt="Duxbury Clipper"
-           style="height:56px;border:3px solid #fff;border-radius:10px;padding:6px;background:#fff;">
-    </div>
-    <div style="font-size:2em;font-weight:900;color:#1a3a1a;margin-top:10px;letter-spacing:1px;">Welcome!</div>
-    <p style="color:#666;font-size:0.95em;margin-top:8px;line-height:1.6;">
-      Manage your print subscription,<br>update your address, or renew online.
-    </p>
-  </div>
-
-  {# Right: login card #}
-  <div style="flex:1.05;min-width:300px;">
+  {# Left: login card #}
+  <div style="flex:1.4;min-width:340px;">
     <div class="card">
       <h2 style="text-align:center;border:none;padding-bottom:0;font-size:1.05em;">
         Please log into your Clipper Print Subscriber account
@@ -66,6 +52,20 @@
         </p>
       </div>
     </div>
+  </div>
+
+  {# Right: mailbox image + welcome #}
+  <div style="flex:0.8;text-align:center;padding-top:10px;">
+    <img src="/static/mailbox.jpg" alt="Duxbury Clipper delivered to your door"
+         style="width:90%;max-width:280px;border-radius:12px;box-shadow:0 4px 16px rgba(0,0,0,0.15);">
+    <div style="margin-top:14px;">
+      <img src="/static/logo.png" alt="Duxbury Clipper"
+           style="height:44px;border:3px solid #fff;border-radius:10px;padding:5px;background:#fff;">
+    </div>
+    <div style="font-size:1.6em;font-weight:900;color:#1a3a1a;margin-top:8px;letter-spacing:1px;">Welcome!</div>
+    <p style="color:#666;font-size:0.88em;margin-top:6px;line-height:1.6;">
+      Manage your print subscription,<br>update your address, or renew online.
+    </p>
   </div>
 
 </div>
