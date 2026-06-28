@@ -272,7 +272,7 @@ def login_screen():
         st.image(_logo, width=400)
         st.markdown("### Circulation Admin")
         with st.form("login"):
-            email = st.text_input("Email")
+            email = st.text_input("Username")
             pc1, pc2 = st.columns([3, 1])
             password = pc1.text_input("Password", type="password")
             pin = pc2.text_input("PIN", type="password")
