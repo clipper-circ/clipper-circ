@@ -148,6 +148,11 @@ st.markdown("""
 [data-testid="stSidebar"] * { color: #ffffff !important; }
 [data-testid="stSidebar"] hr { border-color: var(--forest-mid) !important; }
 
+/* Collapse Streamlit's default element spacing in sidebar */
+[data-testid="stSidebar"] .stButton {
+    margin-bottom: -12px !important;
+}
+
 /* Sidebar nav buttons */
 [data-testid="stSidebar"] .stButton > button {
     background: transparent !important;
