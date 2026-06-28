@@ -781,25 +781,30 @@ elif page == "🔍 Subscribers":
 
     # ── Add New Subscriber (inline) ────────────────────────────────────────────
     if st.session_state["show_add_form"]:
-        st.subheader("➕ Add New Subscriber")
-        st.caption("Search above first to confirm this person doesn't already exist.")
+      with st.container():
         components.html("""
 <script>
 setTimeout(function() {
-    var pdoc = window.parent.document;
-    var headers = pdoc.querySelectorAll('h3');
-    for (var h of headers) {
-        if (h.textContent.includes('Add New Subscriber')) {
-            var block = h.closest('[data-testid="stVerticalBlock"]');
-            if (block) {
-                block.style.cssText += 'background:#fffde7 !important;border:1px solid #f9ca24;border-radius:10px;padding:16px 20px;';
-            }
-            break;
+    try {
+        var el = window.frameElement;
+        if (!el) return;
+        var block = el.parentElement;
+        while (block && block.getAttribute('data-testid') !== 'stVerticalBlock') {
+            block = block.parentElement;
         }
-    }
-}, 300);
+        if (block) {
+            block.style.background = '#fffde7';
+            block.style.border = '1px solid #f0c040';
+            block.style.borderRadius = '10px';
+            block.style.padding = '16px 20px';
+            block.style.marginBottom = '12px';
+        }
+    } catch(e) {}
+}, 200);
 </script>
 """, height=0)
+        st.subheader("➕ Add New Subscriber")
+        st.caption("Search above first to confirm this person doesn't already exist.")
 
         def _zip_lookup():
             z = st.session_state.get("add_zip", "").strip()
