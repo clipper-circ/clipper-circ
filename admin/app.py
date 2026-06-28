@@ -205,16 +205,6 @@ iframe[height="0"] {
     overflow: hidden !important;
 }
 
-/* Red cancel button */
-.cancel-btn button {
-    background-color: #c62828 !important;
-    color: white !important;
-    border: none !important;
-    font-weight: 600 !important;
-}
-.cancel-btn button:hover {
-    background-color: #8b0000 !important;
-}
 
 /* Main buttons */
 .stButton > button {
@@ -828,6 +818,17 @@ setTimeout(function() {
             block.style.marginBottom = '12px';
         }
     } catch(e) {}
+    // Red cancel button
+    try {
+        var pdoc = window.parent.document;
+        pdoc.querySelectorAll('button').forEach(function(btn) {
+            if (btn.innerText.trim().includes('Cancel')) {
+                btn.style.backgroundColor = '#c62828';
+                btn.style.color = 'white';
+                btn.style.border = 'none';
+            }
+        });
+    } catch(e) {}
 }, 200);
 </script>
 """, height=0)
@@ -880,7 +881,7 @@ setTimeout(function() {
           new_notes = _form.text_area("Notes (optional)", height=80, key="add_notes")
 
           _form.markdown("**Initial Payment**")
-          pp1, pp2, pp3, pp4, pp5 = _form.columns([1.5, 2, 2, 2, 1])
+          pp1, pp2, pp3, pp4, pp5 = _form.columns([1.5, 2, 1, 2, 1])
           new_pay_amount = pp1.text_input("Amount Paid ($)", key="add_pay_amount")
           pay_method_opts = [p.value for p in PaymentMethod]
           new_pay_method = pp2.selectbox("Method", pay_method_opts, key="add_pay_method")
