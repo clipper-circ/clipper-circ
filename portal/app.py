@@ -572,6 +572,7 @@ def charge_card():
     subscriber_id = data.get("subscriber_id")
     notes         = data.get("notes", "")
     entered_by    = data.get("entered_by", "Staff")
+    new_exp_str   = data.get("new_expiration", "")
 
     if not pm_id.startswith("pm_"):
         return _cors(jsonify({"error": "Invalid payment method ID"})), 400
@@ -620,9 +621,15 @@ def charge_card():
         )
         db.add(pmt)
         db.flush()
-        # Extend subscription
+        # Set subscription expiration (use admin-supplied date or default +1 year)
         base = sub.expiration_date if (sub.expiration_date and sub.expiration_date >= date.today()) else date.today()
-        new_exp = base.replace(year=base.year + 1)
+        if new_exp_str:
+            try:
+                new_exp = date.fromisoformat(new_exp_str)
+            except ValueError:
+                new_exp = base.replace(year=base.year + 1)
+        else:
+            new_exp = base.replace(year=base.year + 1)
         pmt.period_start = base
         pmt.period_end   = new_exp
         sub.expiration_date = new_exp

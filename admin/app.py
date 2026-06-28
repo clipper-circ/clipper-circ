@@ -1281,6 +1281,7 @@ setTimeout(function() {
 
                 # ── Tab 4: Payments ────────────────────────────────────────────
                 with tab4:
+                    # Payment history
                     payments_list = (db.query(Payment)
                         .filter_by(subscriber_id=sub.id)
                         .order_by(Payment.paid_at.desc()).all())
@@ -1300,82 +1301,85 @@ setTimeout(function() {
                     else:
                         st.caption("No payments recorded.")
 
-                    st.markdown("#### Record a Payment")
-                    if "pay_form_reset" not in st.session_state:
-                        st.session_state["pay_form_reset"] = 0
-                    prk = st.session_state["pay_form_reset"]
-                    confirm_key = f"pay_confirm_{sub.id}"
+                    # Sub-tabs for payment entry
+                    ptab1, ptab2 = st.tabs(["📋 Record Payment", "💳 Charge Card"])
 
-                    method_opts = ["Check", "Credit Card (manual)", "Cash", "Complimentary"]
-                    with st.form(f"check_payment_{prk}"):
-                        pc1, pc2, pc3 = st.columns(3)
-                        check_amount = pc1.number_input("Amount ($)", value=float(PLAN_PRICES[sub.plan]), step=0.01)
-                        pay_method   = pc2.selectbox("Payment Type", method_opts)
-                        check_number = pc3.text_input("Check # (if check)")
-                        pay_notes    = st.text_input("Notes (optional)")
-                        entered_by_name = st.session_state.user["name"]
-                        st.caption(f"Recording as: **{entered_by_name}**")
-                        if st.form_submit_button("Review Payment →", use_container_width=True):
-                            st.session_state[confirm_key] = {
-                                "amount": check_amount, "method": pay_method,
-                                "check_number": check_number, "notes": pay_notes,
-                                "entered_by": entered_by_name,
-                            }
+                    with ptab1:
+                        if "pay_form_reset" not in st.session_state:
+                            st.session_state["pay_form_reset"] = 0
+                        prk = st.session_state["pay_form_reset"]
+                        confirm_key = f"pay_confirm_{sub.id}"
+                        _default_exp = sub.expiration_date.replace(year=sub.expiration_date.year + 1) if sub.expiration_date else date.today().replace(year=date.today().year + 1)
 
-                    if confirm_key in st.session_state:
-                        pending = st.session_state[confirm_key]
-                        st.warning(
-                            f"⚠️ Confirm **${pending['amount']:.2f}** via **{pending['method']}**"
-                            + (f" (Check #{pending['check_number']})" if pending['check_number'] else "")
-                            + f" for **{sub.full_name}**?"
-                        )
-                        conf1, conf2 = st.columns(2)
-                        if conf1.button("✅ Yes, Record It", key=f"pay_yes_{sub.id}_{prk}", use_container_width=True):
-                            method_map = {
-                                "Check": PaymentMethod.CHECK,
-                                "Credit Card (manual)": PaymentMethod.CREDIT_CARD,
-                                "Cash": PaymentMethod.CHECK,
-                                "Complimentary": PaymentMethod.COMPLIMENTARY,
-                            }
-                            pmt = Payment(
-                                subscriber_id=sub.id,
-                                amount=pending["amount"],
-                                payment_method=method_map[pending["method"]],
-                                check_number=pending["check_number"] or None,
-                                notes=pending["notes"] or None,
-                                entered_by=pending["entered_by"],
-                                paid_at=datetime.utcnow(),
+                        method_opts = ["Check", "Credit Card (manual)", "Cash", "Complimentary"]
+                        with st.form(f"check_payment_{prk}"):
+                            pc1, pc2, pc3 = st.columns(3)
+                            check_amount = pc1.number_input("Amount ($)", value=float(PLAN_PRICES[sub.plan]), step=0.01)
+                            pay_method   = pc2.selectbox("Payment Type", method_opts)
+                            check_number = pc3.text_input("Check # (if check)")
+                            pd1, pd2 = st.columns(2)
+                            pay_new_exp  = pd1.date_input("New Expiration Date", value=_default_exp)
+                            pay_notes    = pd2.text_input("Notes (optional)")
+                            entered_by_name = st.session_state.user["name"]
+                            st.caption(f"Recording as: **{entered_by_name}**")
+                            if st.form_submit_button("Review Payment →", use_container_width=True):
+                                st.session_state[confirm_key] = {
+                                    "amount": check_amount, "method": pay_method,
+                                    "check_number": check_number, "notes": pay_notes,
+                                    "new_exp": pay_new_exp.isoformat(),
+                                    "entered_by": entered_by_name,
+                                }
+
+                        if confirm_key in st.session_state:
+                            pending = st.session_state[confirm_key]
+                            st.warning(
+                                f"⚠️ Confirm **${pending['amount']:.2f}** via **{pending['method']}**"
+                                + (f" (Check #{pending['check_number']})" if pending['check_number'] else "")
+                                + f" for **{sub.full_name}**? New expiry: **{pending['new_exp']}**"
                             )
-                            db.add(pmt)
-                            db.flush()
-                            write_audit(db, "CREATED", pmt, sub, pending["entered_by"])
-                            sub.status = SubscriberStatus.ACTIVE
-                            base_date = sub.expiration_date if (sub.expiration_date and sub.expiration_date >= date.today()) else date.today()
-                            new_exp = base_date.replace(year=base_date.year + 1)
-                            pmt.period_start = base_date
-                            pmt.period_end   = new_exp
-                            sub.expiration_date = new_exp
-                            sub.reminder_35_sent = False
-                            sub.reminder_21_sent = False
-                            sub.reminder_14_sent = False
-                            sub.reminder_expire_sent = False
-                            sub.grace_14_sent = False
-                            sub.grace_final_sent = False
-                            db.commit()
-                            del st.session_state[confirm_key]
-                            st.session_state["pay_form_reset"] = prk + 1
-                            st.success("✅ Payment recorded.")
-                            st.rerun()
-                        if conf2.button("✗ Cancel", key=f"pay_no_{sub.id}_{prk}", use_container_width=True):
-                            del st.session_state[confirm_key]
-                            st.rerun()
+                            conf1, conf2 = st.columns(2)
+                            if conf1.button("✅ Yes, Record It", key=f"pay_yes_{sub.id}_{prk}", use_container_width=True):
+                                method_map = {
+                                    "Check": PaymentMethod.CHECK,
+                                    "Credit Card (manual)": PaymentMethod.CREDIT_CARD,
+                                    "Cash": PaymentMethod.CHECK,
+                                    "Complimentary": PaymentMethod.COMPLIMENTARY,
+                                }
+                                new_exp = date.fromisoformat(pending["new_exp"])
+                                pmt = Payment(
+                                    subscriber_id=sub.id,
+                                    amount=pending["amount"],
+                                    payment_method=method_map[pending["method"]],
+                                    check_number=pending["check_number"] or None,
+                                    notes=pending["notes"] or None,
+                                    entered_by=pending["entered_by"],
+                                    paid_at=datetime.utcnow(),
+                                    period_start=sub.expiration_date or date.today(),
+                                    period_end=new_exp,
+                                )
+                                db.add(pmt)
+                                db.flush()
+                                write_audit(db, "CREATED", pmt, sub, pending["entered_by"])
+                                sub.status = SubscriberStatus.ACTIVE
+                                sub.expiration_date = new_exp
+                                for _f in ["reminder_35_sent","reminder_21_sent","reminder_14_sent",
+                                           "reminder_expire_sent","grace_14_sent","grace_final_sent"]:
+                                    setattr(sub, _f, False)
+                                db.commit()
+                                del st.session_state[confirm_key]
+                                st.session_state["pay_form_reset"] = prk + 1
+                                st.success("✅ Payment recorded.")
+                                st.rerun()
+                            if conf2.button("✗ Cancel", key=f"pay_no_{sub.id}_{prk}", use_container_width=True):
+                                del st.session_state[confirm_key]
+                                st.rerun()
 
-                    # Check if a Stripe charge just completed (set by iframe JS)
-                    components.html("""
+                    with ptab2:
+                        # Check if a Stripe charge just completed
+                        components.html("""
 <script>
 if (window.parent.sessionStorage.getItem('stripe_charge_success') === '1') {
     window.parent.sessionStorage.removeItem('stripe_charge_success');
-    // Click the Subscribers nav button to trigger a Streamlit rerun
     setTimeout(function() {
         var btns = window.parent.document.querySelectorAll('[data-testid="stSidebar"] button');
         btns.forEach(function(b) { if (b.innerText.includes('Subscribers')) b.click(); });
@@ -1383,21 +1387,18 @@ if (window.parent.sessionStorage.getItem('stripe_charge_success') === '1') {
 }
 </script>
 """, height=0)
-
-                    # ── Stripe Elements MOTO card charge ──────────────────────
-                    st.divider()
-                    st.markdown("#### 💳 Manual Credit Card Charge")
-                    _stripe_pk  = os.environ.get("STRIPE_PUBLISHABLE_KEY", "")
-                    _charge_tok = os.environ.get("ADMIN_CHARGE_TOKEN", "")
-                    _portal_url = os.environ.get("PORTAL_URL", "https://portal-production-ddc4.up.railway.app")
-                    _stripe_sk  = os.environ.get("STRIPE_SECRET_KEY", "")
-                    if not _stripe_pk or not _charge_tok:
-                        st.warning("Set STRIPE_PUBLISHABLE_KEY and ADMIN_CHARGE_TOKEN in Railway → Admin variables.")
-                    else:
-                        _test_mode = _stripe_sk.startswith("sk_test_")
-                        _default_amt = float(PLAN_PRICES[sub.plan])
-                        _entered_by  = st.session_state.user["name"]
-                        components.html(f"""
+                        _stripe_pk  = os.environ.get("STRIPE_PUBLISHABLE_KEY", "")
+                        _charge_tok = os.environ.get("ADMIN_CHARGE_TOKEN", "")
+                        _portal_url = os.environ.get("PORTAL_URL", "https://portal-production-ddc4.up.railway.app")
+                        _stripe_sk  = os.environ.get("STRIPE_SECRET_KEY", "")
+                        if not _stripe_pk or not _charge_tok:
+                            st.warning("Set STRIPE_PUBLISHABLE_KEY and ADMIN_CHARGE_TOKEN in Railway → Admin variables.")
+                        else:
+                            _test_mode   = _stripe_sk.startswith("sk_test_")
+                            _default_amt = float(PLAN_PRICES[sub.plan])
+                            _entered_by  = st.session_state.user["name"]
+                            _default_exp = (sub.expiration_date.replace(year=sub.expiration_date.year + 1) if sub.expiration_date else date.today().replace(year=date.today().year + 1)).isoformat()
+                            components.html(f"""
 <!DOCTYPE html>
 <html>
 <head>
@@ -1407,23 +1408,26 @@ if (window.parent.sessionStorage.getItem('stripe_charge_success') === '1') {
   .row {{ display: flex; gap: 10px; margin-bottom: 10px; align-items: flex-end; }}
   .field {{ flex: 1; }}
   label {{ display: block; font-size: 12px; color: #555; margin-bottom: 3px; font-weight: 600; }}
-  input {{ width: 100%; padding: 8px 10px; border: 1px solid #ccc; border-radius: 4px;
-           font-size: 14px; box-sizing: border-box; }}
+  input {{ width: 100%; padding: 8px 10px; border: 1px solid #ccc; border-radius: 4px; font-size: 14px; box-sizing: border-box; }}
   #card-element {{ border: 1px solid #ccc; border-radius: 4px; padding: 9px 10px; background: white; }}
   #charge-btn {{ width: 100%; padding: 10px; background: #2e7d32; color: white; border: none;
-                 border-radius: 4px; font-size: 15px; font-weight: 700; cursor: pointer; margin-top: 4px; }}
+                 border-radius: 4px; font-size: 15px; font-weight: 700; cursor: pointer; margin-top: 8px; }}
   #charge-btn:disabled {{ background: #aaa; cursor: not-allowed; }}
   #msg {{ margin-top: 10px; padding: 10px; border-radius: 4px; display: none; font-weight: 600; }}
   .err {{ background: #fde8e8; color: #c62828; }}
   .ok  {{ background: #e8f5e9; color: #1b5e20; }}
-  {'<div style="background:#fff3cd;padding:6px 10px;border-radius:4px;font-size:12px;margin-bottom:8px;">🧪 Test mode — use card 4242 4242 4242 4242, any future date, any CVV</div>' if _test_mode else ''}
 </style>
 </head>
 <body>
+{'<div style="background:#fff3cd;padding:6px 10px;border-radius:4px;font-size:12px;margin-bottom:8px;">🧪 Test mode — use card 4242 4242 4242 4242, any future date, any CVV</div>' if _test_mode else ''}
 <div class="row">
-  <div class="field" style="max-width:120px">
+  <div class="field" style="max-width:110px">
     <label>Amount ($)</label>
     <input type="number" id="amount" value="{_default_amt:.2f}" step="0.01" min="0.01">
+  </div>
+  <div class="field" style="max-width:150px">
+    <label>New Expiration Date</label>
+    <input type="date" id="new_exp" value="{_default_exp}">
   </div>
   <div class="field">
     <label>Notes (optional)</label>
@@ -1449,12 +1453,10 @@ document.getElementById('charge-btn').addEventListener('click', async function()
   msg.style.display = 'none';
 
   const amount  = document.getElementById('amount').value;
+  const new_exp = document.getElementById('new_exp').value;
   const notes   = document.getElementById('notes').value;
 
-  const {{paymentMethod, error}} = await stripe.createPaymentMethod({{
-    type: 'card', card: card,
-  }});
-
+  const {{paymentMethod, error}} = await stripe.createPaymentMethod({{type: 'card', card: card}});
   if (error) {{
     msg.className = 'err'; msg.textContent = error.message;
     msg.style.display = 'block';
@@ -1469,6 +1471,7 @@ document.getElementById('charge-btn').addEventListener('click', async function()
       body: JSON.stringify({{
         payment_method_id: paymentMethod.id,
         amount: amount,
+        new_expiration: new_exp,
         subscriber_id: {sub.id},
         notes: notes,
         entered_by: '{_entered_by}',
@@ -1478,11 +1481,9 @@ document.getElementById('charge-btn').addEventListener('click', async function()
     if (data.success) {{
       msg.className = 'ok';
       msg.textContent = '✅ Charged $' + parseFloat(data.amount).toFixed(2) +
-        ' — subscription extended to ' + data.new_expiration +
-        '. Click the Subscribers nav button to refresh.';
+        ' — expiration set to ' + data.new_expiration + '. Refreshing…';
       msg.style.display = 'block';
       btn.textContent = '✅ Done';
-      // Store success flag so admin knows to rerun
       window.parent.sessionStorage.setItem('stripe_charge_success', '1');
     }} else {{
       msg.className = 'err'; msg.textContent = data.error || 'Charge failed.';
@@ -1498,7 +1499,7 @@ document.getElementById('charge-btn').addEventListener('click', async function()
 </script>
 </body>
 </html>
-""", height=220)
+""", height=250)
 
                 # ── Tab 5: Delivery Hold ───────────────────────────────────────
                 with tab5:
