@@ -22,6 +22,7 @@ from models import (
 import bcrypt
 import hashlib
 import extra_streamlit_components as stx
+import streamlit.components.v1 as components
 
 SETTINGS_FILE = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "settings.json")
 
@@ -461,6 +462,29 @@ if st.sidebar.button("🚪 Log Out", use_container_width=True):
 
 db = SessionLocal()
 
+# Preserve scroll position across reruns (tabs, selections, etc.)
+components.html("""
+<script>
+(function() {
+    var key = 'clipper_scroll';
+    var p = window.parent;
+    function getMain() {
+        return p.document.querySelector('.main');
+    }
+    var saved = parseInt(p.sessionStorage.getItem(key) || '0');
+    if (saved > 0) {
+        setTimeout(function() {
+            var m = getMain();
+            if (m) m.scrollTop = saved;
+        }, 60);
+    }
+    setInterval(function() {
+        var m = getMain();
+        if (m && m.scrollTop > 0) p.sessionStorage.setItem(key, m.scrollTop);
+    }, 300);
+})();
+</script>
+""", height=0)
 
 # ── Dashboard ─────────────────────────────────────────────────────────────────
 
@@ -668,7 +692,7 @@ elif page == "🔍 Subscribers":
     subs = query.order_by(Subscriber.full_name).all()
 
     leg_l, leg_r = st.columns([1, 2])
-    leg_l.caption(f"{len(subs):,} subscribers found")
+    leg_l.caption(f"{len(subs):,} subscribers found — click a row to open")
     leg_r.markdown("""
     <div style="font-size:0.78em;display:flex;gap:10px;justify-content:flex-end;padding-top:4px;">
       <span style="background:#fde8e8;padding:2px 8px;border-radius:4px;">Expired</span>
