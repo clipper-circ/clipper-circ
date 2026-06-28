@@ -188,6 +188,18 @@ st.markdown("""
     border-left: 3px solid #81c784 !important;
 }
 
+/* Collapse zero-height component iframes (used for JS injection) */
+iframe[height="0"] {
+    display: block !important;
+    height: 0 !important;
+    min-height: 0 !important;
+    max-height: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: none !important;
+    overflow: hidden !important;
+}
+
 /* Main buttons */
 .stButton > button {
     background-color: var(--forest-lite);
@@ -796,7 +808,7 @@ setTimeout(function() {
             block.style.background = '#fffde7';
             block.style.border = '1px solid #f0c040';
             block.style.borderRadius = '10px';
-            block.style.padding = '16px 20px';
+            block.style.padding = '4px 24px 20px 24px';
             block.style.marginBottom = '12px';
         }
     } catch(e) {}
