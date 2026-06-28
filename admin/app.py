@@ -1370,61 +1370,118 @@ setTimeout(function() {
                             del st.session_state[confirm_key]
                             st.rerun()
 
-                    # ── Record Stripe payment from Virtual Terminal ────────────
+                    # ── Stripe Elements MOTO card charge ──────────────────────
                     st.divider()
-                    st.markdown("#### 💳 Record Stripe Credit Card Payment")
-                    _stripe_key = os.environ.get("STRIPE_SECRET_KEY", "")
-                    if not _stripe_key:
-                        st.warning("STRIPE_SECRET_KEY not set — add it to Railway environment variables.")
+                    st.markdown("#### 💳 Charge Credit Card")
+                    _stripe_pk  = os.environ.get("STRIPE_PUBLISHABLE_KEY", "")
+                    _charge_tok = os.environ.get("ADMIN_CHARGE_TOKEN", "")
+                    _portal_url = os.environ.get("PORTAL_URL", "https://portal-production-ddc4.up.railway.app")
+                    _stripe_sk  = os.environ.get("STRIPE_SECRET_KEY", "")
+                    if not _stripe_pk or not _charge_tok:
+                        st.warning("Set STRIPE_PUBLISHABLE_KEY and ADMIN_CHARGE_TOKEN in Railway → Admin variables.")
                     else:
-                        _test_mode = _stripe_key.startswith("sk_test_")
-                        _vt_url = "https://dashboard.stripe.com/" + ("test/" if _test_mode else "") + "terminal/virtual-terminal"
-                        st.caption(f"1. Charge the card in [Stripe Virtual Terminal]({_vt_url})  →  2. Paste the Payment Intent ID below to record it here.")
-                        with st.form(f"stripe_pi_{sub.id}"):
-                            sp1, sp2 = st.columns([1, 2])
-                            stripe_amount = sp1.number_input("Amount ($)", value=float(PLAN_PRICES[sub.plan]), step=0.01)
-                            stripe_pi_id  = sp2.text_input("Payment Intent ID", placeholder="pi_3ABC...")
-                            stripe_notes  = st.text_input("Notes (optional)")
-                            record_btn = st.form_submit_button("✅ Record Payment", use_container_width=True)
+                        _test_mode = _stripe_sk.startswith("sk_test_")
+                        _default_amt = float(PLAN_PRICES[sub.plan])
+                        _entered_by  = st.session_state.user["name"]
+                        components.html(f"""
+<!DOCTYPE html>
+<html>
+<head>
+<script src="https://js.stripe.com/v3/"></script>
+<style>
+  body {{ font-family: Arial, sans-serif; font-size: 14px; margin: 0; padding: 0; background: transparent; }}
+  .row {{ display: flex; gap: 10px; margin-bottom: 10px; align-items: flex-end; }}
+  .field {{ flex: 1; }}
+  label {{ display: block; font-size: 12px; color: #555; margin-bottom: 3px; font-weight: 600; }}
+  input {{ width: 100%; padding: 8px 10px; border: 1px solid #ccc; border-radius: 4px;
+           font-size: 14px; box-sizing: border-box; }}
+  #card-element {{ border: 1px solid #ccc; border-radius: 4px; padding: 9px 10px; background: white; }}
+  #charge-btn {{ width: 100%; padding: 10px; background: #2e7d32; color: white; border: none;
+                 border-radius: 4px; font-size: 15px; font-weight: 700; cursor: pointer; margin-top: 4px; }}
+  #charge-btn:disabled {{ background: #aaa; cursor: not-allowed; }}
+  #msg {{ margin-top: 10px; padding: 10px; border-radius: 4px; display: none; font-weight: 600; }}
+  .err {{ background: #fde8e8; color: #c62828; }}
+  .ok  {{ background: #e8f5e9; color: #1b5e20; }}
+  {'<div style="background:#fff3cd;padding:6px 10px;border-radius:4px;font-size:12px;margin-bottom:8px;">🧪 Test mode — use card 4242 4242 4242 4242, any future date, any CVV</div>' if _test_mode else ''}
+</style>
+</head>
+<body>
+<div class="row">
+  <div class="field" style="max-width:120px">
+    <label>Amount ($)</label>
+    <input type="number" id="amount" value="{_default_amt:.2f}" step="0.01" min="0.01">
+  </div>
+  <div class="field">
+    <label>Notes (optional)</label>
+    <input type="text" id="notes" placeholder="e.g. paper renewal form">
+  </div>
+</div>
+<label>Card Details</label>
+<div id="card-element"></div>
+<div id="msg"></div>
+<button id="charge-btn">💳 Charge Card</button>
 
-                        if record_btn:
-                            if not stripe_pi_id.strip().startswith("pi_"):
-                                st.error("Please enter a valid Payment Intent ID (starts with pi_).")
-                            else:
-                                try:
-                                    import stripe as _stripe
-                                    _stripe.api_key = _stripe_key
-                                    _pi = _stripe.PaymentIntent.retrieve(stripe_pi_id.strip())
-                                    if _pi.status != "succeeded":
-                                        st.error(f"Payment Intent status is '{_pi.status}' — only succeeded payments can be recorded.")
-                                    else:
-                                        _actual_amount = _pi.amount_received / 100
-                                        _pmt = Payment(
-                                            subscriber_id=sub.id,
-                                            amount=_actual_amount,
-                                            payment_method=PaymentMethod.CREDIT_CARD,
-                                            stripe_payment_intent_id=_pi.id,
-                                            notes=stripe_notes or None,
-                                            entered_by=st.session_state.user["name"],
-                                            paid_at=datetime.utcnow(),
-                                        )
-                                        db.add(_pmt)
-                                        db.flush()
-                                        write_audit(db, "CREATED", _pmt, sub, st.session_state.user["name"])
-                                        sub.status = SubscriberStatus.ACTIVE
-                                        _base = sub.expiration_date if (sub.expiration_date and sub.expiration_date >= date.today()) else date.today()
-                                        _new_exp = _base.replace(year=_base.year + 1)
-                                        _pmt.period_start = _base
-                                        _pmt.period_end   = _new_exp
-                                        sub.expiration_date = _new_exp
-                                        for _flag in ["reminder_35_sent","reminder_21_sent","reminder_14_sent",
-                                                      "reminder_expire_sent","grace_14_sent","grace_final_sent"]:
-                                            setattr(sub, _flag, False)
-                                        db.commit()
-                                        st.success(f"✅ Recorded ${_actual_amount:.2f} credit card payment — expiration extended to {_new_exp.strftime('%b %d, %Y')}.")
-                                        st.rerun()
-                                except Exception as _e:
-                                    st.error(f"Stripe error: {_e}")
+<script>
+const stripe = Stripe('{_stripe_pk}');
+const elements = stripe.elements();
+const card = elements.create('card', {{style: {{base: {{fontSize: '14px'}}}}}});
+card.mount('#card-element');
+
+document.getElementById('charge-btn').addEventListener('click', async function() {{
+  const btn = this;
+  const msg = document.getElementById('msg');
+  btn.disabled = true;
+  btn.textContent = 'Processing…';
+  msg.style.display = 'none';
+
+  const amount  = document.getElementById('amount').value;
+  const notes   = document.getElementById('notes').value;
+
+  const {{paymentMethod, error}} = await stripe.createPaymentMethod({{
+    type: 'card', card: card,
+  }});
+
+  if (error) {{
+    msg.className = 'err'; msg.textContent = error.message;
+    msg.style.display = 'block';
+    btn.disabled = false; btn.textContent = '💳 Charge Card';
+    return;
+  }}
+
+  try {{
+    const resp = await fetch('{_portal_url}/charge-card', {{
+      method: 'POST',
+      headers: {{'Content-Type': 'application/json', 'X-Admin-Token': '{_charge_tok}'}},
+      body: JSON.stringify({{
+        payment_method_id: paymentMethod.id,
+        amount: amount,
+        subscriber_id: {sub.id},
+        notes: notes,
+        entered_by: '{_entered_by}',
+      }}),
+    }});
+    const data = await resp.json();
+    if (data.success) {{
+      msg.className = 'ok';
+      msg.textContent = '✅ Charged $' + parseFloat(data.amount).toFixed(2) +
+        ' — subscription extended to ' + data.new_expiration + '. Refreshing…';
+      msg.style.display = 'block';
+      setTimeout(() => window.parent.location.reload(), 2000);
+    }} else {{
+      msg.className = 'err'; msg.textContent = data.error || 'Charge failed.';
+      msg.style.display = 'block';
+      btn.disabled = false; btn.textContent = '💳 Charge Card';
+    }}
+  }} catch(e) {{
+    msg.className = 'err'; msg.textContent = 'Network error: ' + e.message;
+    msg.style.display = 'block';
+    btn.disabled = false; btn.textContent = '💳 Charge Card';
+  }}
+}});
+</script>
+</body>
+</html>
+""", height=220)
 
                 # ── Tab 5: Delivery Hold ───────────────────────────────────────
                 with tab5:

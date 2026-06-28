@@ -547,6 +547,103 @@ def renewal_success():
     return render_template("renewal_success.html", subscriber=sub)
 
 
+# ── Admin MOTO card charge ──────────────────────────────────────────────────────
+
+@app.route("/charge-card", methods=["POST", "OPTIONS"])
+def charge_card():
+    # CORS preflight
+    def _cors(resp):
+        resp.headers["Access-Control-Allow-Origin"] = "*"
+        resp.headers["Access-Control-Allow-Methods"] = "POST, OPTIONS"
+        resp.headers["Access-Control-Allow-Headers"] = "Content-Type, X-Admin-Token"
+        return resp
+
+    if request.method == "OPTIONS":
+        return _cors(app.make_response(("", 204)))
+
+    # Simple shared-secret auth so random internet can't hit this
+    token = request.headers.get("X-Admin-Token", "")
+    if token != os.environ.get("ADMIN_CHARGE_TOKEN", ""):
+        return _cors(jsonify({"error": "Unauthorized"})), 401
+
+    data          = request.json or {}
+    pm_id         = data.get("payment_method_id", "").strip()
+    amount_str    = data.get("amount", "0")
+    subscriber_id = data.get("subscriber_id")
+    notes         = data.get("notes", "")
+    entered_by    = data.get("entered_by", "Staff")
+
+    if not pm_id.startswith("pm_"):
+        return _cors(jsonify({"error": "Invalid payment method ID"})), 400
+
+    try:
+        amount_cents = int(float(amount_str) * 100)
+        db = SessionLocal()
+        sub = db.query(Subscriber).filter_by(id=subscriber_id).first()
+        if not sub:
+            db.close()
+            return _cors(jsonify({"error": "Subscriber not found"})), 404
+
+        # Create or retrieve Stripe customer
+        if sub.stripe_customer_id:
+            cust_id = sub.stripe_customer_id
+        else:
+            cust = stripe.Customer.create(name=sub.full_name, email=sub.email or None)
+            cust_id = cust.id
+            sub.stripe_customer_id = cust_id
+            db.commit()
+
+        # Confirm PaymentIntent
+        pi = stripe.PaymentIntent.create(
+            amount=amount_cents,
+            currency="usd",
+            customer=cust_id,
+            payment_method=pm_id,
+            confirm=True,
+            payment_method_types=["card"],
+            description=f"Clipper subscription — {sub.full_name}",
+        )
+
+        if pi.status != "succeeded":
+            db.close()
+            return _cors(jsonify({"error": f"Payment status: {pi.status}"})), 400
+
+        actual_amount = pi.amount_received / 100
+        pmt = Payment(
+            subscriber_id=sub.id,
+            amount=actual_amount,
+            payment_method=PaymentMethod.CREDIT_CARD,
+            stripe_payment_intent_id=pi.id,
+            notes=notes or None,
+            entered_by=entered_by,
+            paid_at=datetime.utcnow(),
+        )
+        db.add(pmt)
+        db.flush()
+        # Extend subscription
+        base = sub.expiration_date if (sub.expiration_date and sub.expiration_date >= date.today()) else date.today()
+        new_exp = base.replace(year=base.year + 1)
+        pmt.period_start = base
+        pmt.period_end   = new_exp
+        sub.expiration_date = new_exp
+        sub.status = SubscriberStatus.ACTIVE
+        for flag in ["reminder_35_sent","reminder_21_sent","reminder_14_sent",
+                     "reminder_expire_sent","grace_14_sent","grace_final_sent"]:
+            setattr(sub, flag, False)
+        db.commit()
+        db.close()
+        return _cors(jsonify({
+            "success": True,
+            "pi_id": pi.id,
+            "amount": actual_amount,
+            "new_expiration": new_exp.isoformat(),
+        }))
+    except stripe.error.CardError as e:
+        return _cors(jsonify({"error": e.user_message or str(e)})), 400
+    except Exception as e:
+        return _cors(jsonify({"error": str(e)})), 500
+
+
 # ── Stripe webhook ─────────────────────────────────────────────────────────────
 
 @app.route("/stripe-webhook", methods=["POST"])
