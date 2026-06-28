@@ -157,8 +157,8 @@ st.markdown("""
     font-size: 1em !important;
     font-weight: 500 !important;
     text-align: left !important;
-    padding: 8px 14px !important;
-    margin-bottom: 2px !important;
+    padding: 5px 14px !important;
+    margin-bottom: 0px !important;
     width: 100% !important;
 }
 [data-testid="stSidebar"] .stButton > button:hover {
@@ -392,10 +392,8 @@ if "login_time" in st.session_state:
 # ── Sidebar nav ───────────────────────────────────────────────────────────────
 
 _logo_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "logo.png")
-try:
-    st.logo(_logo_path, size="large")
-except Exception:
-    pass
+if os.path.exists(_logo_path):
+    st.sidebar.image(_logo_path, use_container_width=True)
 st.sidebar.title("Clipper Circulation")
 st.sidebar.write(f"Logged in as **{st.session_state.user['name']}**")
 st.sidebar.divider()
