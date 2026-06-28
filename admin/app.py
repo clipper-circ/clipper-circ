@@ -286,8 +286,9 @@ def check_login(email, password, pin, ip=None):
         return None
     db.add(AdminLoginLog(email=email, success=True, reason="ok", ip_address=ip))
     db.commit()
+    user_data = {"id": user.id, "name": user.name, "is_admin": user.is_admin}
     db.close()
-    return user
+    return user_data
 
 def user_from_cookie(token):
     db = SessionLocal()
@@ -317,14 +318,17 @@ def login_screen():
                 if result == "locked":
                     st.error(f"Too many failed attempts. This IP is blocked for {LOCKOUT_MINUTES} minutes.")
                 elif result:
-                    st.session_state.user = {"id": result.id, "name": result.name, "is_admin": result.is_admin}
+                    st.session_state.user = result
                     st.session_state["login_time"] = datetime.now().isoformat()
                     if remember:
+                        db2 = SessionLocal()
+                        u = db2.query(StaffUser).filter_by(id=result["id"]).first()
                         cookie_manager.set(
                             COOKIE_NAME,
-                            _token_for(result),
+                            _token_for(u),
                             expires_at=datetime.now() + timedelta(days=COOKIE_DAYS),
                         )
+                        db2.close()
                     st.rerun()
                 else:
                     st.error("Invalid username, password, or PIN.")
