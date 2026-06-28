@@ -14,7 +14,7 @@ import resend
 from datetime import date
 
 resend.api_key = os.environ["RESEND_API_KEY"]
-FROM_EMAIL     = os.environ.get("FROM_EMAIL", "subscribe@duxburyclipper.com")
+FROM_EMAIL     = os.environ.get("FROM_EMAIL", "subscribe@duxburyclipper.net")
 BACKUP_EMAIL   = os.environ.get("STAFF_ALERT_EMAIL", "subscribe@duxburyclipper.com")
 
 db = SessionLocal()
