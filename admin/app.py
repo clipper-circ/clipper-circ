@@ -153,8 +153,15 @@ st.markdown("""
     margin-bottom: -16px !important;
 }
 [data-testid="stSidebar"] > div:first-child {
-    width: 220px !important;
-    min-width: 220px !important;
+    width: 180px !important;
+    min-width: 180px !important;
+}
+/* Logo border */
+[data-testid="stSidebar"] img {
+    border: 2px solid white !important;
+    border-radius: 8px !important;
+    padding: 4px !important;
+    background: white !important;
 }
 
 /* Sidebar nav buttons */
@@ -402,7 +409,7 @@ if "login_time" in st.session_state:
 
 _logo_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "logo.png")
 if os.path.exists(_logo_path):
-    st.sidebar.image(_logo_path, width=200)
+    st.sidebar.image(_logo_path, width=160)
 st.sidebar.title("Clipper Circulation")
 st.sidebar.write(f"Logged in as **{st.session_state.user['name']}**")
 st.sidebar.divider()
