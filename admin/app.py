@@ -2317,4 +2317,23 @@ Dear Jane,
                 save_settings(settings)
                 st.success("Settings saved.")
 
+        st.divider()
+
+        # ── Login Audit Log ────────────────────────────────────────────────────
+        st.subheader("🔐 Admin Login Log")
+        logs = db.query(AdminLoginLog).order_by(AdminLoginLog.event_at.desc()).limit(50).all()
+        if logs:
+            log_rows = []
+            for l in logs:
+                log_rows.append({
+                    "Time": l.event_at.strftime("%Y-%m-%d %H:%M:%S") if l.event_at else "",
+                    "Username": l.email or "",
+                    "Result": "✅ Success" if l.success else "❌ Failed",
+                    "Reason": l.reason or "",
+                    "IP": l.ip_address or "—",
+                })
+            st.dataframe(pd.DataFrame(log_rows), use_container_width=True, hide_index=True, height=280)
+        else:
+            st.caption("No login attempts recorded yet.")
+
 db.close()
