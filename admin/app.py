@@ -250,6 +250,33 @@ SESSION_TIMEOUT_HOURS = 3
 LOCKOUT_ATTEMPTS = 5
 LOCKOUT_MINUTES = 30
 
+def _get_browser():
+    try:
+        ua = st.context.headers.get("User-Agent", "")
+        if "iPhone" in ua or "iPad" in ua:
+            device = "iOS"
+        elif "Android" in ua:
+            device = "Android"
+        elif "Mac" in ua:
+            device = "Mac"
+        elif "Windows" in ua:
+            device = "Windows"
+        else:
+            device = "Unknown"
+        if "Chrome" in ua and "Edg" not in ua and "OPR" not in ua:
+            browser = "Chrome"
+        elif "Safari" in ua and "Chrome" not in ua:
+            browser = "Safari"
+        elif "Firefox" in ua:
+            browser = "Firefox"
+        elif "Edg" in ua:
+            browser = "Edge"
+        else:
+            browser = "Other"
+        return f"{browser} / {device}"
+    except Exception:
+        return None
+
 def is_ip_locked(db, ip):
     if not ip:
         return False
@@ -261,32 +288,33 @@ def is_ip_locked(db, ip):
     ).count()
     return recent_failures >= LOCKOUT_ATTEMPTS
 
-def check_login(email, password, pin, ip=None):
+def check_login(email, password, pin, ip=None, browser=None):
     db = SessionLocal()
     if is_ip_locked(db, ip):
-        db.add(AdminLoginLog(email=email, success=False, reason="ip_locked", ip_address=ip))
+        db.add(AdminLoginLog(email=email, success=False, reason="ip_locked", ip_address=ip, browser=browser))
         db.commit()
         db.close()
         return "locked"
     if pin != ADMIN_PIN:
-        db.add(AdminLoginLog(email=email, success=False, reason="bad_pin", ip_address=ip))
+        db.add(AdminLoginLog(email=email, success=False, reason="bad_pin", ip_address=ip, browser=browser))
         db.commit()
         db.close()
         return None
     user = db.query(StaffUser).filter_by(email=email.lower(), is_active=True).first()
     if not user:
-        db.add(AdminLoginLog(email=email, success=False, reason="not_found", ip_address=ip))
+        db.add(AdminLoginLog(email=email, success=False, reason="not_found", ip_address=ip, browser=browser))
         db.commit()
         db.close()
         return None
     if not bcrypt.checkpw(password.encode(), user.password_hash.encode()):
-        db.add(AdminLoginLog(email=email, success=False, reason="bad_password", ip_address=ip))
+        db.add(AdminLoginLog(email=email, success=False, reason="bad_password", ip_address=ip, browser=browser))
         db.commit()
         db.close()
         return None
-    db.add(AdminLoginLog(email=email, success=True, reason="ok", ip_address=ip))
+    log = AdminLoginLog(email=email, success=True, reason="ok", ip_address=ip, browser=browser)
+    db.add(log)
     db.commit()
-    user_data = {"id": user.id, "name": user.name, "is_admin": user.is_admin}
+    user_data = {"id": user.id, "name": user.name, "is_admin": user.is_admin, "log_id": log.id}
     db.close()
     return user_data
 
@@ -314,12 +342,13 @@ def login_screen():
             pin = pc2.text_input("PIN", type="password")
             remember = st.checkbox("Remember me for 30 days", value=True)
             if st.form_submit_button("Log In", use_container_width=True):
-                result = check_login(email, password, pin)
+                result = check_login(email, password, pin, browser=_get_browser())
                 if result == "locked":
                     st.error(f"Too many failed attempts. This IP is blocked for {LOCKOUT_MINUTES} minutes.")
                 elif result:
                     st.session_state.user = result
                     st.session_state["login_time"] = datetime.now().isoformat()
+                    st.session_state["login_log_id"] = result.get("log_id")
                     if remember:
                         db2 = SessionLocal()
                         u = db2.query(StaffUser).filter_by(id=result["id"]).first()
@@ -402,7 +431,16 @@ page = st.session_state["_current_page"]
 st.sidebar.divider()
 if st.sidebar.button("🚪 Log Out", use_container_width=True):
     cookie_manager.delete(COOKIE_NAME)
+    log_id = st.session_state.get("login_log_id")
+    if log_id:
+        _db = SessionLocal()
+        _log = _db.query(AdminLoginLog).filter_by(id=log_id).first()
+        if _log:
+            _log.logout_at = datetime.utcnow()
+            _db.commit()
+        _db.close()
     del st.session_state.user
+    st.session_state.pop("login_log_id", None)
     st.rerun()
 
 db = SessionLocal()
@@ -2349,12 +2387,21 @@ Dear Jane,
         if logs:
             log_rows = []
             for l in logs:
+                if l.success and l.logout_at and l.event_at:
+                    delta = l.logout_at - l.event_at
+                    mins = int(delta.total_seconds() // 60)
+                    duration = f"{mins}m" if mins < 60 else f"{mins//60}h {mins%60}m"
+                elif l.success and not l.logout_at:
+                    duration = "Active"
+                else:
+                    duration = "—"
                 log_rows.append({
-                    "Time": l.event_at.strftime("%Y-%m-%d %H:%M:%S") if l.event_at else "",
+                    "Time": l.event_at.strftime("%Y-%m-%d %H:%M") if l.event_at else "",
                     "Username": l.email or "",
                     "Result": "✅ Success" if l.success else "❌ Failed",
                     "Reason": l.reason or "",
-                    "IP": l.ip_address or "—",
+                    "Browser": l.browser or "—",
+                    "Session": duration,
                 })
             st.dataframe(pd.DataFrame(log_rows), use_container_width=True, hide_index=True, height=280)
         else:
