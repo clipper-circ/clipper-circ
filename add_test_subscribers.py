@@ -10,7 +10,7 @@ db = SessionLocal()
 
 subs = [
     Subscriber(
-        account_number="10001",
+        simplecirc_id="10001",
         full_name="John Smith",
         email="josh@joshcutler.com",
         address1="10 Elm Street",
@@ -24,7 +24,7 @@ subs = [
         expiration_date=date(2027, 1, 1),
     ),
     Subscriber(
-        account_number="10002",
+        simplecirc_id="10002",
         full_name="Jane Doe",
         email="jsum2271@gmail.com",
         address1="25 Harbor Road",
@@ -40,7 +40,7 @@ subs = [
 ]
 
 for s in subs:
-    existing = db.query(Subscriber).filter_by(account_number=s.account_number).first()
+    existing = db.query(Subscriber).filter_by(simplecirc_id=s.simplecirc_id).first()
     if not existing:
         db.add(s)
         print(f"Added: {s.full_name}")
