@@ -879,7 +879,7 @@ setTimeout(function() {
 
           new_notes = _form.text_area("Notes (optional)", height=80, key="add_notes")
 
-          _form.markdown("**Initial Payment** *(optional — leave amount blank to skip)*")
+          _form.markdown("**Initial Payment**")
           pp0, pp1, pp2, pp3, pp4 = _form.columns([1, 1.5, 2, 2, 2])
           new_auto_renew = pp0.checkbox("Auto-Renew", value=True, key="add_auto_renew")
           new_pay_amount = pp1.text_input("Amount ($)", key="add_pay_amount")
