@@ -1370,6 +1370,20 @@ setTimeout(function() {
                             del st.session_state[confirm_key]
                             st.rerun()
 
+                    # Check if a Stripe charge just completed (set by iframe JS)
+                    components.html("""
+<script>
+if (window.parent.sessionStorage.getItem('stripe_charge_success') === '1') {
+    window.parent.sessionStorage.removeItem('stripe_charge_success');
+    // Click the Subscribers nav button to trigger a Streamlit rerun
+    setTimeout(function() {
+        var btns = window.parent.document.querySelectorAll('[data-testid="stSidebar"] button');
+        btns.forEach(function(b) { if (b.innerText.includes('Subscribers')) b.click(); });
+    }, 300);
+}
+</script>
+""", height=0)
+
                     # ── Stripe Elements MOTO card charge ──────────────────────
                     st.divider()
                     st.markdown("#### 💳 Manual Credit Card Charge")
@@ -1464,9 +1478,12 @@ document.getElementById('charge-btn').addEventListener('click', async function()
     if (data.success) {{
       msg.className = 'ok';
       msg.textContent = '✅ Charged $' + parseFloat(data.amount).toFixed(2) +
-        ' — subscription extended to ' + data.new_expiration + '. Refreshing…';
+        ' — subscription extended to ' + data.new_expiration +
+        '. Click the Subscribers nav button to refresh.';
       msg.style.display = 'block';
-      setTimeout(() => window.parent.location.reload(), 2000);
+      btn.textContent = '✅ Done';
+      // Store success flag so admin knows to rerun
+      window.parent.sessionStorage.setItem('stripe_charge_success', '1');
     }} else {{
       msg.className = 'err'; msg.textContent = data.error || 'Charge failed.';
       msg.style.display = 'block';
