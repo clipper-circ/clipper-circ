@@ -3,7 +3,7 @@ One-time script to add two test subscribers.
 Run via Railway console: python add_test_subscribers.py
 """
 from database import SessionLocal
-from models import Subscriber, SubscriberStatus, SubscriptionPlan, PaymentMethod
+from models import Subscriber, SubscriberStatus, PlanCode, PaymentMethod
 from datetime import date
 
 db = SessionLocal()
@@ -17,7 +17,7 @@ subs = [
         city="Duxbury",
         state="MA",
         zipcode="02332",
-        plan=SubscriptionPlan.LOCAL,
+        plan=PlanCode.LOCAL,
         status=SubscriberStatus.ACTIVE,
         payment_method=PaymentMethod.CHECK,
         auto_renew=False,
@@ -31,7 +31,7 @@ subs = [
         city="Duxbury",
         state="MA",
         zipcode="02332",
-        plan=SubscriptionPlan.LOCAL,
+        plan=PlanCode.LOCAL,
         status=SubscriberStatus.ACTIVE,
         payment_method=PaymentMethod.CHECK,
         auto_renew=False,
