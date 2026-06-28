@@ -205,6 +205,17 @@ iframe[height="0"] {
     overflow: hidden !important;
 }
 
+/* Red cancel button */
+.cancel-btn button {
+    background-color: #c62828 !important;
+    color: white !important;
+    border: none !important;
+    font-weight: 600 !important;
+}
+.cancel-btn button:hover {
+    background-color: #8b0000 !important;
+}
+
 /* Main buttons */
 .stButton > button {
     background-color: var(--forest-lite);
@@ -844,11 +855,9 @@ setTimeout(function() {
           new_full_name = ac1.text_input("Full Name *", key="add_full_name")
           new_phone = ac2.text_input("Phone", key="add_phone")
 
-          ae1, ae2 = _form.columns([2, 2])
+          ae1, ae2 = _form.columns(2)
           new_email = ae1.text_input("Email", key="add_email")
-          plan_options = list(PLAN_LABELS.values())
-          new_plan_label = ae2.selectbox("Plan *", plan_options, key="add_plan")
-          new_plan_code = next(k for k, v in PLAN_LABELS.items() if v == new_plan_label)
+          new_backup_email = ae2.text_input("Backup Email", key="add_backup_email")
 
           new_address1 = _form.text_input("Address *", key="add_address1")
           new_address2 = _form.text_input("Address 2 (optional)", key="add_address2")
@@ -861,9 +870,12 @@ setTimeout(function() {
           new_state = az3.text_input("ST *", key="add_state",
               value=st.session_state.get("add_state_auto", "MA"))
 
-          ad1, ad2 = _form.columns(2)
-          new_start = ad1.date_input("Start Date", value=date.today(), key="add_start")
-          new_expiry = ad2.date_input("Expiration", value=date.today().replace(year=date.today().year + 1), key="add_expiry")
+          plan_options = list(PLAN_LABELS.values())
+          ad1, ad2, ad3 = _form.columns([2, 1.5, 1.5])
+          new_plan_label = ad1.selectbox("Subscription Plan *", plan_options, key="add_plan")
+          new_plan_code = next(k for k, v in PLAN_LABELS.items() if v == new_plan_label)
+          new_start = ad2.date_input("Start Date", value=date.today(), key="add_start")
+          new_expiry = ad3.date_input("Expiration", value=date.today().replace(year=date.today().year + 1), key="add_expiry")
 
           ab1, ab2 = _form.columns(2)
           new_auto_renew = ab1.checkbox("Auto-Renew", value=True, key="add_auto_renew")
@@ -889,7 +901,10 @@ setTimeout(function() {
               st.markdown('<div class="save-new-btn">', unsafe_allow_html=True)
               save_new = st.button("✅ Save New Subscriber", use_container_width=True, key="save_new_btn")
               st.markdown('</div>', unsafe_allow_html=True)
-          cancel_new = fb.button("✗ Cancel", use_container_width=True, key="cancel_new_btn")
+          with fb:
+              st.markdown('<div class="cancel-btn">', unsafe_allow_html=True)
+              cancel_new = st.button("✗ Cancel", use_container_width=True, key="cancel_new_btn")
+              st.markdown('</div>', unsafe_allow_html=True)
 
         if cancel_new:
             for k in list(st.session_state.keys()):
@@ -923,6 +938,7 @@ setTimeout(function() {
                     is_gift=new_is_gift,
                     gift_giver_name=new_gift_giver or None,
                     gift_giver_email=new_gift_email or None,
+                    backup_email=new_backup_email or None,
                     notes=new_notes or None,
                 )
                 db.add(new_sub)
