@@ -152,10 +152,6 @@ st.markdown("""
 [data-testid="stSidebar"] .stButton {
     margin-bottom: -16px !important;
 }
-[data-testid="stSidebar"] > div:first-child {
-    width: 180px !important;
-    min-width: 180px !important;
-}
 /* Logo border */
 [data-testid="stSidebar"] img {
     border: 2px solid white !important;
