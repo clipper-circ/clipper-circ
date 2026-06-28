@@ -17,7 +17,7 @@ from sqlalchemy import or_
 from database import SessionLocal
 from models import (
     Subscriber, Payment, DeliveryHold, StaffUser, PaymentAuditLog, HoldAuditLog,
-    SubscriberEventLog, SubscriberStatus, PlanCode, PaymentMethod, PLAN_LABELS, PLAN_PRICES
+    SubscriberEventLog, AdminLoginLog, SubscriberStatus, PlanCode, PaymentMethod, PLAN_LABELS, PLAN_PRICES
 )
 import bcrypt
 import hashlib
@@ -246,13 +246,30 @@ def _token_for(user):
     raw = f"{user.id}:{user.password_hash}:{os.environ.get('SECRET_KEY','')}"
     return hashlib.sha256(raw.encode()).hexdigest()
 
-def check_login(email, password):
+SESSION_TIMEOUT_HOURS = 3
+
+def check_login(email, password, pin, ip=None):
     db = SessionLocal()
     user = db.query(StaffUser).filter_by(email=email.lower(), is_active=True).first()
+    if pin != ADMIN_PIN:
+        db.add(AdminLoginLog(email=email, success=False, reason="bad_pin", ip_address=ip))
+        db.commit()
+        db.close()
+        return None
+    if not user:
+        db.add(AdminLoginLog(email=email, success=False, reason="not_found", ip_address=ip))
+        db.commit()
+        db.close()
+        return None
+    if not bcrypt.checkpw(password.encode(), user.password_hash.encode()):
+        db.add(AdminLoginLog(email=email, success=False, reason="bad_password", ip_address=ip))
+        db.commit()
+        db.close()
+        return None
+    db.add(AdminLoginLog(email=email, success=True, reason="ok", ip_address=ip))
+    db.commit()
     db.close()
-    if user and bcrypt.checkpw(password.encode(), user.password_hash.encode()):
-        return user
-    return None
+    return user
 
 def user_from_cookie(token):
     db = SessionLocal()
@@ -278,22 +295,19 @@ def login_screen():
             pin = pc2.text_input("PIN", type="password")
             remember = st.checkbox("Remember me for 30 days", value=True)
             if st.form_submit_button("Log In", use_container_width=True):
-                if pin != ADMIN_PIN:
-                    st.error("Invalid email, password, or PIN.")
+                user = check_login(email, password, pin)
+                if user:
+                    st.session_state.user = {"id": user.id, "name": user.name, "is_admin": user.is_admin}
+                    st.session_state["login_time"] = datetime.now().isoformat()
+                    if remember:
+                        cookie_manager.set(
+                            COOKIE_NAME,
+                            _token_for(user),
+                            expires_at=datetime.now() + timedelta(days=COOKIE_DAYS),
+                        )
+                    st.rerun()
                 else:
-                    user = check_login(email, password)
-                    if user:
-                        st.session_state.user = {"id": user.id, "name": user.name, "is_admin": user.is_admin}
-                        if remember:
-                            from datetime import datetime, timedelta
-                            cookie_manager.set(
-                                COOKIE_NAME,
-                                _token_for(user),
-                                expires_at=datetime.now() + timedelta(days=COOKIE_DAYS),
-                            )
-                        st.rerun()
-                    else:
-                        st.error("Invalid email, password, or PIN.")
+                    st.error("Invalid username, password, or PIN.")
 
 
 # ── Check cookie before showing login ─────────────────────────────────────────
@@ -311,6 +325,16 @@ if "user" not in st.session_state:
 if "user" not in st.session_state:
     login_screen()
     st.stop()
+
+# ── Session timeout (3 hours) ─────────────────────────────────────────────────
+if "login_time" in st.session_state:
+    login_dt = datetime.fromisoformat(st.session_state["login_time"])
+    if datetime.now() - login_dt > timedelta(hours=SESSION_TIMEOUT_HOURS):
+        del st.session_state["user"]
+        st.session_state.pop("login_time", None)
+        cookie_manager.delete(COOKIE_NAME)
+        st.warning("Your session has expired. Please log in again.")
+        st.stop()
 
 # ── Sidebar nav ───────────────────────────────────────────────────────────────
 

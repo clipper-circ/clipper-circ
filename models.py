@@ -216,6 +216,18 @@ class SubscriberEventLog(Base):
     performed_by  = Column(String(200), nullable=True)
 
 
+class AdminLoginLog(Base):
+    """Audit log for admin login attempts."""
+    __tablename__ = "admin_login_log"
+
+    id         = Column(Integer, primary_key=True)
+    event_at   = Column(DateTime, default=datetime.utcnow, nullable=False)
+    email      = Column(String(200), nullable=True)
+    success    = Column(Boolean, nullable=False)
+    reason     = Column(String(100), nullable=True)  # "ok", "bad_password", "bad_pin", "not_found"
+    ip_address = Column(String(50), nullable=True)
+
+
 class StaffUser(Base):
     __tablename__ = "staff_users"
 
