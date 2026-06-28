@@ -397,7 +397,10 @@ if "login_time" in st.session_state:
     if datetime.now() - login_dt > timedelta(hours=SESSION_TIMEOUT_HOURS):
         del st.session_state["user"]
         st.session_state.pop("login_time", None)
-        cookie_manager.delete(COOKIE_NAME)
+        try:
+            cookie_manager.delete(COOKIE_NAME)
+        except Exception:
+            pass
         st.warning("Your session has expired. Please log in again.")
         st.stop()
 
@@ -440,7 +443,10 @@ page = st.session_state["_current_page"]
 
 st.sidebar.divider()
 if st.sidebar.button("🚪 Log Out", use_container_width=True):
-    cookie_manager.delete(COOKIE_NAME)
+    try:
+        cookie_manager.delete(COOKIE_NAME)
+    except Exception:
+        pass
     log_id = st.session_state.get("login_log_id")
     if log_id:
         _db = SessionLocal()
