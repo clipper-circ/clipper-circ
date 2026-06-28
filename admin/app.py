@@ -247,15 +247,33 @@ def _token_for(user):
     return hashlib.sha256(raw.encode()).hexdigest()
 
 SESSION_TIMEOUT_HOURS = 3
+LOCKOUT_ATTEMPTS = 5
+LOCKOUT_MINUTES = 30
+
+def is_ip_locked(db, ip):
+    if not ip:
+        return False
+    cutoff = datetime.utcnow() - timedelta(minutes=LOCKOUT_MINUTES)
+    recent_failures = db.query(AdminLoginLog).filter(
+        AdminLoginLog.ip_address == ip,
+        AdminLoginLog.success == False,
+        AdminLoginLog.event_at >= cutoff,
+    ).count()
+    return recent_failures >= LOCKOUT_ATTEMPTS
 
 def check_login(email, password, pin, ip=None):
     db = SessionLocal()
-    user = db.query(StaffUser).filter_by(email=email.lower(), is_active=True).first()
+    if is_ip_locked(db, ip):
+        db.add(AdminLoginLog(email=email, success=False, reason="ip_locked", ip_address=ip))
+        db.commit()
+        db.close()
+        return "locked"
     if pin != ADMIN_PIN:
         db.add(AdminLoginLog(email=email, success=False, reason="bad_pin", ip_address=ip))
         db.commit()
         db.close()
         return None
+    user = db.query(StaffUser).filter_by(email=email.lower(), is_active=True).first()
     if not user:
         db.add(AdminLoginLog(email=email, success=False, reason="not_found", ip_address=ip))
         db.commit()
@@ -295,14 +313,16 @@ def login_screen():
             pin = pc2.text_input("PIN", type="password")
             remember = st.checkbox("Remember me for 30 days", value=True)
             if st.form_submit_button("Log In", use_container_width=True):
-                user = check_login(email, password, pin)
-                if user:
-                    st.session_state.user = {"id": user.id, "name": user.name, "is_admin": user.is_admin}
+                result = check_login(email, password, pin)
+                if result == "locked":
+                    st.error(f"Too many failed attempts. This IP is blocked for {LOCKOUT_MINUTES} minutes.")
+                elif result:
+                    st.session_state.user = {"id": result.id, "name": result.name, "is_admin": result.is_admin}
                     st.session_state["login_time"] = datetime.now().isoformat()
                     if remember:
                         cookie_manager.set(
                             COOKIE_NAME,
-                            _token_for(user),
+                            _token_for(result),
                             expires_at=datetime.now() + timedelta(days=COOKIE_DAYS),
                         )
                     st.rerun()
