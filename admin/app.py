@@ -188,6 +188,11 @@ st.markdown("""
     border-left: 3px solid #81c784 !important;
 }
 
+/* Prevent Streamlit column negative-margin overflow inside styled containers */
+[data-testid="stVerticalBlock"] [data-testid="stHorizontalBlock"] {
+    overflow: visible;
+}
+
 /* Collapse zero-height component iframes (used for JS injection) */
 iframe[height="0"] {
     display: block !important;
@@ -808,8 +813,14 @@ setTimeout(function() {
             block.style.background = '#fffde7';
             block.style.border = '1px solid #f0c040';
             block.style.borderRadius = '10px';
-            block.style.padding = '4px 24px 20px 24px';
+            block.style.paddingTop = '4px';
+            block.style.paddingBottom = '20px';
             block.style.marginBottom = '12px';
+            // Indent direct children to create side padding without fighting column negative-margins
+            Array.from(block.children).forEach(function(child) {
+                child.style.paddingLeft = '20px';
+                child.style.paddingRight = '20px';
+            });
         }
     } catch(e) {}
 }, 200);
