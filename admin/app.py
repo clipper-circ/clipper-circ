@@ -859,8 +859,8 @@ setTimeout(function() {
           new_email = ae1.text_input("Email", key="add_email")
           new_backup_email = ae2.text_input("Backup Email", key="add_backup_email")
 
-          new_address1 = _form.text_input("Address *", key="add_address1")
-          new_address2 = _form.text_input("Address 2 (optional)", key="add_address2")
+          new_address1 = _form.text_input("Mailing Address *", key="add_address1")
+          new_address2 = _form.text_input("Mailing Address 2 (optional)", key="add_address2")
 
           # Zip first — triggers city/state auto-fill
           az1, az2, az3 = _form.columns([2, 3, 1])
@@ -880,14 +880,14 @@ setTimeout(function() {
           new_notes = _form.text_area("Notes (optional)", height=80, key="add_notes")
 
           _form.markdown("**Initial Payment**")
-          pp0, pp1, pp2, pp3, pp4 = _form.columns([1, 1.5, 2, 2, 2])
-          new_auto_renew = pp0.checkbox("Auto-Renew", value=True, key="add_auto_renew")
-          new_pay_amount = pp1.text_input("Amount ($)", key="add_pay_amount")
+          pp1, pp2, pp3, pp4, pp5 = _form.columns([1.5, 2, 2, 2, 1])
+          new_pay_amount = pp1.text_input("Amount Paid ($)", key="add_pay_amount")
           pay_method_opts = [p.value for p in PaymentMethod]
           new_pay_method = pp2.selectbox("Method", pay_method_opts, key="add_pay_method")
           new_check_num = pp3.text_input("Check #", key="add_check_num",
               disabled=(st.session_state.get("add_pay_method", "") != PaymentMethod.CHECK.value))
           new_pay_notes = pp4.text_input("Payment Notes", key="add_pay_notes")
+          new_auto_renew = pp5.checkbox("Auto-Renew", value=True, key="add_auto_renew")
           new_is_gift = False
 
           fa, fb = _form.columns([4, 1])
