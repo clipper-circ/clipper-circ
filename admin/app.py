@@ -1372,7 +1372,7 @@ setTimeout(function() {
 
                     # ── Stripe Elements MOTO card charge ──────────────────────
                     st.divider()
-                    st.markdown("#### 💳 Charge Credit Card")
+                    st.markdown("#### 💳 Manual Credit Card Charge")
                     _stripe_pk  = os.environ.get("STRIPE_PUBLISHABLE_KEY", "")
                     _charge_tok = os.environ.get("ADMIN_CHARGE_TOKEN", "")
                     _portal_url = os.environ.get("PORTAL_URL", "https://portal-production-ddc4.up.railway.app")
