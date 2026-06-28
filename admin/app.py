@@ -781,12 +781,25 @@ elif page == "🔍 Subscribers":
 
     # ── Add New Subscriber (inline) ────────────────────────────────────────────
     if st.session_state["show_add_form"]:
-        st.markdown("""
-        <div style="background:#e8f5e9;border:1px solid #c8e6c9;border-radius:10px;
-                    padding:20px 24px 4px 24px;margin-bottom:12px;">
-        """, unsafe_allow_html=True)
         st.subheader("➕ Add New Subscriber")
         st.caption("Search above first to confirm this person doesn't already exist.")
+        components.html("""
+<script>
+setTimeout(function() {
+    var pdoc = window.parent.document;
+    var headers = pdoc.querySelectorAll('h3');
+    for (var h of headers) {
+        if (h.textContent.includes('Add New Subscriber')) {
+            var block = h.closest('[data-testid="stVerticalBlock"]');
+            if (block) {
+                block.style.cssText += 'background:#fffde7 !important;border:1px solid #f9ca24;border-radius:10px;padding:16px 20px;';
+            }
+            break;
+        }
+    }
+}, 300);
+</script>
+""", height=0)
 
         def _zip_lookup():
             z = st.session_state.get("add_zip", "").strip()
@@ -852,7 +865,6 @@ elif page == "🔍 Subscribers":
             save_new = st.button("✅ Save New Subscriber", use_container_width=True, key="save_new_btn")
             st.markdown('</div>', unsafe_allow_html=True)
         cancel_new = fb.button("✗ Cancel", use_container_width=True, key="cancel_new_btn")
-        st.markdown("</div>", unsafe_allow_html=True)
 
         if cancel_new:
             for k in list(st.session_state.keys()):
