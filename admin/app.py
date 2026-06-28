@@ -273,7 +273,7 @@ def login_screen():
         st.markdown("### Circulation Admin")
         with st.form("login"):
             email = st.text_input("Email")
-            pc1, pc2 = st.columns(2)
+            pc1, pc2 = st.columns([3, 1])
             password = pc1.text_input("Password", type="password")
             pin = pc2.text_input("PIN", type="password")
             remember = st.checkbox("Remember me for 30 days", value=True)
