@@ -799,6 +799,7 @@ elif page == "🔍 Subscribers":
     # ── Add New Subscriber (inline) ────────────────────────────────────────────
     if st.session_state["show_add_form"]:
       with st.container():
+        # JS: add yellow box to this container (no padding — columns below handle margins)
         components.html("""
 <script>
 setTimeout(function() {
@@ -813,86 +814,82 @@ setTimeout(function() {
             block.style.background = '#fffde7';
             block.style.border = '1px solid #f0c040';
             block.style.borderRadius = '10px';
-            block.style.paddingTop = '4px';
-            block.style.paddingBottom = '20px';
             block.style.marginBottom = '12px';
-            // Indent direct children to create side padding without fighting column negative-margins
-            Array.from(block.children).forEach(function(child) {
-                child.style.paddingLeft = '20px';
-                child.style.paddingRight = '20px';
-            });
         }
     } catch(e) {}
 }, 200);
 </script>
 """, height=0)
-        st.subheader("➕ Add New Subscriber")
-        st.caption("Search above first to confirm this person doesn't already exist.")
+        # Use columns to create side margins (reliable vs CSS padding tricks)
+        _gap, _form, _gap2 = st.columns([0.04, 0.92, 0.04])
+        with _form:
+          st.subheader("➕ Add New Subscriber")
+          st.caption("Search above first to confirm this person doesn't already exist.")
 
-        def _zip_lookup():
-            z = st.session_state.get("add_zip", "").strip()
-            if len(z) == 5 and z.isdigit():
-                try:
-                    import requests as _req
-                    r = _req.get(f"https://api.zippopotam.us/us/{z}", timeout=3)
-                    if r.status_code == 200:
-                        data = r.json()
-                        place = data["places"][0]
-                        st.session_state["add_city_auto"] = place["place name"].title()
-                        st.session_state["add_state_auto"] = place["state abbreviation"]
-                except Exception:
-                    pass
+          def _zip_lookup():
+              z = st.session_state.get("add_zip", "").strip()
+              if len(z) == 5 and z.isdigit():
+                  try:
+                      import requests as _req
+                      r = _req.get(f"https://api.zippopotam.us/us/{z}", timeout=3)
+                      if r.status_code == 200:
+                          data = r.json()
+                          place = data["places"][0]
+                          st.session_state["add_city_auto"] = place["place name"].title()
+                          st.session_state["add_state_auto"] = place["state abbreviation"]
+                  except Exception:
+                      pass
 
-        ac1, ac2 = st.columns([3, 1])
-        new_full_name = ac1.text_input("Full Name *", key="add_full_name")
-        new_phone = ac2.text_input("Phone", key="add_phone")
+          ac1, ac2 = _form.columns([3, 1])
+          new_full_name = ac1.text_input("Full Name *", key="add_full_name")
+          new_phone = ac2.text_input("Phone", key="add_phone")
 
-        ae1, ae2 = st.columns([2, 2])
-        new_email = ae1.text_input("Email", key="add_email")
-        plan_options = list(PLAN_LABELS.values())
-        new_plan_label = ae2.selectbox("Plan *", plan_options, key="add_plan")
-        new_plan_code = next(k for k, v in PLAN_LABELS.items() if v == new_plan_label)
+          ae1, ae2 = _form.columns([2, 2])
+          new_email = ae1.text_input("Email", key="add_email")
+          plan_options = list(PLAN_LABELS.values())
+          new_plan_label = ae2.selectbox("Plan *", plan_options, key="add_plan")
+          new_plan_code = next(k for k, v in PLAN_LABELS.items() if v == new_plan_label)
 
-        new_address1 = st.text_input("Address *", key="add_address1")
-        new_address2 = st.text_input("Address 2 (optional)", key="add_address2")
+          new_address1 = _form.text_input("Address *", key="add_address1")
+          new_address2 = _form.text_input("Address 2 (optional)", key="add_address2")
 
-        # Zip first — triggers city/state auto-fill
-        az1, az2, az3 = st.columns([2, 3, 1])
-        new_zipcode = az1.text_input("Zip *", key="add_zip", on_change=_zip_lookup)
-        new_city = az2.text_input("City *", key="add_city",
-            value=st.session_state.get("add_city_auto", ""))
-        new_state = az3.text_input("ST *", key="add_state",
-            value=st.session_state.get("add_state_auto", "MA"))
+          # Zip first — triggers city/state auto-fill
+          az1, az2, az3 = _form.columns([2, 3, 1])
+          new_zipcode = az1.text_input("Zip *", key="add_zip", on_change=_zip_lookup)
+          new_city = az2.text_input("City *", key="add_city",
+              value=st.session_state.get("add_city_auto", ""))
+          new_state = az3.text_input("ST *", key="add_state",
+              value=st.session_state.get("add_state_auto", "MA"))
 
-        ad1, ad2 = st.columns(2)
-        new_start = ad1.date_input("Start Date", value=date.today(), key="add_start")
-        new_expiry = ad2.date_input("Expiration", value=date.today().replace(year=date.today().year + 1), key="add_expiry")
+          ad1, ad2 = _form.columns(2)
+          new_start = ad1.date_input("Start Date", value=date.today(), key="add_start")
+          new_expiry = ad2.date_input("Expiration", value=date.today().replace(year=date.today().year + 1), key="add_expiry")
 
-        ab1, ab2 = st.columns(2)
-        new_auto_renew = ab1.checkbox("Auto-Renew", value=True, key="add_auto_renew")
-        new_is_gift = ab2.checkbox("Gift Subscription", key="add_is_gift")
+          ab1, ab2 = _form.columns(2)
+          new_auto_renew = ab1.checkbox("Auto-Renew", value=True, key="add_auto_renew")
+          new_is_gift = ab2.checkbox("Gift Subscription", key="add_is_gift")
 
-        ag1, ag2 = st.columns(2)
-        new_gift_giver = ag1.text_input("Gift Giver Name", disabled=not new_is_gift, key="add_gift_giver")
-        new_gift_email = ag2.text_input("Gift Giver Email", disabled=not new_is_gift, key="add_gift_email")
+          ag1, ag2 = _form.columns(2)
+          new_gift_giver = ag1.text_input("Gift Giver Name", disabled=not new_is_gift, key="add_gift_giver")
+          new_gift_email = ag2.text_input("Gift Giver Email", disabled=not new_is_gift, key="add_gift_email")
 
-        new_notes = st.text_area("Notes (optional)", height=80, key="add_notes")
+          new_notes = _form.text_area("Notes (optional)", height=80, key="add_notes")
 
-        st.markdown("**Initial Payment** *(optional — leave amount blank to skip)*")
-        pp1, pp2, pp3, pp4 = st.columns([1.5, 2, 2, 2])
-        new_pay_amount = pp1.text_input("Amount ($)", key="add_pay_amount")
-        pay_method_opts = [p.value for p in PaymentMethod]
-        new_pay_method = pp2.selectbox("Method", pay_method_opts, key="add_pay_method")
-        new_check_num = pp3.text_input("Check #", key="add_check_num",
-            disabled=(st.session_state.get("add_pay_method", "") != PaymentMethod.CHECK.value))
-        new_pay_notes = pp4.text_input("Payment Notes", key="add_pay_notes")
+          _form.markdown("**Initial Payment** *(optional — leave amount blank to skip)*")
+          pp1, pp2, pp3, pp4 = _form.columns([1.5, 2, 2, 2])
+          new_pay_amount = pp1.text_input("Amount ($)", key="add_pay_amount")
+          pay_method_opts = [p.value for p in PaymentMethod]
+          new_pay_method = pp2.selectbox("Method", pay_method_opts, key="add_pay_method")
+          new_check_num = pp3.text_input("Check #", key="add_check_num",
+              disabled=(st.session_state.get("add_pay_method", "") != PaymentMethod.CHECK.value))
+          new_pay_notes = pp4.text_input("Payment Notes", key="add_pay_notes")
 
-        fa, fb = st.columns([4, 1])
-        with fa:
-            st.markdown('<div class="save-new-btn">', unsafe_allow_html=True)
-            save_new = st.button("✅ Save New Subscriber", use_container_width=True, key="save_new_btn")
-            st.markdown('</div>', unsafe_allow_html=True)
-        cancel_new = fb.button("✗ Cancel", use_container_width=True, key="cancel_new_btn")
+          fa, fb = _form.columns([4, 1])
+          with fa:
+              st.markdown('<div class="save-new-btn">', unsafe_allow_html=True)
+              save_new = st.button("✅ Save New Subscriber", use_container_width=True, key="save_new_btn")
+              st.markdown('</div>', unsafe_allow_html=True)
+          cancel_new = fb.button("✗ Cancel", use_container_width=True, key="cancel_new_btn")
 
         if cancel_new:
             for k in list(st.session_state.keys()):
