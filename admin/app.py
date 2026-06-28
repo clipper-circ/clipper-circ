@@ -263,6 +263,8 @@ def user_from_cookie(token):
     db.close()
     return None
 
+ADMIN_PIN = os.environ.get("ADMIN_PIN", "1656")
+
 def login_screen():
     col1, col2, col3 = st.columns([1, 2, 1])
     with col2:
@@ -271,22 +273,27 @@ def login_screen():
         st.markdown("### Circulation Admin")
         with st.form("login"):
             email = st.text_input("Email")
-            password = st.text_input("Password", type="password")
+            pc1, pc2 = st.columns(2)
+            password = pc1.text_input("Password", type="password")
+            pin = pc2.text_input("PIN", type="password")
             remember = st.checkbox("Remember me for 30 days", value=True)
             if st.form_submit_button("Log In", use_container_width=True):
-                user = check_login(email, password)
-                if user:
-                    st.session_state.user = {"id": user.id, "name": user.name, "is_admin": user.is_admin}
-                    if remember:
-                        from datetime import datetime, timedelta
-                        cookie_manager.set(
-                            COOKIE_NAME,
-                            _token_for(user),
-                            expires_at=datetime.now() + timedelta(days=COOKIE_DAYS),
-                        )
-                    st.rerun()
+                if pin != ADMIN_PIN:
+                    st.error("Invalid email, password, or PIN.")
                 else:
-                    st.error("Invalid email or password.")
+                    user = check_login(email, password)
+                    if user:
+                        st.session_state.user = {"id": user.id, "name": user.name, "is_admin": user.is_admin}
+                        if remember:
+                            from datetime import datetime, timedelta
+                            cookie_manager.set(
+                                COOKIE_NAME,
+                                _token_for(user),
+                                expires_at=datetime.now() + timedelta(days=COOKIE_DAYS),
+                            )
+                        st.rerun()
+                    else:
+                        st.error("Invalid email, password, or PIN.")
 
 
 # ── Check cookie before showing login ─────────────────────────────────────────
