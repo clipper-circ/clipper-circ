@@ -877,24 +877,18 @@ setTimeout(function() {
           new_start = ad2.date_input("Start Date", value=date.today(), key="add_start")
           new_expiry = ad3.date_input("Expiration", value=date.today().replace(year=date.today().year + 1), key="add_expiry")
 
-          ab1, ab2 = _form.columns(2)
-          new_auto_renew = ab1.checkbox("Auto-Renew", value=True, key="add_auto_renew")
-          new_is_gift = ab2.checkbox("Gift Subscription", key="add_is_gift")
-
-          ag1, ag2 = _form.columns(2)
-          new_gift_giver = ag1.text_input("Gift Giver Name", disabled=not new_is_gift, key="add_gift_giver")
-          new_gift_email = ag2.text_input("Gift Giver Email", disabled=not new_is_gift, key="add_gift_email")
-
           new_notes = _form.text_area("Notes (optional)", height=80, key="add_notes")
 
           _form.markdown("**Initial Payment** *(optional — leave amount blank to skip)*")
-          pp1, pp2, pp3, pp4 = _form.columns([1.5, 2, 2, 2])
+          pp0, pp1, pp2, pp3, pp4 = _form.columns([1, 1.5, 2, 2, 2])
+          new_auto_renew = pp0.checkbox("Auto-Renew", value=True, key="add_auto_renew")
           new_pay_amount = pp1.text_input("Amount ($)", key="add_pay_amount")
           pay_method_opts = [p.value for p in PaymentMethod]
           new_pay_method = pp2.selectbox("Method", pay_method_opts, key="add_pay_method")
           new_check_num = pp3.text_input("Check #", key="add_check_num",
               disabled=(st.session_state.get("add_pay_method", "") != PaymentMethod.CHECK.value))
           new_pay_notes = pp4.text_input("Payment Notes", key="add_pay_notes")
+          new_is_gift = False
 
           fa, fb = _form.columns([4, 1])
           with fa:
@@ -935,9 +929,7 @@ setTimeout(function() {
                     expiration_date=new_expiry if new_plan_code != PlanCode.COMPLIMENTARY else None,
                     payment_method=PaymentMethod(new_pay_method),
                     auto_renew=new_auto_renew,
-                    is_gift=new_is_gift,
-                    gift_giver_name=new_gift_giver or None,
-                    gift_giver_email=new_gift_email or None,
+                    is_gift=False,
                     backup_email=new_backup_email or None,
                     notes=new_notes or None,
                 )
