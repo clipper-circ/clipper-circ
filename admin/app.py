@@ -1370,92 +1370,61 @@ setTimeout(function() {
                             del st.session_state[confirm_key]
                             st.rerun()
 
-                    # ── Stripe card charge ────────────────────────────────────
+                    # ── Record Stripe payment from Virtual Terminal ────────────
                     st.divider()
-                    st.markdown("#### 💳 Charge Credit Card via Stripe")
+                    st.markdown("#### 💳 Record Stripe Credit Card Payment")
                     _stripe_key = os.environ.get("STRIPE_SECRET_KEY", "")
                     if not _stripe_key:
                         st.warning("STRIPE_SECRET_KEY not set — add it to Railway environment variables.")
                     else:
                         _test_mode = _stripe_key.startswith("sk_test_")
-                        if _test_mode:
-                            st.caption("🧪 **Test mode** — use card `4242 4242 4242 4242`, any future expiry, any CVV.")
-                        with st.form(f"stripe_charge_{sub.id}"):
-                            sc1, sc2, sc3, sc4 = st.columns([2, 2, 1, 1])
-                            stripe_amount = sc1.number_input("Amount ($)", value=float(PLAN_PRICES[sub.plan]), step=0.01, key="sc_amt")
-                            stripe_card   = sc2.text_input("Card Number", placeholder="4242424242424242")
-                            stripe_exp_m  = sc3.text_input("MM", placeholder="12", max_chars=2)
-                            stripe_exp_y  = sc4.text_input("YY", placeholder="26", max_chars=2)
-                            stripe_cvc    = st.columns([1, 3])[0].text_input("CVV", type="password", max_chars=4)
-                            stripe_notes  = st.text_input("Notes (optional)", key="sc_notes")
-                            charge_btn = st.form_submit_button("💳 Charge Card", use_container_width=True)
+                        _vt_url = "https://dashboard.stripe.com/" + ("test/" if _test_mode else "") + "terminal/virtual-terminal"
+                        st.caption(f"1. Charge the card in [Stripe Virtual Terminal]({_vt_url})  →  2. Paste the Payment Intent ID below to record it here.")
+                        with st.form(f"stripe_pi_{sub.id}"):
+                            sp1, sp2 = st.columns([1, 2])
+                            stripe_amount = sp1.number_input("Amount ($)", value=float(PLAN_PRICES[sub.plan]), step=0.01)
+                            stripe_pi_id  = sp2.text_input("Payment Intent ID", placeholder="pi_3ABC...")
+                            stripe_notes  = st.text_input("Notes (optional)")
+                            record_btn = st.form_submit_button("✅ Record Payment", use_container_width=True)
 
-                        if charge_btn:
-                            try:
-                                import stripe as _stripe
-                                _stripe.api_key = _stripe_key
-                                # Create or retrieve Stripe customer
-                                if sub.stripe_customer_id:
-                                    _cust_id = sub.stripe_customer_id
-                                else:
-                                    _cust = _stripe.Customer.create(
-                                        name=sub.full_name,
-                                        email=sub.email or None,
-                                    )
-                                    _cust_id = _cust.id
-                                    sub.stripe_customer_id = _cust_id
-                                    db.commit()
-                                # Create payment method from raw card (test mode only)
-                                _pm = _stripe.PaymentMethod.create(
-                                    type="card",
-                                    card={
-                                        "number": stripe_card.replace(" ", ""),
-                                        "exp_month": int(stripe_exp_m),
-                                        "exp_year": int("20" + stripe_exp_y),
-                                        "cvc": stripe_cvc,
-                                    },
-                                )
-                                # Attach to customer and charge
-                                _stripe.PaymentMethod.attach(_pm.id, customer=_cust_id)
-                                _pi = _stripe.PaymentIntent.create(
-                                    amount=int(stripe_amount * 100),
-                                    currency="usd",
-                                    customer=_cust_id,
-                                    payment_method=_pm.id,
-                                    confirm=True,
-                                    description=f"Clipper subscription — {sub.full_name}",
-                                    automatic_payment_methods={"enabled": True, "allow_redirects": "never"},
-                                )
-                                if _pi.status == "succeeded":
-                                    # Record in DB
-                                    _pmt = Payment(
-                                        subscriber_id=sub.id,
-                                        amount=stripe_amount,
-                                        payment_method=PaymentMethod.CREDIT_CARD,
-                                        stripe_payment_intent_id=_pi.id,
-                                        notes=stripe_notes or None,
-                                        entered_by=st.session_state.user["name"],
-                                        paid_at=datetime.utcnow(),
-                                    )
-                                    db.add(_pmt)
-                                    db.flush()
-                                    write_audit(db, "CREATED", _pmt, sub, st.session_state.user["name"])
-                                    sub.status = SubscriberStatus.ACTIVE
-                                    _base = sub.expiration_date if (sub.expiration_date and sub.expiration_date >= date.today()) else date.today()
-                                    _new_exp = _base.replace(year=_base.year + 1)
-                                    _pmt.period_start = _base
-                                    _pmt.period_end   = _new_exp
-                                    sub.expiration_date = _new_exp
-                                    for _flag in ["reminder_35_sent","reminder_21_sent","reminder_14_sent",
-                                                  "reminder_expire_sent","grace_14_sent","grace_final_sent"]:
-                                        setattr(sub, _flag, False)
-                                    db.commit()
-                                    st.success(f"✅ Card charged ${stripe_amount:.2f} — Payment Intent: `{_pi.id}`")
-                                    st.rerun()
-                                else:
-                                    st.error(f"Payment status: {_pi.status}. Check Stripe dashboard.")
-                            except Exception as _e:
-                                st.error(f"Stripe error: {_e}")
+                        if record_btn:
+                            if not stripe_pi_id.strip().startswith("pi_"):
+                                st.error("Please enter a valid Payment Intent ID (starts with pi_).")
+                            else:
+                                try:
+                                    import stripe as _stripe
+                                    _stripe.api_key = _stripe_key
+                                    _pi = _stripe.PaymentIntent.retrieve(stripe_pi_id.strip())
+                                    if _pi.status != "succeeded":
+                                        st.error(f"Payment Intent status is '{_pi.status}' — only succeeded payments can be recorded.")
+                                    else:
+                                        _actual_amount = _pi.amount_received / 100
+                                        _pmt = Payment(
+                                            subscriber_id=sub.id,
+                                            amount=_actual_amount,
+                                            payment_method=PaymentMethod.CREDIT_CARD,
+                                            stripe_payment_intent_id=_pi.id,
+                                            notes=stripe_notes or None,
+                                            entered_by=st.session_state.user["name"],
+                                            paid_at=datetime.utcnow(),
+                                        )
+                                        db.add(_pmt)
+                                        db.flush()
+                                        write_audit(db, "CREATED", _pmt, sub, st.session_state.user["name"])
+                                        sub.status = SubscriberStatus.ACTIVE
+                                        _base = sub.expiration_date if (sub.expiration_date and sub.expiration_date >= date.today()) else date.today()
+                                        _new_exp = _base.replace(year=_base.year + 1)
+                                        _pmt.period_start = _base
+                                        _pmt.period_end   = _new_exp
+                                        sub.expiration_date = _new_exp
+                                        for _flag in ["reminder_35_sent","reminder_21_sent","reminder_14_sent",
+                                                      "reminder_expire_sent","grace_14_sent","grace_final_sent"]:
+                                            setattr(sub, _flag, False)
+                                        db.commit()
+                                        st.success(f"✅ Recorded ${_actual_amount:.2f} credit card payment — expiration extended to {_new_exp.strftime('%b %d, %Y')}.")
+                                        st.rerun()
+                                except Exception as _e:
+                                    st.error(f"Stripe error: {_e}")
 
                 # ── Tab 5: Delivery Hold ───────────────────────────────────────
                 with tab5:
