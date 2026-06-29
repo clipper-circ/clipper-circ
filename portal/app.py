@@ -621,18 +621,10 @@ def charge_card():
         )
         db.add(pmt)
         db.flush()
-        # Set subscription expiration (use admin-supplied date or default +1 year)
+        # Record payment period but do not change expiration (admin controls that separately)
         base = sub.expiration_date if (sub.expiration_date and sub.expiration_date >= date.today()) else date.today()
-        if new_exp_str:
-            try:
-                new_exp = date.fromisoformat(new_exp_str)
-            except ValueError:
-                new_exp = base.replace(year=base.year + 1)
-        else:
-            new_exp = base.replace(year=base.year + 1)
         pmt.period_start = base
-        pmt.period_end   = new_exp
-        sub.expiration_date = new_exp
+        pmt.period_end   = base
         sub.status = SubscriberStatus.ACTIVE
         for flag in ["reminder_35_sent","reminder_21_sent","reminder_14_sent",
                      "reminder_expire_sent","grace_14_sent","grace_final_sent"]:

@@ -1046,7 +1046,6 @@ setTimeout(function() {
                     "plan": PLAN_LABELS[sub.plan],
                     "status": sub.status.value,
                     "expiration": sub.expiration_date or date.today(),
-                    "payment_method": sub.payment_method.value,
                     "auto_renew": sub.auto_renew,
                     "notes": sub.notes or "",
                     "backup_email": sub.backup_email or "",
@@ -1067,7 +1066,6 @@ setTimeout(function() {
                 "plan":           st.session_state.get(f"e_plan_{eid}",      bl["plan"]),
                 "status":         st.session_state.get(f"e_status_{eid}",    bl["status"]),
                 "expiration":     st.session_state.get(f"e_exp_{eid}",       bl["expiration"]),
-                "payment_method": st.session_state.get(f"e_paymethod_{eid}", bl["payment_method"]),
                 "auto_renew":     st.session_state.get(f"e_ar_{eid}",        bl["auto_renew"]),
                 "notes":          st.session_state.get(f"e_notes_{eid}",     bl["notes"]),
                 "backup_email":   st.session_state.get(f"e_backup_{eid}",   bl.get("backup_email", sub.backup_email or "")),
@@ -1119,7 +1117,7 @@ setTimeout(function() {
                     del st.session_state[baseline_key]
                     for k in [f"e_name_{eid}", f"e_email_{eid}", f"e_addr1_{eid}", f"e_addr2_{eid}",
                                f"e_city_{eid}", f"e_state_{eid}", f"e_zip_{eid}", f"e_phone_{eid}",
-                               f"e_plan_{eid}", f"e_status_{eid}", f"e_exp_{eid}", f"e_paymethod_{eid}",
+                               f"e_plan_{eid}", f"e_status_{eid}", f"e_exp_{eid}",
                                f"e_ar_{eid}", f"e_notes_{eid}", f"e_backup_{eid}"]:
                         st.session_state.pop(k, None)
                     st.rerun()
@@ -1138,7 +1136,6 @@ setTimeout(function() {
                     sub.status          = SubscriberStatus(current["status"])
                     sub.expiration_date = current["expiration"]
                     sub.auto_renew      = current["auto_renew"]
-                    sub.payment_method  = PaymentMethod(current["payment_method"])
                     sub.notes           = current["notes"]
                     sub.backup_email    = current["backup_email"] or None
                     db.commit()
@@ -1161,15 +1158,22 @@ setTimeout(function() {
                     ts1, ts2 = st.columns([1.4, 1])
                     with ts1:
                         st.markdown("#### Subscription Details")
-                        er1, er2 = st.columns(2)
+                        er1, er2, er3 = st.columns(3)
                         er1.selectbox("Plan", plan_options,
                             index=plan_options.index(bl["plan"]), key=f"e_plan_{eid}")
                         er2.selectbox("Status", status_options,
                             index=status_options.index(bl["status"]), key=f"e_status_{eid}")
-                        ex1, ex2 = st.columns(2)
-                        ex1.date_input("Expiration Date", value=bl["expiration"], key=f"e_exp_{eid}")
-                        ex2.selectbox("Payment Method", payment_options,
-                            index=payment_options.index(bl["payment_method"]), key=f"e_paymethod_{eid}")
+                        er3.date_input("Expiration Date", value=bl["expiration"], key=f"e_exp_{eid}")
+                        # Last payment info
+                        last_pmt = (db.query(Payment)
+                            .filter_by(subscriber_id=sub.id)
+                            .order_by(Payment.paid_at.desc()).first())
+                        lp_amount = f"${last_pmt.amount:.2f}" if last_pmt else "—"
+                        lp_date   = last_pmt.paid_at.strftime("%m/%d/%Y") if last_pmt else "—"
+                        lp1, lp2, lp3 = st.columns(3)
+                        lp1.text_input("Last Payment", value=lp_amount, disabled=True, key=f"e_lpa_{eid}")
+                        lp2.text_input("Last Payment Date", value=lp_date, disabled=True, key=f"e_lpd_{eid}")
+                        lp3.text_input("Amount Due", value=f"${amount_due:.2f}" if amount_due > 0 else "$0.00", disabled=True, key=f"e_due_{eid}")
                         st.checkbox("Auto-Renew", value=bl["auto_renew"], key=f"e_ar_{eid}")
                         st.text_area("Internal Notes", value=bl["notes"], key=f"e_notes_{eid}",
                             height=80, placeholder="Staff notes — not visible to subscriber")
@@ -1181,8 +1185,7 @@ setTimeout(function() {
                             f'&nbsp;<strong>{PLAN_LABELS[sub.plan]}</strong><br>'
                             f'Expires <strong>{exp_str}</strong><br>'
                             f'<strong>{issues_left}</strong> issue{"s" if issues_left != 1 else ""} remaining<br>'
-                            f'Auto-renew: <strong style="color:{ar_color};">{ar_label}</strong><br>'
-                            f'Payment: {sub.payment_method.value.replace("_"," ").title()}'
+                            f'Auto-renew: <strong style="color:{ar_color};">{ar_label}</strong>'
                             f'{due_html}{credit_html}</div>'
                         )
                         st.markdown(info_html, unsafe_allow_html=True)
