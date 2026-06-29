@@ -1302,7 +1302,7 @@ setTimeout(function() {
                         st.caption("No payments recorded.")
 
                     # Sub-tabs for payment entry
-                    ptab1, ptab2 = st.tabs(["📋 Record Payment", "💳 Charge Card"])
+                    ptab1, ptab2 = st.tabs(["📋 Record Payment", "💳 Manual Charge Card"])
 
                     with ptab1:
                         if "pay_form_reset" not in st.session_state:
@@ -1397,7 +1397,6 @@ if (window.parent.sessionStorage.getItem('stripe_charge_success') === '1') {
                             _test_mode   = _stripe_sk.startswith("sk_test_")
                             _default_amt = float(PLAN_PRICES[sub.plan])
                             _entered_by  = st.session_state.user["name"]
-                            _default_exp = (sub.expiration_date.replace(year=sub.expiration_date.year + 1) if sub.expiration_date else date.today().replace(year=date.today().year + 1)).isoformat()
                             components.html(f"""
 <!DOCTYPE html>
 <html>
@@ -1425,10 +1424,6 @@ if (window.parent.sessionStorage.getItem('stripe_charge_success') === '1') {
     <label>Amount ($)</label>
     <input type="number" id="amount" value="{_default_amt:.2f}" step="0.01" min="0.01">
   </div>
-  <div class="field" style="max-width:150px">
-    <label>New Expiration Date</label>
-    <input type="date" id="new_exp" value="{_default_exp}">
-  </div>
   <div class="field">
     <label>Notes (optional)</label>
     <input type="text" id="notes" placeholder="e.g. paper renewal form">
@@ -1453,7 +1448,6 @@ document.getElementById('charge-btn').addEventListener('click', async function()
   msg.style.display = 'none';
 
   const amount  = document.getElementById('amount').value;
-  const new_exp = document.getElementById('new_exp').value;
   const notes   = document.getElementById('notes').value;
 
   const {{paymentMethod, error}} = await stripe.createPaymentMethod({{type: 'card', card: card}});
@@ -1471,7 +1465,6 @@ document.getElementById('charge-btn').addEventListener('click', async function()
       body: JSON.stringify({{
         payment_method_id: paymentMethod.id,
         amount: amount,
-        new_expiration: new_exp,
         subscriber_id: {sub.id},
         notes: notes,
         entered_by: '{_entered_by}',
