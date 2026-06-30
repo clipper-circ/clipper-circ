@@ -1172,7 +1172,7 @@ document.getElementById('review-btn').addEventListener('click', function() {
   document.getElementById('rv-deceased').textContent = deceased_name;
   document.getElementById('rv-age').textContent = age;
   document.getElementById('rv-dod').textContent = dod;
-  document.getElementById('rv-words').textContent = words + ' words' + (extra > 0 ? ' (' + extra + ' over 300-word limit)' : ' (within 300-word base)');
+  document.getElementById('rv-words').textContent = words + ' words' + (extra > 0 ? ' — additional per-word charges apply' : ' — within 300-word base fee');
   document.getElementById('rv-name').textContent = first_name + ' ' + last_name;
   document.getElementById('rv-phone').textContent = phone;
   document.getElementById('rv-email').textContent = email;
@@ -1191,25 +1191,30 @@ document.getElementById('review-btn').addEventListener('click', function() {
     photoEl.innerHTML = '';
     Array.from(photoFiles).slice(0,2).forEach((f, i) => {
       const url = URL.createObjectURL(f);
+      const sizeKB = Math.round(f.size / 1024);
+      const sizeTxt = sizeKB >= 1024 ? (sizeKB/1024).toFixed(1) + ' MB' : sizeKB + ' KB';
+      const tooSmall = f.size < 204800; // warn under 200 KB
       // Thumbnail in review table
       const img = document.createElement('img');
       img.className = 'photo-thumb';
       img.src = url;
       photoEl.appendChild(img);
       const lbl = document.createElement('span');
-      lbl.textContent = ' ' + f.name;
       lbl.style.fontSize = '0.85em';
+      lbl.textContent = ' ' + f.name + ' (' + sizeTxt + ')';
       photoEl.appendChild(lbl);
+      if (tooSmall) {
+        const warn = document.createElement('div');
+        warn.style.cssText = 'color:#c62828;font-size:0.82em;font-weight:700;margin-top:3px;';
+        warn.textContent = '⚠️ This photo may be too small for quality print reproduction. We recommend at least 200 KB. You may want to go back and upload a higher-resolution image.';
+        photoEl.appendChild(warn);
+      }
       // First photo floated directly in proof box
       if (i === 0) {
         proofPhotoWrap.className = 'obit-proof-photo';
         const pi = document.createElement('img');
         pi.src = url;
-        const cap = document.createElement('div');
-        cap.className = 'obit-proof-photo-caption';
-        cap.textContent = f.name;
         proofPhotoWrap.appendChild(pi);
-        proofPhotoWrap.appendChild(cap);
       }
     });
   }
