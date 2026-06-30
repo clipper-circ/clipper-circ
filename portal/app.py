@@ -871,7 +871,7 @@ OBIT_PAGE = """<!DOCTYPE html>
                padding: 14px 18px; margin: 16px 0; font-size: 1.05em; }
   .price-box span { font-size: 1.4em; font-weight: 700; }
   .word-bar { font-size: 0.85em; color: #555; margin-top: 4px; }
-  .word-bar.over { color: #c62828; font-weight: 700; }
+  .word-bar.over { color: #2e7d32; font-weight: 700; }
   .radio-group label { font-weight: normal; display: flex; align-items: flex-start; gap: 8px;
                        margin-bottom: 8px; cursor: pointer; }
   .radio-group input[type=radio] { margin-top: 3px; flex-shrink: 0; }
