@@ -1165,7 +1165,7 @@ function updatePrice() {
   const bar = document.getElementById('word_bar');
   const extra = Math.max(0, words - WORD_LIMIT);
   if (extra > 0) {
-    bar.textContent = words + ' words — ' + extra + ' over limit × $0.50 = $' + (extra * 0.50).toFixed(2) + ' extra';
+    bar.textContent = words + ' words — ' + extra + ' additional words × $0.50 = $' + (extra * 0.50).toFixed(2);
     bar.className = 'word-bar over';
   } else {
     bar.textContent = words + ' words — base fee covers up to 300 words';
