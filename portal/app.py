@@ -903,8 +903,13 @@ OBIT_PAGE = """<!DOCTYPE html>
   .review-val { color: #222; }
   .obit-proof { background: white; border: 1px solid #ccc; border-radius: 6px;
                 padding: 20px 24px; font-family: Georgia, serif; line-height: 1.8;
-                font-size: 0.97em; white-space: pre-wrap; margin-top: 8px; }
-  .obit-proof-name { font-weight: 700; font-size: 1.1em; margin-bottom: 8px; }
+                font-size: 0.97em; margin-top: 8px; }
+  .obit-proof-name { font-weight: 700; font-size: 1.1em; margin-bottom: 10px; }
+  .obit-proof-body { white-space: pre-wrap; }
+  .obit-proof-photo { float: left; margin: 0 16px 8px 0; max-width: 140px; border: 1px solid #ccc; }
+  .obit-proof-photo img { display: block; width: 100%; }
+  .obit-proof-photo-caption { font-size: 0.75em; color: #777; text-align: center; padding: 3px 0; }
+  .clearfix::after { content: ''; display: table; clear: both; }
   .proof-box { background: #f5f5f5; border: 2px solid #1a3a1a; border-radius: 8px;
                padding: 20px; margin-bottom: 20px; }
   .proof-box h3 { color: #1a3a1a; margin-top: 0; font-size: 1em; text-transform: uppercase;
@@ -1035,9 +1040,10 @@ OBIT_PAGE = """<!DOCTYPE html>
 
     <div class="proof-box">
       <h3>&#128260; Obituary Proof — Review Carefully Before Paying</h3>
-      <div class="obit-proof">
+      <div class="obit-proof clearfix">
+        <div id="proof-photo-wrap"></div>
         <div class="obit-proof-name" id="proof-name"></div>
-        <div id="proof-body"></div>
+        <div class="obit-proof-body" id="proof-body"></div>
       </div>
     </div>
 
@@ -1173,22 +1179,39 @@ document.getElementById('review-btn').addEventListener('click', function() {
   document.getElementById('rv-relation').textContent = relation_display;
   document.getElementById('rv-pub').textContent = pub_timing;
 
-  // Photo thumbnails
+  // Photo thumbnails in review row + photo in proof
   const photoFiles = document.getElementById('photo_upload').files;
   const photoEl = document.getElementById('rv-photos');
+  const proofPhotoWrap = document.getElementById('proof-photo-wrap');
+  proofPhotoWrap.innerHTML = '';
   if (photoFiles.length === 0) {
     photoEl.textContent = 'No photo uploaded';
   } else {
     photoEl.innerHTML = '';
-    Array.from(photoFiles).slice(0,2).forEach(f => {
+    Array.from(photoFiles).slice(0,2).forEach((f, i) => {
+      const url = URL.createObjectURL(f);
+      // Thumbnail in review table
       const img = document.createElement('img');
       img.className = 'photo-thumb';
-      img.src = URL.createObjectURL(f);
+      img.src = url;
       photoEl.appendChild(img);
       const lbl = document.createElement('span');
-      lbl.textContent = f.name;
+      lbl.textContent = ' ' + f.name;
       lbl.style.fontSize = '0.85em';
       photoEl.appendChild(lbl);
+      // First photo in proof box
+      if (i === 0) {
+        const wrap = document.createElement('div');
+        wrap.className = 'obit-proof-photo';
+        const pi = document.createElement('img');
+        pi.src = url;
+        const cap = document.createElement('div');
+        cap.className = 'obit-proof-photo-caption';
+        cap.textContent = f.name;
+        wrap.appendChild(pi);
+        wrap.appendChild(cap);
+        proofPhotoWrap.appendChild(wrap);
+      }
     });
   }
 
