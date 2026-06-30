@@ -930,11 +930,13 @@ OBIT_PAGE = """<!DOCTYPE html>
     <div class="step" id="step2-tab">2 &nbsp; Review &amp; Pay</div>
     <div class="step" id="step3-tab">3 &nbsp; Confirmed</div>
   </div>
+  <div id="page-intro">
   <h2>Place an Obituary Notice</h2>
   <p class="intro">Please use this form to place an obituary notice in the Duxbury Clipper.
   The deadline to submit for Wednesday's Clipper is the Friday preceding publication.
   The base fee of <strong>$100</strong> includes a photo and up to 300 words.
   Longer notices are welcome — there is an additional fee of <strong>50¢ per word</strong> over 300.</p>
+  </div>
 
   <div id="main-form">
     <h3>Obituary Details</h3>
@@ -1378,6 +1380,7 @@ document.getElementById('submit-btn').addEventListener('click', async function()
     const data = await resp.json();
     if (data.success) {
       document.getElementById('review-panel').style.display = 'none';
+      document.getElementById('page-intro').style.display = 'none';
       document.getElementById('success-panel').style.display = 'block';
       document.getElementById('step2-tab').className = 'step done';
       document.getElementById('step3-tab').className = 'step active';
