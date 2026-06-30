@@ -949,7 +949,7 @@ OBIT_PAGE = """<!DOCTYPE html>
       </div>
       <div class="field">
         <label>Date of death *</label>
-        <input type="text" id="dod" placeholder="MM/DD/YYYY" required>
+        <input type="date" id="dod" required>
       </div>
     </div>
 
@@ -1136,7 +1136,8 @@ document.getElementById('review-btn').addEventListener('click', function() {
 
   const deceased_name  = document.getElementById('deceased_name').value.trim();
   const age            = document.getElementById('age').value.trim();
-  const dod            = document.getElementById('dod').value.trim();
+  const dod_raw        = document.getElementById('dod').value;
+  const dod            = dod_raw ? new Date(dod_raw + 'T12:00:00').toLocaleDateString('en-US', {month:'long', day:'numeric', year:'numeric'}) : '';
   const obit_text      = document.getElementById('obit_text').value.trim();
   const first_name     = document.getElementById('first_name').value.trim();
   const last_name      = document.getElementById('last_name').value.trim();
@@ -1148,7 +1149,7 @@ document.getElementById('review-btn').addEventListener('click', function() {
   const relation_other = document.getElementById('relation_other').value.trim();
   const pub_timing     = document.querySelector('input[name="pub_timing"]:checked').value;
 
-  if (!deceased_name || !age || !dod || !obit_text || !first_name || !last_name || !phone || !email) {
+  if (!deceased_name || !age || !dod_raw || !obit_text || !first_name || !last_name || !phone || !email) {
     errBox.textContent = 'Please fill in all required fields.';
     errBox.style.display = 'block'; errBox.scrollIntoView({behavior:'smooth'}); return;
   }
@@ -1193,7 +1194,7 @@ document.getElementById('review-btn').addEventListener('click', function() {
       const url = URL.createObjectURL(f);
       const sizeKB = Math.round(f.size / 1024);
       const sizeTxt = sizeKB >= 1024 ? (sizeKB/1024).toFixed(1) + ' MB' : sizeKB + ' KB';
-      const tooSmall = f.size < 204800; // warn under 200 KB
+      const tooSmall = f.size < 102400; // warn under 100 KB
       // Thumbnail in review table
       const img = document.createElement('img');
       img.className = 'photo-thumb';
@@ -1252,7 +1253,8 @@ document.getElementById('submit-btn').addEventListener('click', async function()
 
   const deceased_name  = document.getElementById('deceased_name').value.trim();
   const age            = document.getElementById('age').value.trim();
-  const dod            = document.getElementById('dod').value.trim();
+  const dod_raw        = document.getElementById('dod').value;
+  const dod            = dod_raw ? new Date(dod_raw + 'T12:00:00').toLocaleDateString('en-US', {month:'long', day:'numeric', year:'numeric'}) : '';
   const obit_text      = document.getElementById('obit_text').value.trim();
   const first_name     = document.getElementById('first_name').value.trim();
   const last_name      = document.getElementById('last_name').value.trim();
