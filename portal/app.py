@@ -1294,7 +1294,7 @@ document.getElementById('review-btn').addEventListener('click', function() {
   document.getElementById('rv-price-breakdown').textContent =
     extra > 0
       ? '$100.00 base + ' + extra + ' extra words × $0.50 = ' + priceStr
-      : '$100.00 base fee (notice is within 300 words)';
+      : '$100.00 base fee';
 
   // Switch panels
   document.getElementById('main-form').style.display = 'none';
