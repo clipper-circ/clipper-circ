@@ -1553,7 +1553,9 @@ def obituary_submit():
 </table>
 <h3 style="margin-top:24px;">Obituary Text ({words} words)</h3>
 <div style="background:#f9f9f9;border:1px solid #ddd;border-radius:4px;padding:16px;
-            font-family:Georgia,serif;font-size:14px;line-height:1.7;white-space:pre-wrap;">{obit_text}</div>
+            font-family:Georgia,serif;font-size:14px;line-height:1.7;white-space:pre-wrap;"><strong>{deceased_name}{(", " + dod) if dod else ""}</strong>
+
+{obit_text}</div>
 """
 
     # Attach photos
