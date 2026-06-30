@@ -2458,9 +2458,7 @@ elif page == "📰 Obituaries":
                 st.divider()
                 st.markdown("**Obituary Text:**")
                 st.text_area("", value=s.obit_text or "", height=250, key=f"obit_text_{s.id}", disabled=False, label_visibility="collapsed")
-                with st.expander("Submitter metadata"):
-                    st.caption(f"IP: {s.ip_address or '—'}")
-                    st.caption(f"Browser: {s.user_agent or '—'}")
+                st.caption(f"IP: {s.ip_address or '—'}  |  Browser: {s.user_agent or '—'}")
 
 elif page == "⚙️ Settings":
     if not st.session_state.user["is_admin"]:
