@@ -845,10 +845,9 @@ OBIT_PAGE = """<!DOCTYPE html>
   body { font-family: Georgia, serif; background: #f9f9f7; color: #222; margin: 0; padding: 0; }
   .masthead { background: white; text-align: center; padding: 20px 24px 12px; border-bottom: 1px solid #ddd; }
   .masthead img { max-width: 520px; width: 90%; height: auto; }
-  .header { background: #1a3a1a; padding: 10px 24px; display: flex; align-items: center; justify-content: center; position: relative; }
-  .header h1 { color: white; margin: 0; font-size: 1.4em; letter-spacing: 1px; }
-  .header-link { position: absolute; right: 24px; color: white; font-size: 0.9em; text-decoration: none; opacity: 0.9; }
-  .header-link:hover { text-decoration: underline; }
+  .header { background: #1a3a1a; padding: 10px 24px; display: flex; align-items: center; justify-content: flex-start; gap: 24px; }
+  .header a { color: white; font-size: 0.95em; text-decoration: none; opacity: 0.9; }
+  .header a:hover { text-decoration: underline; }
   .wrap { max-width: 780px; margin: 32px auto; padding: 0 20px 60px; }
   h2 { font-size: 1.5em; border-bottom: 2px solid #1a3a1a; padding-bottom: 6px; margin-top: 36px; }
   h3 { font-size: 1.1em; color: #1a3a1a; margin-top: 28px; margin-bottom: 6px; }
@@ -935,7 +934,7 @@ OBIT_PAGE = """<!DOCTYPE html>
 </head>
 <body>
 <div class="masthead"><a href="https://www.duxburyclipper.com/" target="_blank"><img src="https://www.duxburyclipper.com/wp-content/uploads/2019/01/logo-1-2.png" alt="Duxbury Clipper"></a></div>
-<div class="header"><h1>Place an Obituary Notice</h1><a class="header-link" href="https://www.duxburyclipper.com/obituaries/" target="_blank">Current Obituaries</a></div>
+<div class="header"><a href="https://www.duxburyclipper.com/" target="_blank">duxburyclipper.com</a><a href="https://www.duxburyclipper.com/obituaries/" target="_blank">Current Obituaries</a></div>
 <div class="wrap">
   <div class="steps">
     <div class="step active" id="step1-tab">1 &nbsp; Obituary Details</div>
