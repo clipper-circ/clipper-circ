@@ -11,10 +11,12 @@ load_dotenv()
 
 resend.api_key = os.environ.get("RESEND_API_KEY", "")
 
-from database import SessionLocal
+from database import SessionLocal, engine
 from models import (Subscriber, Payment, DeliveryHold, PaymentAuditLog,
                     SubscriberEventLog, SubscriberStatus, PaymentMethod,
                     PLAN_LABELS, PLAN_PRICES, ObituarySubmission, Setting)
+from models import Base
+Base.metadata.create_all(bind=engine)  # ensure new tables exist on Railway
 
 app = Flask(__name__)
 app.secret_key = os.environ.get("SECRET_KEY", "dev-secret-change-me")
