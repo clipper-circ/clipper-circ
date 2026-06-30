@@ -890,6 +890,9 @@ OBIT_PAGE = """<!DOCTYPE html>
   #edit-btn { padding: 10px 24px; background: white; color: #1a3a1a; border: 2px solid #1a3a1a;
               border-radius: 6px; font-size: 0.95em; font-weight: 700; cursor: pointer;
               font-family: Georgia, serif; margin-bottom: 20px; }
+  .photo-item { display: flex; align-items: center; gap: 10px; padding: 6px 0; font-size: 0.9em; }
+  .photo-item img { width: 40px; height: 40px; object-fit: cover; border: 1px solid #ccc; border-radius: 3px; }
+  .photo-remove { color: #c62828; cursor: pointer; font-weight: 700; text-decoration: underline; font-size: 0.85em; background: none; border: none; padding: 0; font-family: Georgia, serif; }
   #msg { margin-top: 16px; padding: 14px 16px; border-radius: 6px; display: none; font-size: 0.95em; }
   .msg-err { background: #fde8e8; color: #c62828; border: 1px solid #f5c6c6; }
   .section-note { background: #fff8e1; border-left: 3px solid #f0c040; padding: 10px 14px;
@@ -970,6 +973,7 @@ OBIT_PAGE = """<!DOCTYPE html>
       <label>Upload photo (optional, up to 2 images)</label>
       <input type="file" id="photo_upload" accept=".jpg,.jpeg,.png" multiple>
       <div class="hint">JPG or PNG. A clear headshot works best. Avoid group photos or pictures of pictures.</div>
+      <div id="photo_preview" style="margin-top:10px;"></div>
     </div>
 
     <h3>Your Contact Info</h3>
@@ -1031,7 +1035,7 @@ OBIT_PAGE = """<!DOCTYPE html>
     </div>
 
     <div id="form-err" class="msg-err" style="display:none;padding:12px 16px;border-radius:6px;margin-top:12px;"></div>
-    <div id="no-photo-warn" style="display:none;color:#c62828;font-weight:700;margin-top:12px;">⚠️ No photo has been uploaded. You can still submit without one, but obituaries with a photo tend to be more meaningful — consider going back to add one.</div>
+    <div id="no-photo-warn" style="display:none;color:#c62828;font-weight:700;margin-top:12px;">⚠️ No photo has been uploaded. Consider going back to add one.</div>
     <button id="review-btn" type="button">Review My Submission &rarr;</button>
   </div>
 
@@ -1123,8 +1127,50 @@ function updatePrice() {
   document.getElementById('price_display').textContent = fmt(price);
 }
 document.getElementById('obit_text').addEventListener('input', updatePrice);
-document.getElementById('photo_upload').addEventListener('change', function() {
-  if (this.files.length > 0) document.getElementById('no-photo-warn').style.display = 'none';
+
+// ── Photo selection with remove/replace support ────────────────────────────
+let selectedPhotos = [];
+const photoInput = document.getElementById('photo_upload');
+
+function syncPhotoInput() {
+  const dt = new DataTransfer();
+  selectedPhotos.forEach(f => dt.items.add(f));
+  photoInput.files = dt.files;
+}
+
+function renderPhotoPreview() {
+  const preview = document.getElementById('photo_preview');
+  preview.innerHTML = '';
+  selectedPhotos.forEach((f, idx) => {
+    const url = URL.createObjectURL(f);
+    const item = document.createElement('div');
+    item.className = 'photo-item';
+    const img = document.createElement('img');
+    img.src = url;
+    const lbl = document.createElement('span');
+    lbl.textContent = f.name;
+    const removeBtn = document.createElement('button');
+    removeBtn.type = 'button';
+    removeBtn.className = 'photo-remove';
+    removeBtn.textContent = 'Remove';
+    removeBtn.addEventListener('click', function() {
+      selectedPhotos.splice(idx, 1);
+      syncPhotoInput();
+      renderPhotoPreview();
+    });
+    item.appendChild(img);
+    item.appendChild(lbl);
+    item.appendChild(removeBtn);
+    preview.appendChild(item);
+  });
+  if (selectedPhotos.length > 0) document.getElementById('no-photo-warn').style.display = 'none';
+}
+
+photoInput.addEventListener('change', function() {
+  const newFiles = Array.from(this.files);
+  selectedPhotos = selectedPhotos.concat(newFiles).slice(0, 2);
+  syncPhotoInput();
+  renderPhotoPreview();
 });
 
 document.querySelectorAll('input[name="relation"]').forEach(r => {
