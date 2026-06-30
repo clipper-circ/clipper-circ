@@ -856,6 +856,13 @@ OBIT_PAGE = """<!DOCTYPE html>
     font-size: 0.95em; font-family: Georgia, serif; background: white;
   }
   textarea { resize: vertical; }
+  /* Step indicator */
+  .steps { display: flex; gap: 0; margin-bottom: 28px; }
+  .step { flex: 1; text-align: center; padding: 10px 4px; font-size: 0.82em; font-weight: 700;
+          background: #ddd; color: #888; border-right: 2px solid white; }
+  .step:last-child { border-right: none; }
+  .step.active { background: #1a3a1a; color: white; }
+  .step.done { background: #4caf50; color: white; }
   .row { display: flex; gap: 16px; margin-bottom: 16px; }
   .row .field { flex: 1; }
   .field { margin-bottom: 16px; }
@@ -877,17 +884,44 @@ OBIT_PAGE = """<!DOCTYPE html>
                 border-radius: 6px; font-size: 1.1em; font-weight: 700; cursor: pointer;
                 margin-top: 12px; font-family: Georgia, serif; }
   #submit-btn:disabled { background: #888; cursor: not-allowed; }
+  #review-btn { width: 100%; padding: 14px; background: #1a3a1a; color: white; border: none;
+                border-radius: 6px; font-size: 1.1em; font-weight: 700; cursor: pointer;
+                margin-top: 16px; font-family: Georgia, serif; }
+  #edit-btn { padding: 10px 24px; background: white; color: #1a3a1a; border: 2px solid #1a3a1a;
+              border-radius: 6px; font-size: 0.95em; font-weight: 700; cursor: pointer;
+              font-family: Georgia, serif; margin-bottom: 20px; }
   #msg { margin-top: 16px; padding: 14px 16px; border-radius: 6px; display: none; font-size: 0.95em; }
   .msg-err { background: #fde8e8; color: #c62828; border: 1px solid #f5c6c6; }
-  .msg-ok  { background: #e8f5e9; color: #1b5e20; border: 1px solid #a5d6a7; font-size: 1.05em; }
   .section-note { background: #fff8e1; border-left: 3px solid #f0c040; padding: 10px 14px;
                   font-size: 0.87em; color: #555; border-radius: 0 4px 4px 0; margin-bottom: 16px; }
+  /* Review panel */
+  .review-section { margin-bottom: 20px; }
+  .review-section h3 { margin-top: 0; border-bottom: 1px solid #ddd; padding-bottom: 6px; }
+  .review-row { display: flex; gap: 12px; padding: 6px 0; border-bottom: 1px solid #f0f0f0;
+                font-size: 0.92em; }
+  .review-label { font-weight: 700; color: #555; min-width: 140px; flex-shrink: 0; }
+  .review-val { color: #222; }
+  .obit-proof { background: white; border: 1px solid #ccc; border-radius: 6px;
+                padding: 20px 24px; font-family: Georgia, serif; line-height: 1.8;
+                font-size: 0.97em; white-space: pre-wrap; margin-top: 8px; }
+  .obit-proof-name { font-weight: 700; font-size: 1.1em; margin-bottom: 8px; }
+  .proof-box { background: #f5f5f5; border: 2px solid #1a3a1a; border-radius: 8px;
+               padding: 20px; margin-bottom: 20px; }
+  .proof-box h3 { color: #1a3a1a; margin-top: 0; font-size: 1em; text-transform: uppercase;
+                  letter-spacing: 1px; }
+  .photo-thumb { width: 80px; height: 80px; object-fit: cover; border-radius: 4px;
+                 border: 1px solid #ccc; margin-right: 8px; }
   @media (max-width: 560px) { .row { flex-direction: column; gap: 0; } }
 </style>
 </head>
 <body>
 <div class="header"><h1>&#9654; Duxbury Clipper</h1></div>
 <div class="wrap">
+  <div class="steps">
+    <div class="step active" id="step1-tab">1 &nbsp; Obituary Details</div>
+    <div class="step" id="step2-tab">2 &nbsp; Review &amp; Pay</div>
+    <div class="step" id="step3-tab">3 &nbsp; Confirmed</div>
+  </div>
   <h2>Place an Obituary Notice</h2>
   <p class="intro">Please use this form to place an obituary notice in the Duxbury Clipper.
   The deadline to submit for Wednesday's Clipper is the Friday preceding publication.
@@ -991,18 +1025,56 @@ OBIT_PAGE = """<!DOCTYPE html>
       I understand the newspaper may decline to publish notices that don't meet its guidelines.</div>
     </div>
 
-    <h3>Payment Information</h3>
-    <div class="price-box" style="margin-bottom:12px;">
-      Total due: <span id="price_display2">$100.00</span>
-    </div>
-    <label>Card details *</label>
-    <div id="card-element"></div>
-    <div id="msg"></div>
-    <button id="submit-btn" type="button">Submit &amp; Pay <span id="btn-price">$100.00</span></button>
+    <div id="form-err" class="msg-err" style="display:none;padding:12px 16px;border-radius:6px;margin-top:12px;"></div>
+    <button id="review-btn" type="button">Review My Submission &rarr;</button>
   </div>
 
+  <!-- Step 2: Review & Pay -->
+  <div id="review-panel" style="display:none;">
+    <button id="edit-btn" type="button">&larr; Edit My Submission</button>
+
+    <div class="proof-box">
+      <h3>&#128260; Obituary Proof — Review Carefully Before Paying</h3>
+      <div class="obit-proof">
+        <div class="obit-proof-name" id="proof-name"></div>
+        <div id="proof-body"></div>
+      </div>
+    </div>
+
+    <div class="review-section">
+      <h3>Submission Details</h3>
+      <div class="review-row"><div class="review-label">Deceased</div><div class="review-val" id="rv-deceased"></div></div>
+      <div class="review-row"><div class="review-label">Age</div><div class="review-val" id="rv-age"></div></div>
+      <div class="review-row"><div class="review-label">Date of Death</div><div class="review-val" id="rv-dod"></div></div>
+      <div class="review-row"><div class="review-label">Word Count</div><div class="review-val" id="rv-words"></div></div>
+      <div class="review-row"><div class="review-label">Photo(s)</div><div class="review-val" id="rv-photos"></div></div>
+    </div>
+
+    <div class="review-section">
+      <h3>Your Contact Info</h3>
+      <div class="review-row"><div class="review-label">Name</div><div class="review-val" id="rv-name"></div></div>
+      <div class="review-row"><div class="review-label">Phone</div><div class="review-val" id="rv-phone"></div></div>
+      <div class="review-row"><div class="review-label">Email</div><div class="review-val" id="rv-email"></div></div>
+      <div class="review-row"><div class="review-label">Relation</div><div class="review-val" id="rv-relation"></div></div>
+      <div class="review-row"><div class="review-label">Publication</div><div class="review-val" id="rv-pub"></div></div>
+    </div>
+
+    <div class="review-section">
+      <h3>Payment</h3>
+      <div class="price-box" style="margin-bottom:12px;">
+        Total due: <span id="rv-price">$100.00</span>
+      </div>
+      <div class="section-note" id="rv-price-breakdown"></div>
+      <label>Card details *</label>
+      <div id="card-element"></div>
+      <div id="msg"></div>
+      <button id="submit-btn" type="button">Submit &amp; Pay <span id="btn-price">$100.00</span></button>
+    </div>
+  </div>
+
+  <!-- Step 3: Success -->
   <div id="success-panel" style="display:none;text-align:center;padding:40px 20px;">
-    <div style="font-size:3em;">✅</div>
+    <div style="font-size:3em;">&#10003;</div>
     <h2 style="border:none;color:#1b5e20;">Submission Received</h2>
     <p id="success-msg" style="font-size:1.05em;line-height:1.7;color:#333;"></p>
     <p style="color:#777;font-size:0.9em;">Questions? Call us at 781-934-2811.</p>
@@ -1023,12 +1095,9 @@ card.mount('#card-element');
 function countWords(text) {
   return text.trim() === '' ? 0 : text.trim().split(/\\s+/).length;
 }
-
 function calcPrice(words) {
-  const extra = Math.max(0, words - WORD_LIMIT);
-  return BASE_FEE + extra * OVERAGE_RATE;
+  return BASE_FEE + Math.max(0, words - WORD_LIMIT) * OVERAGE_RATE;
 }
-
 function fmt(n) { return '$' + n.toFixed(2); }
 
 function updatePrice() {
@@ -1043,15 +1112,10 @@ function updatePrice() {
     bar.textContent = words + ' words — base fee covers up to 300';
     bar.className = 'word-bar';
   }
-  const ps = fmt(price);
-  document.getElementById('price_display').textContent = ps;
-  document.getElementById('price_display2').textContent = ps;
-  document.getElementById('btn-price').textContent = ps;
+  document.getElementById('price_display').textContent = fmt(price);
 }
-
 document.getElementById('obit_text').addEventListener('input', updatePrice);
 
-// Show/hide "Other" relation field
 document.querySelectorAll('input[name="relation"]').forEach(r => {
   r.addEventListener('change', function() {
     document.getElementById('relation_other').style.display =
@@ -1059,40 +1123,129 @@ document.querySelectorAll('input[name="relation"]').forEach(r => {
   });
 });
 
+// ── Step 1 → Step 2: Review ────────────────────────────────────────────────
+document.getElementById('review-btn').addEventListener('click', function() {
+  const errBox = document.getElementById('form-err');
+  errBox.style.display = 'none';
+
+  const deceased_name  = document.getElementById('deceased_name').value.trim();
+  const age            = document.getElementById('age').value.trim();
+  const dod            = document.getElementById('dod').value.trim();
+  const obit_text      = document.getElementById('obit_text').value.trim();
+  const first_name     = document.getElementById('first_name').value.trim();
+  const last_name      = document.getElementById('last_name').value.trim();
+  const phone          = document.getElementById('phone').value.trim();
+  const email          = document.getElementById('email').value.trim();
+  const email_confirm  = document.getElementById('email_confirm').value.trim();
+  const consent        = document.getElementById('consent').checked;
+  const relation       = document.querySelector('input[name="relation"]:checked').value;
+  const relation_other = document.getElementById('relation_other').value.trim();
+  const pub_timing     = document.querySelector('input[name="pub_timing"]:checked').value;
+
+  if (!deceased_name || !age || !dod || !obit_text || !first_name || !last_name || !phone || !email) {
+    errBox.textContent = 'Please fill in all required fields.';
+    errBox.style.display = 'block'; errBox.scrollIntoView({behavior:'smooth'}); return;
+  }
+  if (email !== email_confirm) {
+    errBox.textContent = 'Email addresses do not match.';
+    errBox.style.display = 'block'; return;
+  }
+  if (!consent) {
+    errBox.textContent = 'Please check the consent box to continue.';
+    errBox.style.display = 'block'; return;
+  }
+
+  const words = countWords(obit_text);
+  const price = calcPrice(words);
+  const extra = Math.max(0, words - WORD_LIMIT);
+  const relation_display = relation === 'Other' ? 'Other: ' + relation_other : relation;
+
+  // Populate review panel
+  document.getElementById('proof-name').textContent = deceased_name + ', age ' + age;
+  document.getElementById('proof-body').textContent = obit_text;
+  document.getElementById('rv-deceased').textContent = deceased_name;
+  document.getElementById('rv-age').textContent = age;
+  document.getElementById('rv-dod').textContent = dod;
+  document.getElementById('rv-words').textContent = words + ' words' + (extra > 0 ? ' (' + extra + ' over 300-word limit)' : ' (within 300-word base)');
+  document.getElementById('rv-name').textContent = first_name + ' ' + last_name;
+  document.getElementById('rv-phone').textContent = phone;
+  document.getElementById('rv-email').textContent = email;
+  document.getElementById('rv-relation').textContent = relation_display;
+  document.getElementById('rv-pub').textContent = pub_timing;
+
+  // Photo thumbnails
+  const photoFiles = document.getElementById('photo_upload').files;
+  const photoEl = document.getElementById('rv-photos');
+  if (photoFiles.length === 0) {
+    photoEl.textContent = 'No photo uploaded';
+  } else {
+    photoEl.innerHTML = '';
+    Array.from(photoFiles).slice(0,2).forEach(f => {
+      const img = document.createElement('img');
+      img.className = 'photo-thumb';
+      img.src = URL.createObjectURL(f);
+      photoEl.appendChild(img);
+      const lbl = document.createElement('span');
+      lbl.textContent = f.name;
+      lbl.style.fontSize = '0.85em';
+      photoEl.appendChild(lbl);
+    });
+  }
+
+  const priceStr = fmt(price);
+  document.getElementById('rv-price').textContent = priceStr;
+  document.getElementById('btn-price').textContent = priceStr;
+  document.getElementById('rv-price-breakdown').textContent =
+    extra > 0
+      ? '$100.00 base + ' + extra + ' extra words × $0.50 = ' + priceStr
+      : '$100.00 base fee (notice is within 300 words)';
+
+  // Switch panels
+  document.getElementById('main-form').style.display = 'none';
+  document.getElementById('review-panel').style.display = 'block';
+  document.getElementById('step1-tab').className = 'step done';
+  document.getElementById('step2-tab').className = 'step active';
+  window.scrollTo({top: 0, behavior: 'smooth'});
+});
+
+// ── Step 2 → Step 1: Edit ─────────────────────────────────────────────────
+document.getElementById('edit-btn').addEventListener('click', function() {
+  document.getElementById('review-panel').style.display = 'none';
+  document.getElementById('main-form').style.display = 'block';
+  document.getElementById('step1-tab').className = 'step active';
+  document.getElementById('step2-tab').className = 'step';
+  window.scrollTo({top: 0, behavior: 'smooth'});
+});
+
+// ── Step 2: Submit & Pay ───────────────────────────────────────────────────
 document.getElementById('submit-btn').addEventListener('click', async function() {
   const btn = this;
   const msg = document.getElementById('msg');
   msg.style.display = 'none';
 
-  // Validate
-  const deceased_name = document.getElementById('deceased_name').value.trim();
-  const age           = document.getElementById('age').value.trim();
-  const dod           = document.getElementById('dod').value.trim();
-  const obit_text     = document.getElementById('obit_text').value.trim();
-  const first_name    = document.getElementById('first_name').value.trim();
-  const last_name     = document.getElementById('last_name').value.trim();
-  const phone         = document.getElementById('phone').value.trim();
-  const email         = document.getElementById('email').value.trim();
-  const email_confirm = document.getElementById('email_confirm').value.trim();
-  const consent       = document.getElementById('consent').checked;
-  const relation      = document.querySelector('input[name="relation"]:checked').value;
+  const deceased_name  = document.getElementById('deceased_name').value.trim();
+  const age            = document.getElementById('age').value.trim();
+  const dod            = document.getElementById('dod').value.trim();
+  const obit_text      = document.getElementById('obit_text').value.trim();
+  const first_name     = document.getElementById('first_name').value.trim();
+  const last_name      = document.getElementById('last_name').value.trim();
+  const phone          = document.getElementById('phone').value.trim();
+  const email          = document.getElementById('email').value.trim();
+  const relation       = document.querySelector('input[name="relation"]:checked').value;
   const relation_other = document.getElementById('relation_other').value.trim();
-  const pub_timing    = document.querySelector('input[name="pub_timing"]:checked').value;
-
-  if (!deceased_name || !age || !dod || !obit_text || !first_name || !last_name || !phone || !email) {
-    show_err('Please fill in all required fields.'); return;
-  }
-  if (email !== email_confirm) {
-    show_err('Email addresses do not match.'); return;
-  }
-  if (!consent) {
-    show_err('Please check the consent box to continue.'); return;
-  }
+  const pub_timing     = document.querySelector('input[name="pub_timing"]:checked').value;
+  const words          = countWords(obit_text);
+  const price          = calcPrice(words);
 
   btn.disabled = true;
   btn.textContent = 'Processing…';
 
-  // Upload files + form data via FormData
+  const {paymentMethod, error} = await stripe.createPaymentMethod({type: 'card', card: card});
+  if (error) {
+    show_err(error.message);
+    btn.disabled = false; btn.textContent = 'Submit & Pay ' + fmt(price); return;
+  }
+
   const formData = new FormData();
   formData.append('deceased_name', deceased_name);
   formData.append('age', age);
@@ -1104,46 +1257,41 @@ document.getElementById('submit-btn').addEventListener('click', async function()
   formData.append('email', email);
   formData.append('relation', relation === 'Other' ? 'Other: ' + relation_other : relation);
   formData.append('pub_timing', pub_timing);
-  const words = countWords(obit_text);
-  const price = calcPrice(words);
   formData.append('words', words);
   formData.append('amount_cents', Math.round(price * 100));
-
+  formData.append('payment_method_id', paymentMethod.id);
   const photos = document.getElementById('photo_upload').files;
   for (let i = 0; i < Math.min(photos.length, 2); i++) {
     formData.append('photos', photos[i]);
   }
 
-  // Tokenize card first
-  const {paymentMethod, error} = await stripe.createPaymentMethod({type: 'card', card: card});
-  if (error) { show_err(error.message); btn.disabled = false; btn.textContent = restore_btn(price); return; }
-  formData.append('payment_method_id', paymentMethod.id);
-
   try {
     const resp = await fetch('/obituary/submit', {method: 'POST', body: formData});
     const data = await resp.json();
     if (data.success) {
-      document.getElementById('main-form').style.display = 'none';
+      document.getElementById('review-panel').style.display = 'none';
       document.getElementById('success-panel').style.display = 'block';
+      document.getElementById('step2-tab').className = 'step done';
+      document.getElementById('step3-tab').className = 'step active';
       document.getElementById('success-msg').innerHTML =
         'Thank you, <strong>' + first_name + '</strong>. Your obituary notice for <strong>' +
-        deceased_name + '</strong> has been received and payment of <strong>$' +
-        price.toFixed(2) + '</strong> has been processed.<br><br>' +
-        'You will receive a confirmation email at <strong>' + email + '</strong>. ' +
+        deceased_name + '</strong> has been received and payment of <strong>' + fmt(price) +
+        '</strong> has been processed.<br><br>' +
+        'A confirmation has been sent to <strong>' + email + '</strong>. ' +
         'We will be in touch if we have any questions before publication.';
+      window.scrollTo({top: 0, behavior: 'smooth'});
     } else {
       show_err(data.error || 'Submission failed. Please try again or call 781-934-2811.');
-      btn.disabled = false; btn.textContent = restore_btn(price);
+      btn.disabled = false; btn.textContent = 'Submit & Pay ' + fmt(price);
     }
   } catch(e) {
     show_err('Network error. Please try again or call 781-934-2811.');
-    btn.disabled = false; btn.textContent = restore_btn(price);
+    btn.disabled = false; btn.textContent = 'Submit & Pay ' + fmt(price);
   }
 
   function show_err(m) {
     msg.className = 'msg-err'; msg.textContent = m; msg.style.display = 'block';
   }
-  function restore_btn(p) { return 'Submit & Pay $' + p.toFixed(2); }
 });
 </script>
 </body>
