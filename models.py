@@ -240,3 +240,44 @@ class StaffUser(Base):
     is_admin = Column(Boolean, default=False)  # admins can manage other staff
     is_active = Column(Boolean, default=True)
     created_at = Column(DateTime, default=datetime.utcnow)
+
+
+class ObituarySubmission(Base):
+    __tablename__ = "obituary_submissions"
+
+    id                    = Column(Integer, primary_key=True)
+    submitted_at          = Column(DateTime, default=datetime.utcnow, nullable=False)
+
+    # Deceased info
+    deceased_name         = Column(String(200), nullable=False)
+    age                   = Column(String(10),  nullable=True)
+    date_of_death         = Column(String(50),  nullable=True)
+    obit_text             = Column(Text,         nullable=False)
+    word_count            = Column(Integer,      nullable=True)
+
+    # Submitter info
+    submitter_first_name  = Column(String(100),  nullable=True)
+    submitter_last_name   = Column(String(100),  nullable=True)
+    submitter_email       = Column(String(200),  nullable=True)
+    submitter_phone       = Column(String(30),   nullable=True)
+    relation              = Column(String(200),  nullable=True)
+
+    # Publication
+    pub_timing            = Column(String(200),  nullable=True)
+    photo_submitted       = Column(Boolean,      default=False)
+
+    # Payment
+    amount_paid           = Column(Numeric(10,2), nullable=True)
+    card_description      = Column(String(100),  nullable=True)
+    stripe_pi_id          = Column(String(100),  nullable=True)
+
+    # Metadata
+    ip_address            = Column(String(50),   nullable=True)
+    user_agent            = Column(Text,          nullable=True)
+
+
+class Setting(Base):
+    __tablename__ = "settings"
+
+    key   = Column(String(100), primary_key=True)
+    value = Column(Text, nullable=True)

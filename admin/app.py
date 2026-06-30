@@ -17,7 +17,8 @@ from sqlalchemy import or_
 from database import SessionLocal
 from models import (
     Subscriber, Payment, DeliveryHold, StaffUser, PaymentAuditLog, HoldAuditLog,
-    SubscriberEventLog, AdminLoginLog, SubscriberStatus, PlanCode, PaymentMethod, PLAN_LABELS, PLAN_PRICES
+    SubscriberEventLog, AdminLoginLog, SubscriberStatus, PlanCode, PaymentMethod,
+    PLAN_LABELS, PLAN_PRICES, ObituarySubmission, Setting
 )
 import bcrypt
 import hashlib
@@ -438,6 +439,7 @@ nav_options = [
     "🔔 Renewals",
     "📦 Delivery List",
     "🔁 Duplicates",
+    "📰 Obituaries",
     "⚙️ Settings",
 ]
 
@@ -2427,6 +2429,39 @@ elif page == "📋 Hold Log":
     else:
         st.info("No hold history yet.")
 
+elif page == "📰 Obituaries":
+    st.title("📰 Obituary Submissions")
+    submissions = db.query(ObituarySubmission).order_by(ObituarySubmission.submitted_at.desc()).all()
+    if not submissions:
+        st.info("No obituary submissions yet.")
+    else:
+        search = st.text_input("Search by name or submitter", placeholder="Type to filter...")
+        filtered = [s for s in submissions if not search or
+                    search.lower() in (s.deceased_name or "").lower() or
+                    search.lower() in f"{s.submitter_first_name} {s.submitter_last_name}".lower()]
+        st.caption(f"{len(filtered)} submission{'s' if len(filtered) != 1 else ''}")
+        for s in filtered:
+            label = f"{s.deceased_name}  —  submitted {s.submitted_at.strftime('%b %d, %Y %I:%M %p')}  —  ${float(s.amount_paid or 0):.2f}"
+            with st.expander(label):
+                c1, c2 = st.columns(2)
+                c1.markdown(f"**Deceased:** {s.deceased_name}")
+                c1.markdown(f"**Age:** {s.age or '—'}")
+                c1.markdown(f"**Date of Death:** {s.date_of_death or '—'}")
+                c1.markdown(f"**Word Count:** {s.word_count or '—'}")
+                c1.markdown(f"**Photo Submitted:** {'Yes' if s.photo_submitted else 'No'}")
+                c2.markdown(f"**Submitter:** {s.submitter_first_name} {s.submitter_last_name}")
+                c2.markdown(f"**Email:** {s.submitter_email or '—'}")
+                c2.markdown(f"**Phone:** {s.submitter_phone or '—'}")
+                c2.markdown(f"**Relation:** {s.relation or '—'}")
+                c2.markdown(f"**Publication:** {s.pub_timing or '—'}")
+                st.markdown(f"**Amount Charged:** ${float(s.amount_paid or 0):.2f}  |  **Card:** {s.card_description or '—'}  |  **Confirmation:** `{s.stripe_pi_id or '—'}`")
+                st.divider()
+                st.markdown("**Obituary Text:**")
+                st.text_area("", value=s.obit_text or "", height=250, key=f"obit_text_{s.id}", disabled=False, label_visibility="collapsed")
+                with st.expander("Submitter metadata"):
+                    st.caption(f"IP: {s.ip_address or '—'}")
+                    st.caption(f"Browser: {s.user_agent or '—'}")
+
 elif page == "⚙️ Settings":
     if not st.session_state.user["is_admin"]:
         st.error("Admin access required.")
@@ -2454,6 +2489,26 @@ elif page == "⚙️ Settings":
                     st.success(f"User {new_name} added.")
                 else:
                     st.error("All fields required.")
+
+        st.divider()
+
+        # ── Obituary Email Settings ────────────────────────────────────────────
+        st.subheader("📰 Obituary Notification Emails")
+        st.caption("Who receives the staff notification email when an obituary is submitted.")
+        obit_to_row = db.query(Setting).filter_by(key="obit_notify_email").first()
+        obit_cc_row = db.query(Setting).filter_by(key="obit_notify_cc").first()
+        with st.form("obit_email_settings"):
+            obit_to = st.text_input("Send To (primary)", value=obit_to_row.value if obit_to_row else "josh@joshcutler.com")
+            obit_cc = st.text_input("CC (comma-separated, optional)", value=obit_cc_row.value if obit_cc_row else "")
+            if st.form_submit_button("Save Obituary Email Settings"):
+                for key, val in [("obit_notify_email", obit_to.strip()), ("obit_notify_cc", obit_cc.strip())]:
+                    row = db.query(Setting).filter_by(key=key).first()
+                    if row:
+                        row.value = val
+                    else:
+                        db.add(Setting(key=key, value=val))
+                db.commit()
+                st.success("Obituary email settings saved.")
 
         st.divider()
 

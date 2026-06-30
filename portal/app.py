@@ -14,7 +14,7 @@ resend.api_key = os.environ.get("RESEND_API_KEY", "")
 from database import SessionLocal
 from models import (Subscriber, Payment, DeliveryHold, PaymentAuditLog,
                     SubscriberEventLog, SubscriberStatus, PaymentMethod,
-                    PLAN_LABELS, PLAN_PRICES)
+                    PLAN_LABELS, PLAN_PRICES, ObituarySubmission, Setting)
 
 app = Flask(__name__)
 app.secret_key = os.environ.get("SECRET_KEY", "dev-secret-change-me")
@@ -831,7 +831,19 @@ def paypal_cancel():
 OBIT_BASE_FEE      = 100.00   # includes photo + up to 300 words
 OBIT_WORD_LIMIT    = 300
 OBIT_OVERAGE_RATE  = 0.50     # per word over limit
-OBIT_NOTIFY_EMAIL  = "josh@joshcutler.com"
+OBIT_NOTIFY_EMAIL  = "josh@joshcutler.com"  # fallback if no DB setting
+
+def get_obit_settings():
+    """Return (notify_email, cc_list) from DB settings, falling back to defaults."""
+    db = SessionLocal()
+    try:
+        to_row = db.query(Setting).filter_by(key="obit_notify_email").first()
+        cc_row = db.query(Setting).filter_by(key="obit_notify_cc").first()
+        to_addr = to_row.value if (to_row and to_row.value) else OBIT_NOTIFY_EMAIL
+        cc_list = [e.strip() for e in cc_row.value.split(",") if e.strip()] if (cc_row and cc_row.value) else []
+        return to_addr, cc_list
+    finally:
+        db.close()
 
 OBIT_PAGE = """<!DOCTYPE html>
 <html lang="en">
@@ -1570,14 +1582,47 @@ def obituary_submit():
 {obit_text}</div>
 """
 
+    # Save submission to database
     try:
-        resend.Emails.send({
-            "from": "Duxbury Clipper <noreply@duxburyclipper.net>",
-            "to": [OBIT_NOTIFY_EMAIL],
-            "subject": f"Obituary Notice: {deceased_name} — ${amount_paid:.2f} paid",
-            "html": body_html,
-            "attachments": attachments,
-        })
+        db = SessionLocal()
+        submission = ObituarySubmission(
+            deceased_name        = deceased_name,
+            age                  = age,
+            date_of_death        = dod,
+            obit_text            = obit_text,
+            word_count           = words,
+            submitter_first_name = first_name,
+            submitter_last_name  = last_name,
+            submitter_email      = email,
+            submitter_phone      = phone,
+            relation             = relation,
+            pub_timing           = pub_timing,
+            photo_submitted      = bool(attachments),
+            amount_paid          = amount_paid,
+            card_description     = card_desc,
+            stripe_pi_id         = confirmation_code,
+            ip_address           = ip_address,
+            user_agent           = user_agent,
+        )
+        db.add(submission)
+        db.commit()
+        db.close()
+    except Exception:
+        pass  # don't fail over a DB write error
+
+    # Send staff notification
+    notify_to, notify_cc = get_obit_settings()
+    staff_email = {
+        "from": "Duxbury Clipper <noreply@duxburyclipper.net>",
+        "to": [notify_to],
+        "subject": f"Obituary Notice: {deceased_name} — ${amount_paid:.2f} paid",
+        "html": body_html,
+        "attachments": attachments,
+    }
+    if notify_cc:
+        staff_email["cc"] = notify_cc
+    try:
+        resend.Emails.send(staff_email)
     except Exception:
         pass  # payment already succeeded — don't fail the submission over email
 
