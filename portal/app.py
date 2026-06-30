@@ -1018,9 +1018,9 @@ OBIT_PAGE = """<!DOCTYPE html>
       <div class="field">
         <label>Publication instructions *</label>
         <div class="radio-group">
-          <label><input type="radio" name="pub_timing" value="Print first, then online" checked>
+          <label><input type="radio" name="pub_timing" value="Publish in the next available Clipper issue and then online" checked>
             Publish in the next available Clipper issue and then online</label>
-          <label><input type="radio" name="pub_timing" value="Online first, then print">
+          <label><input type="radio" name="pub_timing" value="Publish online as soon as approved, then in the next Clipper issue">
             Publish online as soon as approved, then in the next Clipper issue</label>
         </div>
         <div class="hint">Deadline for Wednesday's Clipper is Friday at noon. Submissions after that will run the following week.</div>
