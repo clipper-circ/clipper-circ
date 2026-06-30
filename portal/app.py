@@ -1184,6 +1184,7 @@ document.getElementById('review-btn').addEventListener('click', function() {
   const photoEl = document.getElementById('rv-photos');
   const proofPhotoWrap = document.getElementById('proof-photo-wrap');
   proofPhotoWrap.innerHTML = '';
+  proofPhotoWrap.className = '';
   if (photoFiles.length === 0) {
     photoEl.textContent = 'No photo uploaded';
   } else {
@@ -1199,18 +1200,16 @@ document.getElementById('review-btn').addEventListener('click', function() {
       lbl.textContent = ' ' + f.name;
       lbl.style.fontSize = '0.85em';
       photoEl.appendChild(lbl);
-      // First photo in proof box
+      // First photo floated directly in proof box
       if (i === 0) {
-        const wrap = document.createElement('div');
-        wrap.className = 'obit-proof-photo';
+        proofPhotoWrap.className = 'obit-proof-photo';
         const pi = document.createElement('img');
         pi.src = url;
         const cap = document.createElement('div');
         cap.className = 'obit-proof-photo-caption';
         cap.textContent = f.name;
-        wrap.appendChild(pi);
-        wrap.appendChild(cap);
-        proofPhotoWrap.appendChild(wrap);
+        proofPhotoWrap.appendChild(pi);
+        proofPhotoWrap.appendChild(cap);
       }
     });
   }
