@@ -894,6 +894,13 @@ OBIT_PAGE = """<!DOCTYPE html>
   #edit-btn { padding: 10px 24px; background: white; color: #1a3a1a; border: 2px solid #1a3a1a;
               border-radius: 6px; font-size: 0.95em; font-weight: 700; cursor: pointer;
               font-family: Georgia, serif; margin-bottom: 20px; }
+  .tips-toggle { background: none; border: none; color: #1a3a1a; font-family: Georgia, serif;
+                 font-size: 0.9em; cursor: pointer; padding: 0; text-decoration: underline;
+                 margin-bottom: 6px; display: inline-block; }
+  .tips-box { display: none; background: #f0f4ee; border-left: 3px solid #1a3a1a; border-radius: 4px;
+              padding: 14px 16px; margin-bottom: 12px; font-size: 0.88em; line-height: 1.6; color: #333; }
+  .tips-box ol { margin: 8px 0 0 16px; padding: 0; }
+  .tips-box li { margin-bottom: 6px; }
   .photo-item { display: flex; align-items: center; gap: 10px; padding: 6px 0; font-size: 0.9em; }
   .photo-item img { width: 40px; height: 40px; object-fit: cover; border: 1px solid #ccc; border-radius: 3px; }
   .photo-remove { color: #c62828; cursor: pointer; font-weight: 700; text-decoration: underline; font-size: 0.85em; background: none; border: none; padding: 0; font-family: Georgia, serif; }
@@ -965,6 +972,19 @@ OBIT_PAGE = """<!DOCTYPE html>
 
     <div class="field">
       <label>Full text of obituary *</label>
+      <button type="button" class="tips-toggle" onclick="var b=document.getElementById('obit-tips');var open=b.style.display==='block';b.style.display=open?'none':'block';this.textContent=open?'▶ Tips for writing your obituary':'▼ Tips for writing your obituary';">▶ Tips for writing your obituary</button>
+      <div class="tips-box" id="obit-tips">
+        <p style="margin:0 0 6px;">There is no one right or wrong way to write an obituary notice, but here is a typical format:</p>
+        <ol>
+          <li><strong>Full Name and Age:</strong> Start with the loved one's full name (including any nicknames, maiden names, or suffixes) and their age at the time of death.</li>
+          <li><strong>Date and Place of Death:</strong> Include the date and location of death. Mentioning the cause is optional and based on the family's wishes.</li>
+          <li><strong>Brief Summary of Life:</strong> Share the birth date and place, parents' names, and key life details — education, career, military service, marriage, hobbies, and accomplishments. Personal touches are always welcome.</li>
+          <li><strong>Survived By:</strong> List immediate surviving family members (spouse, children, grandchildren, siblings, etc.) and note anyone who predeceased them.</li>
+          <li><strong>Funeral or Memorial Details:</strong> Include the date, time, and location of services, and whether they are public or private. Mention viewing hours or burial if applicable.</li>
+          <li><strong>Donations or Tributes:</strong> Optionally suggest a charity for donations in lieu of flowers.</li>
+        </ol>
+        <p style="margin:8px 0 0;">If you are unsure what to write, we encourage you to <a href="https://www.duxburyclipper.com/obituaries/" target="_blank" style="color:#1a3a1a;">review previously published obituary notices</a> on our website.</p>
+      </div>
       <textarea id="obit_text" rows="12" placeholder="Type or paste your obituary here..." required></textarea>
       <div class="word-bar" id="word_bar">0 words — base fee covers up to 300</div>
     </div>
