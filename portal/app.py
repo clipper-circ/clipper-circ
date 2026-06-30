@@ -1162,6 +1162,14 @@ document.getElementById('review-btn').addEventListener('click', function() {
     errBox.textContent = 'Please check the consent box to continue.';
     errBox.style.display = 'block'; return;
   }
+  if (parseInt(age, 10) > 110) {
+    errBox.textContent = 'Age at death (' + age + ') seems unusually high — please double-check this is correct.';
+    errBox.style.display = 'block'; errBox.scrollIntoView({behavior:'smooth'}); return;
+  }
+  if (deceased_name.replace(/\\s/g, '').length < 4 || deceased_name.indexOf(' ') === -1) {
+    errBox.textContent = 'Please enter the deceased\\'s full name (first and last).';
+    errBox.style.display = 'block'; errBox.scrollIntoView({behavior:'smooth'}); return;
+  }
 
   const words = countWords(obit_text);
   const price = calcPrice(words);
