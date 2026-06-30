@@ -1200,8 +1200,17 @@ document.getElementById('review-btn').addEventListener('click', function() {
   const relation_other = document.getElementById('relation_other').value.trim();
   const pub_timing     = document.querySelector('input[name="pub_timing"]:checked').value;
 
-  if (!deceased_name || !age || !dod_raw || !obit_text || !first_name || !last_name || !phone || !email) {
-    errBox.textContent = 'Please fill in all required fields.';
+  const missing = [];
+  if (!deceased_name) missing.push('Full name of deceased');
+  if (!age)           missing.push('Age at death');
+  if (!dod_raw)       missing.push('Date of death');
+  if (!obit_text)     missing.push('Obituary text');
+  if (!first_name)    missing.push('Your first name');
+  if (!last_name)     missing.push('Your last name');
+  if (!phone)         missing.push('Phone number');
+  if (!email)         missing.push('Email address');
+  if (missing.length > 0) {
+    errBox.textContent = 'Please fill in the following required fields: ' + missing.join(', ') + '.';
     errBox.style.display = 'block'; errBox.scrollIntoView({behavior:'smooth'}); return;
   }
   if (email !== email_confirm) {
