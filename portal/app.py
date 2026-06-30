@@ -975,8 +975,8 @@ OBIT_PAGE = """<!DOCTYPE html>
         <input type="number" id="age" min="0" max="130" required>
       </div>
       <div class="field">
-        <label>Date of death *</label>
-        <input type="date" id="dod" required>
+        <label>Date of death</label>
+        <input type="date" id="dod">
       </div>
     </div>
 
@@ -1250,7 +1250,6 @@ document.getElementById('review-btn').addEventListener('click', function() {
   const missing = [];
   if (!deceased_name) missing.push('Full name of deceased');
   if (!age)           missing.push('Age at death');
-  if (!dod_raw)       missing.push('Date of death');
   if (!obit_text)     missing.push('Obituary text');
   if (!first_name)    missing.push('Your first name');
   if (!last_name)     missing.push('Your last name');
