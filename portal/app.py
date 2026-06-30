@@ -1035,7 +1035,7 @@ OBIT_PAGE = """<!DOCTYPE html>
     </div>
 
     <div id="form-err" class="msg-err" style="display:none;padding:12px 16px;border-radius:6px;margin-top:12px;"></div>
-    <div id="no-photo-warn" style="display:none;color:#c62828;font-weight:700;margin-top:12px;">⚠️ No photo has been uploaded. Consider going back to add one.</div>
+    <div id="no-photo-warn" style="display:none;color:#e65100;font-weight:700;margin-top:12px;">⚠️ No photo has been uploaded. Consider going back to add one.</div>
     <button id="review-btn" type="button">Review My Submission &rarr;</button>
   </div>
 
