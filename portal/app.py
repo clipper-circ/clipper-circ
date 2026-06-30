@@ -1121,7 +1121,7 @@ function updatePrice() {
     bar.textContent = words + ' words — ' + extra + ' over limit × $0.50 = $' + (extra * 0.50).toFixed(2) + ' extra';
     bar.className = 'word-bar over';
   } else {
-    bar.textContent = words + ' words — base fee covers up to 300';
+    bar.textContent = words + ' words — base fee covers up to 300 words';
     bar.className = 'word-bar';
   }
   document.getElementById('price_display').textContent = fmt(price);
