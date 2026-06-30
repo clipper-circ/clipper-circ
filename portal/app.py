@@ -1592,9 +1592,29 @@ def obituary_submit():
 <p>Thank you for submitting an obituary notice for <strong>{deceased_name}</strong> to the Duxbury Clipper.</p>
 <p>We have received your submission and processed payment of <strong>${amount_paid:.2f}</strong> on your {card_desc}.</p>
 <p><strong>Confirmation number:</strong> {confirmation_code}</p>
-<p><strong>Publication preference:</strong> {pub_timing}</p>
-<p>We will be in touch if we have any questions before publication. If you need to make changes or have questions, please call us at <strong>781-934-2811</strong>.</p>
-<p style="color:#777;font-size:0.9em;">The Duxbury Clipper &mdash; duxburyclipper.com</p>
+<p>We will be in touch if we have any questions before publication. If you need to make changes or have questions, please email <a href="mailto:obits@duxburyclipper.com">obits@duxburyclipper.com</a> or call us at <strong>781-934-2811</strong>.</p>
+<hr style="margin:24px 0;border:none;border-top:1px solid #ddd;">
+<h3 style="font-family:Georgia,serif;color:#1a3a1a;margin-bottom:12px;">Your Submission</h3>
+<table style="border-collapse:collapse;width:100%;font-family:Arial,sans-serif;font-size:14px;margin-bottom:20px;">
+  <tr><td style="padding:6px 12px;background:#f5f5f5;font-weight:700;width:160px;">Deceased</td>
+      <td style="padding:6px 12px;">{deceased_name}</td></tr>
+  <tr><td style="padding:6px 12px;background:#f5f5f5;font-weight:700;">Age</td>
+      <td style="padding:6px 12px;">{age}</td></tr>
+  <tr><td style="padding:6px 12px;background:#f5f5f5;font-weight:700;">Date of Death</td>
+      <td style="padding:6px 12px;">{dod if dod else "—"}</td></tr>
+  <tr><td style="padding:6px 12px;background:#f5f5f5;font-weight:700;">Word Count</td>
+      <td style="padding:6px 12px;">{words} words</td></tr>
+  <tr><td style="padding:6px 12px;background:#f5f5f5;font-weight:700;">Amount Charged</td>
+      <td style="padding:6px 12px;">${amount_paid:.2f}</td></tr>
+  <tr><td style="padding:6px 12px;background:#f5f5f5;font-weight:700;">Publication</td>
+      <td style="padding:6px 12px;">{pub_timing}</td></tr>
+  <tr><td style="padding:6px 12px;background:#f5f5f5;font-weight:700;">Photo</td>
+      <td style="padding:6px 12px;">{"Submitted" if attachments else "Not submitted"}</td></tr>
+</table>
+<h4 style="font-family:Georgia,serif;color:#1a3a1a;margin-bottom:8px;">Obituary Text</h4>
+<div style="background:#f9f9f9;border:1px solid #ddd;border-radius:4px;padding:16px;
+            font-family:Georgia,serif;font-size:14px;line-height:1.7;white-space:pre-wrap;">{obit_text}</div>
+<p style="color:#777;font-size:0.9em;margin-top:24px;">The Duxbury Clipper &mdash; duxburyclipper.com</p>
 """,
         })
     except Exception:
