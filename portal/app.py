@@ -846,7 +846,7 @@ OBIT_PAGE = """<!DOCTYPE html>
   .masthead { background: white; text-align: center; padding: 20px 24px 12px; border-bottom: 1px solid #ddd; }
   .masthead img { max-width: 520px; width: 90%; height: auto; }
   .header { background: #1a3a1a; padding: 0; display: flex; align-items: stretch; justify-content: center; flex-wrap: wrap; }
-  .header a { color: white; font-size: 0.85em; text-decoration: none; padding: 10px 14px; display: inline-flex; align-items: center; letter-spacing: 0.03em; font-family: Arial, sans-serif; font-weight: 600; }
+  .header a { color: white; font-size: 0.85em; text-decoration: none; padding: 10px 14px; display: inline-flex; align-items: center; letter-spacing: 0.03em; font-family: Georgia, serif; font-weight: normal; }
   .header a:hover { background: rgba(255,255,255,0.15); }
   .header a.active { background: rgba(255,255,255,0.1); }
   .wrap { max-width: 780px; margin: 32px auto; padding: 0 20px 60px; }
