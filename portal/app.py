@@ -826,5 +826,456 @@ def paypal_cancel():
     return redirect(url_for("renew_self"))
 
 
+# ── Obituary Notice Form ───────────────────────────────────────────────────────
+
+OBIT_BASE_FEE      = 100.00   # includes photo + up to 300 words
+OBIT_WORD_LIMIT    = 300
+OBIT_OVERAGE_RATE  = 0.50     # per word over limit
+OBIT_NOTIFY_EMAIL  = "josh@joshcutler.com"
+
+OBIT_PAGE = """<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Place an Obituary Notice — Duxbury Clipper</title>
+<script src="https://js.stripe.com/v3/"></script>
+<style>
+  *, *::before, *::after { box-sizing: border-box; }
+  body { font-family: Georgia, serif; background: #f9f9f7; color: #222; margin: 0; padding: 0; }
+  .header { background: #1a3a1a; padding: 14px 24px; }
+  .header h1 { color: white; margin: 0; font-size: 1.4em; letter-spacing: 1px; }
+  .wrap { max-width: 780px; margin: 32px auto; padding: 0 20px 60px; }
+  h2 { font-size: 1.5em; border-bottom: 2px solid #1a3a1a; padding-bottom: 6px; margin-top: 36px; }
+  h3 { font-size: 1.1em; color: #1a3a1a; margin-top: 28px; margin-bottom: 6px; }
+  p.intro { line-height: 1.7; color: #444; }
+  label { display: block; font-size: 0.88em; font-weight: 700; margin-bottom: 4px; color: #333; }
+  input[type=text], input[type=email], input[type=tel], input[type=number],
+  select, textarea {
+    width: 100%; padding: 9px 11px; border: 1px solid #ccc; border-radius: 4px;
+    font-size: 0.95em; font-family: Georgia, serif; background: white;
+  }
+  textarea { resize: vertical; }
+  .row { display: flex; gap: 16px; margin-bottom: 16px; }
+  .row .field { flex: 1; }
+  .field { margin-bottom: 16px; }
+  .hint { font-size: 0.78em; color: #777; margin-top: 3px; }
+  .price-box { background: #1a3a1a; color: white; border-radius: 6px;
+               padding: 14px 18px; margin: 16px 0; font-size: 1.05em; }
+  .price-box span { font-size: 1.4em; font-weight: 700; }
+  .word-bar { font-size: 0.85em; color: #555; margin-top: 4px; }
+  .word-bar.over { color: #c62828; font-weight: 700; }
+  .radio-group label { font-weight: normal; display: flex; align-items: flex-start; gap: 8px;
+                       margin-bottom: 8px; cursor: pointer; }
+  .radio-group input[type=radio] { margin-top: 3px; flex-shrink: 0; }
+  .consent-row { display: flex; gap: 10px; align-items: flex-start; margin-top: 8px; }
+  .consent-row input { margin-top: 3px; flex-shrink: 0; }
+  .consent-text { font-size: 0.83em; color: #555; line-height: 1.5; }
+  #card-element { border: 1px solid #ccc; border-radius: 4px; padding: 10px 12px;
+                  background: white; margin-bottom: 6px; }
+  #submit-btn { width: 100%; padding: 14px; background: #1a3a1a; color: white; border: none;
+                border-radius: 6px; font-size: 1.1em; font-weight: 700; cursor: pointer;
+                margin-top: 12px; font-family: Georgia, serif; }
+  #submit-btn:disabled { background: #888; cursor: not-allowed; }
+  #msg { margin-top: 16px; padding: 14px 16px; border-radius: 6px; display: none; font-size: 0.95em; }
+  .msg-err { background: #fde8e8; color: #c62828; border: 1px solid #f5c6c6; }
+  .msg-ok  { background: #e8f5e9; color: #1b5e20; border: 1px solid #a5d6a7; font-size: 1.05em; }
+  .section-note { background: #fff8e1; border-left: 3px solid #f0c040; padding: 10px 14px;
+                  font-size: 0.87em; color: #555; border-radius: 0 4px 4px 0; margin-bottom: 16px; }
+  @media (max-width: 560px) { .row { flex-direction: column; gap: 0; } }
+</style>
+</head>
+<body>
+<div class="header"><h1>&#9654; Duxbury Clipper</h1></div>
+<div class="wrap">
+  <h2>Place an Obituary Notice</h2>
+  <p class="intro">Please use this form to place an obituary notice in the Duxbury Clipper.
+  The deadline to submit for Wednesday's Clipper is the Friday preceding publication.
+  The base fee of <strong>$100</strong> includes a photo and up to 300 words.
+  Longer notices are welcome — there is an additional fee of <strong>50¢ per word</strong> over 300.</p>
+
+  <div id="main-form">
+    <h3>Obituary Details</h3>
+    <p class="hint" style="margin-top:-4px;margin-bottom:12px;">This information will be published as part of the notice.</p>
+
+    <div class="field">
+      <label>Full name of deceased *</label>
+      <input type="text" id="deceased_name" placeholder="As you would like it to appear" required>
+    </div>
+
+    <div class="row">
+      <div class="field">
+        <label>Age at death *</label>
+        <input type="number" id="age" min="0" max="130" required>
+      </div>
+      <div class="field">
+        <label>Date of death *</label>
+        <input type="text" id="dod" placeholder="MM/DD/YYYY" required>
+      </div>
+    </div>
+
+    <div class="field">
+      <label>Full text of obituary *</label>
+      <textarea id="obit_text" rows="12" placeholder="Type or paste your obituary here..." required></textarea>
+      <div class="word-bar" id="word_bar">0 words — base fee covers up to 300</div>
+    </div>
+
+    <div class="price-box">
+      Obituary Notice &nbsp;|&nbsp; Price: <span id="price_display">$100.00</span>
+    </div>
+
+    <div class="section-note">First 300 words included in base $100 fee. Each additional word is 50¢.</div>
+
+    <h3>Photo of Loved One</h3>
+    <div class="field">
+      <label>Upload photo (optional, up to 2 images)</label>
+      <input type="file" id="photo_upload" accept=".jpg,.jpeg,.png" multiple>
+      <div class="hint">JPG or PNG. A clear headshot works best. Avoid group photos or pictures of pictures.</div>
+    </div>
+
+    <h3>Your Contact Info</h3>
+    <p class="hint" style="margin-top:-4px;margin-bottom:12px;">This will not be published.</p>
+
+    <div class="row">
+      <div class="field">
+        <label>First name *</label>
+        <input type="text" id="first_name" required>
+      </div>
+      <div class="field">
+        <label>Last name *</label>
+        <input type="text" id="last_name" required>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="field">
+        <label>Phone *</label>
+        <input type="tel" id="phone" required>
+      </div>
+      <div class="field">
+        <label>Email *</label>
+        <input type="email" id="email" required>
+      </div>
+      <div class="field">
+        <label>Confirm email *</label>
+        <input type="email" id="email_confirm" required>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="field">
+        <label>Relation to deceased *</label>
+        <div class="radio-group">
+          <label><input type="radio" name="relation" value="Family member" checked> Family member</label>
+          <label><input type="radio" name="relation" value="Funeral home"> Funeral home</label>
+          <label><input type="radio" name="relation" value="Other"> Other</label>
+        </div>
+        <input type="text" id="relation_other" placeholder="Please specify" style="display:none;margin-top:6px;">
+      </div>
+      <div class="field">
+        <label>Publication instructions *</label>
+        <div class="radio-group">
+          <label><input type="radio" name="pub_timing" value="Print first, then online" checked>
+            Publish in the next available Clipper issue and then online</label>
+          <label><input type="radio" name="pub_timing" value="Online first, then print">
+            Publish online as soon as approved, then in the next Clipper issue</label>
+        </div>
+        <div class="hint">Deadline for Wednesday's Clipper is Friday at noon. Submissions after that will run the following week.</div>
+      </div>
+    </div>
+
+    <div class="consent-row">
+      <input type="checkbox" id="consent" required>
+      <div class="consent-text">I confirm that I'm a family member or funeral home representative with permission to submit this obituary.
+      I've done my best to ensure all information is accurate and take responsibility for the details provided.
+      I understand the newspaper may decline to publish notices that don't meet its guidelines.</div>
+    </div>
+
+    <h3>Payment Information</h3>
+    <div class="price-box" style="margin-bottom:12px;">
+      Total due: <span id="price_display2">$100.00</span>
+    </div>
+    <label>Card details *</label>
+    <div id="card-element"></div>
+    <div id="msg"></div>
+    <button id="submit-btn" type="button">Submit &amp; Pay <span id="btn-price">$100.00</span></button>
+  </div>
+
+  <div id="success-panel" style="display:none;text-align:center;padding:40px 20px;">
+    <div style="font-size:3em;">✅</div>
+    <h2 style="border:none;color:#1b5e20;">Submission Received</h2>
+    <p id="success-msg" style="font-size:1.05em;line-height:1.7;color:#333;"></p>
+    <p style="color:#777;font-size:0.9em;">Questions? Call us at 781-934-2811.</p>
+  </div>
+</div>
+
+<script>
+const STRIPE_PK = "STRIPE_PK_PLACEHOLDER";
+const BASE_FEE = 100.00;
+const WORD_LIMIT = 300;
+const OVERAGE_RATE = 0.50;
+
+const stripe = Stripe(STRIPE_PK);
+const elements = stripe.elements();
+const card = elements.create('card', {style: {base: {fontSize: '15px', fontFamily: 'Georgia, serif'}}});
+card.mount('#card-element');
+
+function countWords(text) {
+  return text.trim() === '' ? 0 : text.trim().split(/\\s+/).length;
+}
+
+function calcPrice(words) {
+  const extra = Math.max(0, words - WORD_LIMIT);
+  return BASE_FEE + extra * OVERAGE_RATE;
+}
+
+function fmt(n) { return '$' + n.toFixed(2); }
+
+function updatePrice() {
+  const words = countWords(document.getElementById('obit_text').value);
+  const price = calcPrice(words);
+  const bar = document.getElementById('word_bar');
+  const extra = Math.max(0, words - WORD_LIMIT);
+  if (extra > 0) {
+    bar.textContent = words + ' words — ' + extra + ' over limit × $0.50 = $' + (extra * 0.50).toFixed(2) + ' extra';
+    bar.className = 'word-bar over';
+  } else {
+    bar.textContent = words + ' words — base fee covers up to 300';
+    bar.className = 'word-bar';
+  }
+  const ps = fmt(price);
+  document.getElementById('price_display').textContent = ps;
+  document.getElementById('price_display2').textContent = ps;
+  document.getElementById('btn-price').textContent = ps;
+}
+
+document.getElementById('obit_text').addEventListener('input', updatePrice);
+
+// Show/hide "Other" relation field
+document.querySelectorAll('input[name="relation"]').forEach(r => {
+  r.addEventListener('change', function() {
+    document.getElementById('relation_other').style.display =
+      this.value === 'Other' ? 'block' : 'none';
+  });
+});
+
+document.getElementById('submit-btn').addEventListener('click', async function() {
+  const btn = this;
+  const msg = document.getElementById('msg');
+  msg.style.display = 'none';
+
+  // Validate
+  const deceased_name = document.getElementById('deceased_name').value.trim();
+  const age           = document.getElementById('age').value.trim();
+  const dod           = document.getElementById('dod').value.trim();
+  const obit_text     = document.getElementById('obit_text').value.trim();
+  const first_name    = document.getElementById('first_name').value.trim();
+  const last_name     = document.getElementById('last_name').value.trim();
+  const phone         = document.getElementById('phone').value.trim();
+  const email         = document.getElementById('email').value.trim();
+  const email_confirm = document.getElementById('email_confirm').value.trim();
+  const consent       = document.getElementById('consent').checked;
+  const relation      = document.querySelector('input[name="relation"]:checked').value;
+  const relation_other = document.getElementById('relation_other').value.trim();
+  const pub_timing    = document.querySelector('input[name="pub_timing"]:checked').value;
+
+  if (!deceased_name || !age || !dod || !obit_text || !first_name || !last_name || !phone || !email) {
+    show_err('Please fill in all required fields.'); return;
+  }
+  if (email !== email_confirm) {
+    show_err('Email addresses do not match.'); return;
+  }
+  if (!consent) {
+    show_err('Please check the consent box to continue.'); return;
+  }
+
+  btn.disabled = true;
+  btn.textContent = 'Processing…';
+
+  // Upload files + form data via FormData
+  const formData = new FormData();
+  formData.append('deceased_name', deceased_name);
+  formData.append('age', age);
+  formData.append('dod', dod);
+  formData.append('obit_text', obit_text);
+  formData.append('first_name', first_name);
+  formData.append('last_name', last_name);
+  formData.append('phone', phone);
+  formData.append('email', email);
+  formData.append('relation', relation === 'Other' ? 'Other: ' + relation_other : relation);
+  formData.append('pub_timing', pub_timing);
+  const words = countWords(obit_text);
+  const price = calcPrice(words);
+  formData.append('words', words);
+  formData.append('amount_cents', Math.round(price * 100));
+
+  const photos = document.getElementById('photo_upload').files;
+  for (let i = 0; i < Math.min(photos.length, 2); i++) {
+    formData.append('photos', photos[i]);
+  }
+
+  // Tokenize card first
+  const {paymentMethod, error} = await stripe.createPaymentMethod({type: 'card', card: card});
+  if (error) { show_err(error.message); btn.disabled = false; btn.textContent = restore_btn(price); return; }
+  formData.append('payment_method_id', paymentMethod.id);
+
+  try {
+    const resp = await fetch('/obituary/submit', {method: 'POST', body: formData});
+    const data = await resp.json();
+    if (data.success) {
+      document.getElementById('main-form').style.display = 'none';
+      document.getElementById('success-panel').style.display = 'block';
+      document.getElementById('success-msg').innerHTML =
+        'Thank you, <strong>' + first_name + '</strong>. Your obituary notice for <strong>' +
+        deceased_name + '</strong> has been received and payment of <strong>$' +
+        price.toFixed(2) + '</strong> has been processed.<br><br>' +
+        'You will receive a confirmation email at <strong>' + email + '</strong>. ' +
+        'We will be in touch if we have any questions before publication.';
+    } else {
+      show_err(data.error || 'Submission failed. Please try again or call 781-934-2811.');
+      btn.disabled = false; btn.textContent = restore_btn(price);
+    }
+  } catch(e) {
+    show_err('Network error. Please try again or call 781-934-2811.');
+    btn.disabled = false; btn.textContent = restore_btn(price);
+  }
+
+  function show_err(m) {
+    msg.className = 'msg-err'; msg.textContent = m; msg.style.display = 'block';
+  }
+  function restore_btn(p) { return 'Submit & Pay $' + p.toFixed(2); }
+});
+</script>
+</body>
+</html>"""
+
+
+@app.route("/obituary")
+def obituary_form():
+    pk = os.environ.get("STRIPE_PUBLISHABLE_KEY", "")
+    page = OBIT_PAGE.replace("STRIPE_PK_PLACEHOLDER", pk)
+    return page, 200, {"Content-Type": "text/html"}
+
+
+@app.route("/obituary/submit", methods=["POST"])
+def obituary_submit():
+    import base64
+
+    deceased_name = request.form.get("deceased_name", "").strip()
+    age           = request.form.get("age", "").strip()
+    dod           = request.form.get("dod", "").strip()
+    obit_text     = request.form.get("obit_text", "").strip()
+    first_name    = request.form.get("first_name", "").strip()
+    last_name     = request.form.get("last_name", "").strip()
+    phone         = request.form.get("phone", "").strip()
+    email         = request.form.get("email", "").strip()
+    relation      = request.form.get("relation", "").strip()
+    pub_timing    = request.form.get("pub_timing", "").strip()
+    words         = int(request.form.get("words", "0"))
+    amount_cents  = int(request.form.get("amount_cents", "10000"))
+    pm_id         = request.form.get("payment_method_id", "").strip()
+
+    if not pm_id.startswith("pm_"):
+        return jsonify({"error": "Invalid payment method."}), 400
+
+    # Charge card
+    try:
+        pi = stripe.PaymentIntent.create(
+            amount=amount_cents,
+            currency="usd",
+            payment_method=pm_id,
+            confirm=True,
+            payment_method_types=["card"],
+            description=f"Obituary notice — {deceased_name}",
+            receipt_email=email,
+        )
+        if pi.status != "succeeded":
+            return jsonify({"error": f"Payment status: {pi.status}"}), 400
+    except stripe.error.CardError as e:
+        return jsonify({"error": e.user_message or str(e)}), 400
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+    amount_paid = amount_cents / 100
+
+    # Build email body
+    extra_words = max(0, words - OBIT_WORD_LIMIT)
+    pricing_line = f"$100.00 base"
+    if extra_words > 0:
+        pricing_line += f" + {extra_words} extra words × $0.50 = ${amount_paid:.2f} total"
+
+    body_html = f"""
+<h2>New Obituary Notice Submission</h2>
+<table style="border-collapse:collapse;width:100%;font-family:Arial,sans-serif;font-size:14px;">
+  <tr><td style="padding:6px 12px;background:#f5f5f5;font-weight:700;width:180px;">Deceased</td>
+      <td style="padding:6px 12px;">{deceased_name}</td></tr>
+  <tr><td style="padding:6px 12px;background:#f5f5f5;font-weight:700;">Age</td>
+      <td style="padding:6px 12px;">{age}</td></tr>
+  <tr><td style="padding:6px 12px;background:#f5f5f5;font-weight:700;">Date of Death</td>
+      <td style="padding:6px 12px;">{dod}</td></tr>
+  <tr><td style="padding:6px 12px;background:#f5f5f5;font-weight:700;">Word Count</td>
+      <td style="padding:6px 12px;">{words} words</td></tr>
+  <tr><td style="padding:6px 12px;background:#f5f5f5;font-weight:700;">Pricing</td>
+      <td style="padding:6px 12px;">{pricing_line}</td></tr>
+  <tr><td style="padding:6px 12px;background:#f5f5f5;font-weight:700;">Amount Charged</td>
+      <td style="padding:6px 12px;"><strong>${amount_paid:.2f}</strong> (Stripe PI: {pi.id})</td></tr>
+  <tr><td style="padding:6px 12px;background:#f5f5f5;font-weight:700;">Submitter</td>
+      <td style="padding:6px 12px;">{first_name} {last_name}</td></tr>
+  <tr><td style="padding:6px 12px;background:#f5f5f5;font-weight:700;">Phone</td>
+      <td style="padding:6px 12px;">{phone}</td></tr>
+  <tr><td style="padding:6px 12px;background:#f5f5f5;font-weight:700;">Email</td>
+      <td style="padding:6px 12px;">{email}</td></tr>
+  <tr><td style="padding:6px 12px;background:#f5f5f5;font-weight:700;">Relation</td>
+      <td style="padding:6px 12px;">{relation}</td></tr>
+  <tr><td style="padding:6px 12px;background:#f5f5f5;font-weight:700;">Publication</td>
+      <td style="padding:6px 12px;">{pub_timing}</td></tr>
+</table>
+<h3 style="margin-top:24px;">Obituary Text ({words} words)</h3>
+<div style="background:#f9f9f9;border:1px solid #ddd;border-radius:4px;padding:16px;
+            font-family:Georgia,serif;font-size:14px;line-height:1.7;white-space:pre-wrap;">{obit_text}</div>
+"""
+
+    # Attach photos
+    attachments = []
+    for photo in request.files.getlist("photos"):
+        if photo and photo.filename:
+            data = photo.read()
+            attachments.append({
+                "filename": photo.filename,
+                "content": list(data),
+            })
+
+    try:
+        resend.Emails.send({
+            "from": "Duxbury Clipper <noreply@duxburyclipper.net>",
+            "to": [OBIT_NOTIFY_EMAIL],
+            "subject": f"Obituary Notice: {deceased_name} — ${amount_paid:.2f} paid",
+            "html": body_html,
+            "attachments": attachments,
+        })
+    except Exception:
+        pass  # payment already succeeded — don't fail the submission over email
+
+    # Confirmation email to submitter
+    try:
+        resend.Emails.send({
+            "from": "Duxbury Clipper <noreply@duxburyclipper.net>",
+            "to": [email],
+            "subject": f"Obituary Notice Received — {deceased_name}",
+            "html": f"""
+<p>Dear {first_name},</p>
+<p>Thank you for submitting an obituary notice for <strong>{deceased_name}</strong> to the Duxbury Clipper.</p>
+<p>We have received your submission and processed payment of <strong>${amount_paid:.2f}</strong>.</p>
+<p><strong>Publication preference:</strong> {pub_timing}</p>
+<p>We will be in touch if we have any questions before publication. If you need to make changes or have questions, please call us at <strong>781-934-2811</strong>.</p>
+<p style="color:#777;font-size:0.9em;">The Duxbury Clipper &mdash; duxburyclipper.com</p>
+""",
+        })
+    except Exception:
+        pass
+
+    return jsonify({"success": True, "amount": amount_paid})
+
+
 if __name__ == "__main__":
     app.run(debug=True, port=5001)
