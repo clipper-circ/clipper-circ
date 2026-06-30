@@ -1089,7 +1089,7 @@ OBIT_PAGE = """<!DOCTYPE html>
     <div style="font-size:3em;">&#10003;</div>
     <h2 style="border:none;color:#1b5e20;">Submission Received</h2>
     <p id="success-msg" style="font-size:1.05em;line-height:1.7;color:#333;"></p>
-    <p style="color:#777;font-size:0.9em;">Questions? Call us at 781-934-2811.</p>
+    <p style="color:#777;font-size:0.9em;">Questions? Email <a href="mailto:obits@duxburyclipper.com">obits@duxburyclipper.com</a> or call us at 781-934-2811.</p>
   </div>
 </div>
 
