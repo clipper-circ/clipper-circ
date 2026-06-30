@@ -1511,6 +1511,16 @@ def obituary_submit():
     except Exception:
         card_desc = "Card"
 
+    # Attach photos (built before email body so we can reference attachment status)
+    attachments = []
+    for photo in request.files.getlist("photos"):
+        if photo and photo.filename:
+            data = photo.read()
+            attachments.append({
+                "filename": photo.filename,
+                "content": list(data),
+            })
+
     # Build email body
     extra_words = max(0, words - OBIT_WORD_LIMIT)
     pricing_line = f"$100.00 base"
@@ -1550,6 +1560,8 @@ def obituary_submit():
       <td style="padding:6px 12px;">{relation}</td></tr>
   <tr><td style="padding:6px 12px;background:#f5f5f5;font-weight:700;">Publication</td>
       <td style="padding:6px 12px;">{pub_timing}</td></tr>
+  <tr><td style="padding:6px 12px;background:#f5f5f5;font-weight:700;">Photo</td>
+      <td style="padding:6px 12px;">{"Attached" if attachments else "Not Submitted"}</td></tr>
 </table>
 <h3 style="margin-top:24px;">Obituary Text ({words} words)</h3>
 <div style="background:#f9f9f9;border:1px solid #ddd;border-radius:4px;padding:16px;
@@ -1557,16 +1569,6 @@ def obituary_submit():
 
 {obit_text}</div>
 """
-
-    # Attach photos
-    attachments = []
-    for photo in request.files.getlist("photos"):
-        if photo and photo.filename:
-            data = photo.read()
-            attachments.append({
-                "filename": photo.filename,
-                "content": list(data),
-            })
 
     try:
         resend.Emails.send({
