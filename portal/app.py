@@ -1196,7 +1196,7 @@ document.getElementById('review-btn').addEventListener('click', function() {
   proofPhotoWrap.innerHTML = '';
   proofPhotoWrap.className = '';
   if (photoFiles.length === 0) {
-    photoEl.textContent = 'No photo uploaded';
+    photoEl.innerHTML = '<span style="color:#c62828;font-weight:700;">No photo uploaded</span>';
   } else {
     photoEl.innerHTML = '';
     Array.from(photoFiles).slice(0,2).forEach((f, i) => {
