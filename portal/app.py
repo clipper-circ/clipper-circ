@@ -1031,6 +1031,7 @@ OBIT_PAGE = """<!DOCTYPE html>
     </div>
 
     <div id="form-err" class="msg-err" style="display:none;padding:12px 16px;border-radius:6px;margin-top:12px;"></div>
+    <div id="no-photo-warn" style="display:none;color:#c62828;font-weight:700;margin-top:12px;">⚠️ No photo has been uploaded. You can still submit without one, but obituaries with a photo tend to be more meaningful — consider going back to add one.</div>
     <button id="review-btn" type="button">Review My Submission &rarr;</button>
   </div>
 
@@ -1122,6 +1123,9 @@ function updatePrice() {
   document.getElementById('price_display').textContent = fmt(price);
 }
 document.getElementById('obit_text').addEventListener('input', updatePrice);
+document.getElementById('photo_upload').addEventListener('change', function() {
+  if (this.files.length > 0) document.getElementById('no-photo-warn').style.display = 'none';
+});
 
 document.querySelectorAll('input[name="relation"]').forEach(r => {
   r.addEventListener('change', function() {
@@ -1170,6 +1174,15 @@ document.getElementById('review-btn').addEventListener('click', function() {
     errBox.textContent = 'Please enter the deceased\\'s full name (first and last).';
     errBox.style.display = 'block'; errBox.scrollIntoView({behavior:'smooth'}); return;
   }
+
+  const noPhotoWarn = document.getElementById('no-photo-warn');
+  const hasPhoto = document.getElementById('photo_upload').files.length > 0;
+  if (!hasPhoto && noPhotoWarn.style.display !== 'block') {
+    noPhotoWarn.style.display = 'block';
+    noPhotoWarn.scrollIntoView({behavior:'smooth'});
+    return;
+  }
+  noPhotoWarn.style.display = 'none';
 
   const words = countWords(obit_text);
   const price = calcPrice(words);
