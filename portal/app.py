@@ -997,8 +997,18 @@ OBIT_PAGE = """<!DOCTYPE html>
     <h3>Photo of Loved One</h3>
     <div class="field">
       <label>Upload photo (optional)</label>
+      <button type="button" class="tips-toggle" onclick="var b=document.getElementById('photo-tips');var open=b.style.display==='block';b.style.display=open?'none':'block';this.textContent=open?'▶ Photo upload guidelines':'▼ Photo upload guidelines';">▶ Photo upload guidelines</button>
+      <div class="tips-box" id="photo-tips">
+        <ul style="margin:4px 0 0 16px;padding:0;">
+          <li>A clear headshot is best; avoid using a group photo.</li>
+          <li>If there are multiple people in your photo make sure it's easy to identify your loved one.</li>
+          <li>Photos can be old or new. This is your choice.</li>
+          <li>Avoid taking a picture of a picture; scans or digital originals should be at least 150 dpi resolution.</li>
+          <li>The best quality photo is a digital original — a jpeg file downloaded directly from a camera, smartphone, or online gallery.</li>
+          <li>Please note that while your photo will be in color on our website, it may be published in black and white in the print edition of the Clipper.</li>
+        </ul>
+      </div>
       <input type="file" id="photo_upload" accept=".jpg,.jpeg,.png">
-      <div class="hint">JPG or PNG. A clear headshot works best. Avoid group photos or pictures of pictures.</div>
       <div id="photo_preview" style="margin-top:10px;"></div>
     </div>
 
