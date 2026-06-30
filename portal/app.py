@@ -1453,6 +1453,14 @@ def obituary_submit():
         return jsonify({"error": str(e)}), 500
 
     amount_paid = amount_cents / 100
+    confirmation_code = pi.id
+    try:
+        pm_obj   = stripe.PaymentMethod.retrieve(pm_id)
+        card_brand = pm_obj.card.brand.capitalize()
+        card_last4 = pm_obj.card.last4
+        card_desc  = f"{card_brand} ending in {card_last4}"
+    except Exception:
+        card_desc = "Card"
 
     # Build email body
     extra_words = max(0, words - OBIT_WORD_LIMIT)
@@ -1474,7 +1482,11 @@ def obituary_submit():
   <tr><td style="padding:6px 12px;background:#f5f5f5;font-weight:700;">Pricing</td>
       <td style="padding:6px 12px;">{pricing_line}</td></tr>
   <tr><td style="padding:6px 12px;background:#f5f5f5;font-weight:700;">Amount Charged</td>
-      <td style="padding:6px 12px;"><strong>${amount_paid:.2f}</strong> (Stripe PI: {pi.id})</td></tr>
+      <td style="padding:6px 12px;"><strong>${amount_paid:.2f}</strong></td></tr>
+  <tr><td style="padding:6px 12px;background:#f5f5f5;font-weight:700;">Card</td>
+      <td style="padding:6px 12px;">{card_desc}</td></tr>
+  <tr><td style="padding:6px 12px;background:#f5f5f5;font-weight:700;">Confirmation #</td>
+      <td style="padding:6px 12px;">{confirmation_code}</td></tr>
   <tr><td style="padding:6px 12px;background:#f5f5f5;font-weight:700;">Submitter</td>
       <td style="padding:6px 12px;">{first_name} {last_name}</td></tr>
   <tr><td style="padding:6px 12px;background:#f5f5f5;font-weight:700;">Phone</td>
@@ -1521,7 +1533,8 @@ def obituary_submit():
             "html": f"""
 <p>Dear {first_name},</p>
 <p>Thank you for submitting an obituary notice for <strong>{deceased_name}</strong> to the Duxbury Clipper.</p>
-<p>We have received your submission and processed payment of <strong>${amount_paid:.2f}</strong>.</p>
+<p>We have received your submission and processed payment of <strong>${amount_paid:.2f}</strong> on your {card_desc}.</p>
+<p><strong>Confirmation number:</strong> {confirmation_code}</p>
 <p><strong>Publication preference:</strong> {pub_timing}</p>
 <p>We will be in touch if we have any questions before publication. If you need to make changes or have questions, please call us at <strong>781-934-2811</strong>.</p>
 <p style="color:#777;font-size:0.9em;">The Duxbury Clipper &mdash; duxburyclipper.com</p>
