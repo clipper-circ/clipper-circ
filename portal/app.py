@@ -1346,7 +1346,7 @@ document.getElementById('review-btn').addEventListener('click', function() {
       if (tooSmall) {
         const warn = document.createElement('div');
         warn.style.cssText = 'color:#c62828;font-size:0.82em;font-weight:700;margin-top:3px;';
-        warn.textContent = '⚠️ This photo may be too small for quality print reproduction. We recommend at least 200 KB. You may want to go back and upload a higher-resolution image.';
+        warn.textContent = '⚠️ This photo may be too small for quality print reproduction. We recommend at least 100 KB. You may want to go back and upload a higher-resolution image.';
         photoEl.appendChild(warn);
       }
       // First photo floated directly in proof box
