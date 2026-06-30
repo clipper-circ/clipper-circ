@@ -1045,6 +1045,7 @@ OBIT_PAGE = """<!DOCTYPE html>
         <div class="obit-proof-name" id="proof-name"></div>
         <div class="obit-proof-body" id="proof-body"></div>
       </div>
+      <p style="font-size:0.78em;color:#777;margin:10px 0 0;font-style:italic;">Please note this proof is for general review purposes only. It is not an exact replica and the formatting may vary when published.</p>
     </div>
 
     <div class="review-section">
