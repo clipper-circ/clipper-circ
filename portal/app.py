@@ -1430,6 +1430,8 @@ def obituary_submit():
     words         = int(request.form.get("words", "0"))
     amount_cents  = int(request.form.get("amount_cents", "10000"))
     pm_id         = request.form.get("payment_method_id", "").strip()
+    user_agent    = request.headers.get("User-Agent", "Unknown")
+    ip_address    = request.headers.get("X-Forwarded-For", request.remote_addr or "Unknown").split(",")[0].strip()
 
     if not pm_id.startswith("pm_"):
         return jsonify({"error": "Invalid payment method."}), 400
@@ -1487,6 +1489,10 @@ def obituary_submit():
       <td style="padding:6px 12px;">{card_desc}</td></tr>
   <tr><td style="padding:6px 12px;background:#f5f5f5;font-weight:700;">Confirmation #</td>
       <td style="padding:6px 12px;">{confirmation_code}</td></tr>
+  <tr><td style="padding:6px 12px;background:#f5f5f5;font-weight:700;">IP Address</td>
+      <td style="padding:6px 12px;">{ip_address}</td></tr>
+  <tr><td style="padding:6px 12px;background:#f5f5f5;font-weight:700;">Browser / Device</td>
+      <td style="padding:6px 12px;font-size:12px;">{user_agent}</td></tr>
   <tr><td style="padding:6px 12px;background:#f5f5f5;font-weight:700;">Submitter</td>
       <td style="padding:6px 12px;">{first_name} {last_name}</td></tr>
   <tr><td style="padding:6px 12px;background:#f5f5f5;font-weight:700;">Phone</td>
