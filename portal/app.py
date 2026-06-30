@@ -843,7 +843,9 @@ OBIT_PAGE = """<!DOCTYPE html>
 <style>
   *, *::before, *::after { box-sizing: border-box; }
   body { font-family: Georgia, serif; background: #f9f9f7; color: #222; margin: 0; padding: 0; }
-  .header { background: #1a3a1a; padding: 14px 24px; }
+  .masthead { background: white; text-align: center; padding: 20px 24px 12px; border-bottom: 1px solid #ddd; }
+  .masthead img { max-width: 520px; width: 90%; height: auto; }
+  .header { background: #1a3a1a; padding: 10px 24px; }
   .header h1 { color: white; margin: 0; font-size: 1.4em; letter-spacing: 1px; }
   .wrap { max-width: 780px; margin: 32px auto; padding: 0 20px 60px; }
   h2 { font-size: 1.5em; border-bottom: 2px solid #1a3a1a; padding-bottom: 6px; margin-top: 36px; }
@@ -923,7 +925,8 @@ OBIT_PAGE = """<!DOCTYPE html>
 </style>
 </head>
 <body>
-<div class="header"><h1>&#9654; Duxbury Clipper</h1></div>
+<div class="masthead"><img src="https://www.duxburyclipper.com/wp-content/uploads/2019/01/logo-1-2.png" alt="Duxbury Clipper"></div>
+<div class="header"><h1>Place an Obituary Notice</h1></div>
 <div class="wrap">
   <div class="steps">
     <div class="step active" id="step1-tab">1 &nbsp; Obituary Details</div>
