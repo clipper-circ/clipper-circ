@@ -1250,7 +1250,9 @@ document.getElementById('review-btn').addEventListener('click', function() {
   document.getElementById('rv-deceased').textContent = deceased_name;
   document.getElementById('rv-age').textContent = age;
   document.getElementById('rv-dod').textContent = dod;
-  document.getElementById('rv-words').textContent = words + ' words' + (extra > 0 ? ' — additional per-word charges apply' : ' — within 300-word base fee');
+  const rvWords = document.getElementById('rv-words');
+  rvWords.textContent = words + ' words';
+  rvWords.style.color = words < 100 ? '#c62828' : '';
   document.getElementById('rv-name').textContent = first_name + ' ' + last_name;
   document.getElementById('rv-phone').textContent = phone;
   document.getElementById('rv-email').textContent = email;
