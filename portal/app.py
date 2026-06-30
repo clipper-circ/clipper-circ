@@ -970,8 +970,8 @@ OBIT_PAGE = """<!DOCTYPE html>
 
     <h3>Photo of Loved One</h3>
     <div class="field">
-      <label>Upload photo (optional, up to 2 images)</label>
-      <input type="file" id="photo_upload" accept=".jpg,.jpeg,.png" multiple>
+      <label>Upload photo (optional)</label>
+      <input type="file" id="photo_upload" accept=".jpg,.jpeg,.png">
       <div class="hint">JPG or PNG. A clear headshot works best. Avoid group photos or pictures of pictures.</div>
       <div id="photo_preview" style="margin-top:10px;"></div>
     </div>
@@ -1168,7 +1168,7 @@ function renderPhotoPreview() {
 
 photoInput.addEventListener('change', function() {
   const newFiles = Array.from(this.files);
-  selectedPhotos = selectedPhotos.concat(newFiles).slice(0, 2);
+  selectedPhotos = newFiles.slice(0, 1);
   syncPhotoInput();
   renderPhotoPreview();
 });
@@ -1269,7 +1269,7 @@ document.getElementById('review-btn').addEventListener('click', function() {
     photoEl.innerHTML = '<span style="color:#c62828;font-weight:700;">No photo uploaded</span>';
   } else {
     photoEl.innerHTML = '';
-    Array.from(photoFiles).slice(0,2).forEach((f, i) => {
+    Array.from(photoFiles).slice(0,1).forEach((f, i) => {
       const url = URL.createObjectURL(f);
       const sizeKB = Math.round(f.size / 1024);
       const sizeTxt = sizeKB >= 1024 ? (sizeKB/1024).toFixed(1) + ' MB' : sizeKB + ' KB';
@@ -1369,7 +1369,7 @@ document.getElementById('submit-btn').addEventListener('click', async function()
   formData.append('amount_cents', Math.round(price * 100));
   formData.append('payment_method_id', paymentMethod.id);
   const photos = document.getElementById('photo_upload').files;
-  for (let i = 0; i < Math.min(photos.length, 2); i++) {
+  for (let i = 0; i < Math.min(photos.length, 1); i++) {
     formData.append('photos', photos[i]);
   }
 
