@@ -948,17 +948,17 @@ OBIT_PAGE = """<!DOCTYPE html>
 </style>
 </head>
 <body>
-<div class="masthead"><a href="https://www.duxburyclipper.com/"><img src="https://www.duxburyclipper.com/wp-content/uploads/2019/01/logo-1-2.png" alt="Duxbury Clipper"></a></div>
+<div class="masthead"><a href="https://www.duxburyclipper.com/" rel="noreferrer"><img src="https://www.duxburyclipper.com/wp-content/uploads/2019/01/logo-1-2.png" alt="Duxbury Clipper"></a></div>
 <div class="header">
-  <a href="https://www.duxburyclipper.com/">&#8962; Home</a>
-  <a href="https://www.duxburyclipper.com/category/news/">News</a>
-  <a href="https://www.duxburyclipper.com/category/features/">Features</a>
-  <a href="https://www.duxburyclipper.com/category/sports/">Sports</a>
-  <a href="https://www.duxburyclipper.com/category/opinion/">Opinion</a>
-  <a href="https://www.duxburyclipper.com/obituaries/" class="active">Obituaries</a>
-  <a href="https://www.duxburyclipper.com/category/classifieds/">Classifieds</a>
-  <a href="https://www.duxburyclipper.com/marketplace/">Marketplace</a>
-  <a href="https://www.duxburyclipper.com/subscribe/">Subscribe</a>
+  <a href="https://www.duxburyclipper.com/" rel="noreferrer">&#8962; Home</a>
+  <a href="https://www.duxburyclipper.com/category/news/" rel="noreferrer">News</a>
+  <a href="https://www.duxburyclipper.com/category/features/" rel="noreferrer">Features</a>
+  <a href="https://www.duxburyclipper.com/category/sports/" rel="noreferrer">Sports</a>
+  <a href="https://www.duxburyclipper.com/category/opinion/" rel="noreferrer">Opinion</a>
+  <a href="https://www.duxburyclipper.com/obituaries/" class="active" rel="noreferrer">Obituaries</a>
+  <a href="https://www.duxburyclipper.com/category/classifieds/" rel="noreferrer">Classifieds</a>
+  <a href="https://www.duxburyclipper.com/marketplace/" rel="noreferrer">Marketplace</a>
+  <a href="https://www.duxburyclipper.com/subscribe/" rel="noreferrer">Subscribe</a>
 </div>
 <div class="wrap">
   <div class="steps">
