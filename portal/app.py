@@ -1379,8 +1379,8 @@ document.getElementById('review-btn').addEventListener('click', function() {
   pr.update({total: {label: 'Obituary Notice — Duxbury Clipper', amount: Math.round(price * 100)}});
   document.getElementById('rv-price-breakdown').textContent =
     extra > 0
-      ? '$100.00 base + ' + extra + ' extra words × $0.50 = ' + priceStr
-      : '$100.00 base fee';
+      ? '$' + BASE_FEE.toFixed(2) + ' base + ' + extra + ' extra words × $0.50 = ' + priceStr
+      : '$' + BASE_FEE.toFixed(2) + ' base fee';
 
   // Switch panels
   document.getElementById('main-form').style.display = 'none';
