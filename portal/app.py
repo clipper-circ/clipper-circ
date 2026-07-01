@@ -971,7 +971,7 @@ OBIT_PAGE = """<!DOCTYPE html>
   <p class="intro">Please use this form to place an obituary notice in the Duxbury Clipper.
   The base fee of <strong>$100</strong> includes a photo and up to 300 words.
   Longer notices are welcome — there is an additional fee of <strong>50¢ per word</strong> over 300.
-  Your notice will be published on our website as soon as it is processed and then in the next available print edition of the Clipper.</p>
+  Your notice will be published on our website as soon as it is approved and then in the next available print edition of the Clipper.</p>
   </div>
 
   <div id="main-form">
