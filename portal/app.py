@@ -1038,7 +1038,7 @@ OBIT_PAGE = """<!DOCTYPE html>
     </div>
 
     <h3>Your Contact Info</h3>
-    <p class="hint" style="margin-top:-4px;margin-bottom:12px;">This will not be published.</p>
+    <p class="hint" style="margin-top:-4px;margin-bottom:12px;">This will <span style="text-decoration:underline;">not</span> be published.</p>
 
     <div class="row">
       <div class="field">
