@@ -1122,6 +1122,7 @@ OBIT_PAGE = """<!DOCTYPE html>
       <div class="review-row"><div class="review-label">Date Submitted</div><div class="review-val" id="rv-submitted"></div></div>
     </div>
 
+    <p style="font-size:0.82em;color:#555;font-style:italic;margin:0 0 20px;">Your notice will be published on our website as soon as it is approved and then in the next available print edition of the Clipper. Our print deadline is generally Friday by noon for the following Wednesday's paper.</p>
     <div class="review-section">
       <h3>Payment</h3>
       <div class="price-box" style="margin-bottom:12px;">
