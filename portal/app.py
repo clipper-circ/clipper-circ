@@ -1119,6 +1119,7 @@ OBIT_PAGE = """<!DOCTYPE html>
       <div class="review-row"><div class="review-label">Phone</div><div class="review-val" id="rv-phone"></div></div>
       <div class="review-row"><div class="review-label">Email</div><div class="review-val" id="rv-email"></div></div>
       <div class="review-row"><div class="review-label">Relation</div><div class="review-val" id="rv-relation"></div></div>
+      <div class="review-row"><div class="review-label">Date Submitted</div><div class="review-val" id="rv-submitted"></div></div>
     </div>
 
     <div class="review-section">
@@ -1304,6 +1305,7 @@ document.getElementById('review-btn').addEventListener('click', function() {
   document.getElementById('rv-phone').textContent = phone;
   document.getElementById('rv-email').textContent = email;
   document.getElementById('rv-relation').textContent = relation_display;
+  document.getElementById('rv-submitted').textContent = new Date().toLocaleDateString('en-US', {month:'long', day:'numeric', year:'numeric', hour:'numeric', minute:'2-digit'});
 
   // Photo thumbnails in review row + photo in proof
   const photoFiles = document.getElementById('photo_upload').files;
