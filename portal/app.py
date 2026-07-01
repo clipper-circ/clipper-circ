@@ -1644,8 +1644,8 @@ def obituary_submit():
         staff_email["cc"] = notify_cc
     try:
         resend.Emails.send(staff_email)
-    except Exception:
-        pass  # payment already succeeded — don't fail the submission over email
+    except Exception as e:
+        sys.stderr.write(f"[OBIT-STAFF-EMAIL-ERROR] to={notify_to} error={e}\n")
 
     # Confirmation email to submitter
     try:
