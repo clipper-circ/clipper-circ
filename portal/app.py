@@ -1129,6 +1129,8 @@ OBIT_PAGE = """<!DOCTYPE html>
         Total due: <span id="rv-price">$100.00</span>
       </div>
       <div class="section-note" id="rv-price-breakdown"></div>
+      <div id="payment-request-btn" style="display:none;margin-bottom:12px;"></div>
+      <div id="pr-divider" style="display:none;text-align:center;margin:10px 0;font-size:0.85em;color:#888;">— or pay by card —</div>
       <label>Card details *</label>
       <div id="card-element"></div>
       <div id="msg"></div>
@@ -1155,6 +1157,29 @@ const stripe = Stripe(STRIPE_PK);
 const elements = stripe.elements();
 const card = elements.create('card', {style: {base: {fontSize: '15px', fontFamily: 'Georgia, serif'}}});
 card.mount('#card-element');
+
+// ── Apple Pay / Google Pay ─────────────────────────────────────────────────
+let prPaymentMethod = null;
+const pr = stripe.paymentRequest({
+  country: 'US',
+  currency: 'usd',
+  total: { label: 'Obituary Notice — Duxbury Clipper', amount: 10000 },
+  requestPayerName: false,
+  requestPayerEmail: false,
+});
+pr.canMakePayment().then(result => {
+  if (result) {
+    const prButton = elements.create('paymentRequestButton', { paymentRequest: pr, style: { paymentRequestButton: { height: '44px' } } });
+    prButton.mount('#payment-request-btn');
+    document.getElementById('payment-request-btn').style.display = 'block';
+    document.getElementById('pr-divider').style.display = 'block';
+  }
+});
+pr.on('paymentmethod', async (ev) => {
+  prPaymentMethod = ev.paymentMethod.id;
+  ev.complete('success');
+  document.getElementById('submit-btn').click();
+});
 
 function countWords(text) {
   return text.trim() === '' ? 0 : text.trim().split(/\\s+/).length;
@@ -1351,6 +1376,7 @@ document.getElementById('review-btn').addEventListener('click', function() {
   const priceStr = fmt(price);
   document.getElementById('rv-price').textContent = priceStr;
   document.getElementById('btn-price').textContent = priceStr;
+  pr.update({total: {label: 'Obituary Notice — Duxbury Clipper', amount: Math.round(price * 100)}});
   document.getElementById('rv-price-breakdown').textContent =
     extra > 0
       ? '$100.00 base + ' + extra + ' extra words × $0.50 = ' + priceStr
@@ -1396,11 +1422,19 @@ document.getElementById('submit-btn').addEventListener('click', async function()
   btn.disabled = true;
   btn.textContent = 'Processing…';
 
-  const {paymentMethod, error} = await stripe.createPaymentMethod({type: 'card', card: card});
-  if (error) {
-    show_err(error.message);
-    btn.disabled = false; btn.textContent = 'Submit & Pay ' + fmt(price); return;
+  let pmId = prPaymentMethod;
+  if (!pmId) {
+    const {paymentMethod, error} = await stripe.createPaymentMethod({type: 'card', card: card});
+    if (error) {
+      show_err(error.message);
+      btn.disabled = false; btn.textContent = 'Submit & Pay ' + fmt(price); return;
+    }
+    pmId = paymentMethod.id;
   }
+  prPaymentMethod = null;
+
+  // Update payment request amount in case word count changed
+  pr.update({total: {label: 'Obituary Notice — Duxbury Clipper', amount: Math.round(price * 100)}});
 
   const formData = new FormData();
   formData.append('deceased_name', deceased_name);
@@ -1414,7 +1448,7 @@ document.getElementById('submit-btn').addEventListener('click', async function()
   formData.append('relation', relation === 'Other' ? 'Other: ' + relation_other : relation);
   formData.append('words', words);
   formData.append('amount_cents', Math.round(price * 100));
-  formData.append('payment_method_id', paymentMethod.id);
+  formData.append('payment_method_id', pmId);
   const photos = document.getElementById('photo_upload').files;
   for (let i = 0; i < Math.min(photos.length, 1); i++) {
     formData.append('photos', photos[i]);
