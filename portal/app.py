@@ -969,9 +969,9 @@ OBIT_PAGE = """<!DOCTYPE html>
   <div id="page-intro">
   <h2>Place an Obituary Notice</h2>
   <p class="intro">Please use this form to place an obituary notice in the Duxbury Clipper.
-  The deadline to submit for Wednesday's Clipper is the Friday preceding publication.
   The base fee of <strong>$100</strong> includes a photo and up to 300 words.
-  Longer notices are welcome — there is an additional fee of <strong>50¢ per word</strong> over 300.</p>
+  Longer notices are welcome — there is an additional fee of <strong>50¢ per word</strong> over 300.
+  Your notice will be published on our website as soon as it is processed and then in the next available print edition of the Clipper.</p>
   </div>
 
   <div id="main-form">
@@ -1076,16 +1076,6 @@ OBIT_PAGE = """<!DOCTYPE html>
         </div>
         <input type="text" id="relation_other" placeholder="Please specify" style="display:none;margin-top:6px;">
       </div>
-      <div class="field">
-        <label>Publication instructions *</label>
-        <div class="radio-group">
-          <label><input type="radio" name="pub_timing" value="Publish in the next available Clipper issue and then online" checked>
-            Publish in the next available Clipper issue and then online</label>
-          <label><input type="radio" name="pub_timing" value="Publish online as soon as approved, then in the next Clipper issue">
-            Publish online as soon as approved, then in the next Clipper issue</label>
-        </div>
-        <div class="hint">Deadline for Wednesday's Clipper is Friday at noon. Submissions after that will run the following week.</div>
-      </div>
     </div>
 
     <div class="consent-row">
@@ -1129,7 +1119,6 @@ OBIT_PAGE = """<!DOCTYPE html>
       <div class="review-row"><div class="review-label">Phone</div><div class="review-val" id="rv-phone"></div></div>
       <div class="review-row"><div class="review-label">Email</div><div class="review-val" id="rv-email"></div></div>
       <div class="review-row"><div class="review-label">Relation</div><div class="review-val" id="rv-relation"></div></div>
-      <div class="review-row"><div class="review-label">Publication</div><div class="review-val" id="rv-pub"></div></div>
     </div>
 
     <div class="review-section">
@@ -1259,8 +1248,6 @@ document.getElementById('review-btn').addEventListener('click', function() {
   const consent        = document.getElementById('consent').checked;
   const relation       = document.querySelector('input[name="relation"]:checked').value;
   const relation_other = document.getElementById('relation_other').value.trim();
-  const pub_timing     = document.querySelector('input[name="pub_timing"]:checked').value;
-
   const missing = [];
   if (!deceased_name) missing.push('Full name of deceased');
   if (!age)           missing.push('Age at death');
@@ -1317,7 +1304,6 @@ document.getElementById('review-btn').addEventListener('click', function() {
   document.getElementById('rv-phone').textContent = phone;
   document.getElementById('rv-email').textContent = email;
   document.getElementById('rv-relation').textContent = relation_display;
-  document.getElementById('rv-pub').textContent = pub_timing;
 
   // Photo thumbnails in review row + photo in proof
   const photoFiles = document.getElementById('photo_upload').files;
@@ -1401,7 +1387,6 @@ document.getElementById('submit-btn').addEventListener('click', async function()
   const email          = document.getElementById('email').value.trim();
   const relation       = document.querySelector('input[name="relation"]:checked').value;
   const relation_other = document.getElementById('relation_other').value.trim();
-  const pub_timing     = document.querySelector('input[name="pub_timing"]:checked').value;
   const words          = countWords(obit_text);
   const price          = calcPrice(words);
 
@@ -1424,7 +1409,6 @@ document.getElementById('submit-btn').addEventListener('click', async function()
   formData.append('phone', phone);
   formData.append('email', email);
   formData.append('relation', relation === 'Other' ? 'Other: ' + relation_other : relation);
-  formData.append('pub_timing', pub_timing);
   formData.append('words', words);
   formData.append('amount_cents', Math.round(price * 100));
   formData.append('payment_method_id', paymentMethod.id);
@@ -1487,7 +1471,7 @@ def obituary_submit():
     phone         = request.form.get("phone", "").strip()
     email         = request.form.get("email", "").strip()
     relation      = request.form.get("relation", "").strip()
-    pub_timing    = request.form.get("pub_timing", "").strip()
+    pub_timing    = "Online as soon as processed, then next available print edition"
     words         = int(request.form.get("words", "0"))
     amount_cents  = int(request.form.get("amount_cents", "10000"))
     pm_id         = request.form.get("payment_method_id", "").strip()
@@ -1572,8 +1556,6 @@ def obituary_submit():
       <td style="padding:6px 12px;">{email}</td></tr>
   <tr><td style="padding:6px 12px;background:#f5f5f5;font-weight:700;">Relation</td>
       <td style="padding:6px 12px;">{relation}</td></tr>
-  <tr><td style="padding:6px 12px;background:#f5f5f5;font-weight:700;">Publication</td>
-      <td style="padding:6px 12px;">{pub_timing}</td></tr>
   <tr><td style="padding:6px 12px;background:#f5f5f5;font-weight:700;">Photo</td>
       <td style="padding:6px 12px;">{"Attached" if attachments else "Not Submitted"}</td></tr>
 </table>
@@ -1653,8 +1635,6 @@ def obituary_submit():
       <td style="padding:6px 12px;">{words} words</td></tr>
   <tr><td style="padding:6px 12px;background:#f5f5f5;font-weight:700;">Amount Charged</td>
       <td style="padding:6px 12px;">${amount_paid:.2f}</td></tr>
-  <tr><td style="padding:6px 12px;background:#f5f5f5;font-weight:700;">Publication</td>
-      <td style="padding:6px 12px;">{pub_timing}</td></tr>
   <tr><td style="padding:6px 12px;background:#f5f5f5;font-weight:700;">Photo</td>
       <td style="padding:6px 12px;">{"Submitted" if attachments else "Not submitted"}</td></tr>
 </table>
