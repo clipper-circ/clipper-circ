@@ -1115,7 +1115,7 @@ OBIT_PAGE = """<!DOCTYPE html>
 
     <div class="review-section">
       <h3>Your Contact Info</h3>
-      <div class="review-row"><div class="review-label">Name</div><div class="review-val" id="rv-name"></div></div>
+      <div class="review-row"><div class="review-label">Your Name</div><div class="review-val" id="rv-name"></div></div>
       <div class="review-row"><div class="review-label">Phone</div><div class="review-val" id="rv-phone"></div></div>
       <div class="review-row"><div class="review-label">Email</div><div class="review-val" id="rv-email"></div></div>
       <div class="review-row"><div class="review-label">Relation</div><div class="review-val" id="rv-relation"></div></div>
