@@ -1677,7 +1677,9 @@ def obituary_submit():
 </table>
 <h4 style="font-family:Georgia,serif;color:#1a3a1a;margin-bottom:8px;">Obituary Text</h4>
 <div style="background:#f9f9f9;border:1px solid #ddd;border-radius:4px;padding:16px;
-            font-family:Georgia,serif;font-size:14px;line-height:1.7;white-space:pre-wrap;">{obit_text}</div>
+            font-family:Georgia,serif;font-size:14px;line-height:1.7;white-space:pre-wrap;"><strong>{deceased_name}, age {age}</strong>
+
+{obit_text}</div>
 <p style="color:#777;font-size:0.9em;margin-top:24px;">The Duxbury Clipper &mdash; duxburyclipper.com</p>
 """,
         })
