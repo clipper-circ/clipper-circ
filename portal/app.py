@@ -830,7 +830,7 @@ def paypal_cancel():
 
 # ── Obituary Notice Form ───────────────────────────────────────────────────────
 
-OBIT_BASE_FEE      = 2.00   # TEMP TEST — change back to 100.00
+OBIT_BASE_FEE      = 100.00
 OBIT_WORD_LIMIT    = 300
 OBIT_OVERAGE_RATE  = 0.50     # per word over limit
 OBIT_NOTIFY_EMAIL  = "josh@joshcutler.com"  # fallback if no DB setting
@@ -1149,7 +1149,7 @@ OBIT_PAGE = """<!DOCTYPE html>
 
 <script>
 const STRIPE_PK = "STRIPE_PK_PLACEHOLDER";
-const BASE_FEE = 2.00; // TEMP TEST — change back to 100.00
+const BASE_FEE = 100.00;
 const WORD_LIMIT = 300;
 const OVERAGE_RATE = 0.50;
 
