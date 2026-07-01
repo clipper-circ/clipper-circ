@@ -948,17 +948,17 @@ OBIT_PAGE = """<!DOCTYPE html>
 </style>
 </head>
 <body>
-<div class="masthead"><a href="https://www.duxburyclipper.com/" target="_blank"><img src="https://www.duxburyclipper.com/wp-content/uploads/2019/01/logo-1-2.png" alt="Duxbury Clipper"></a></div>
+<div class="masthead"><a href="https://www.duxburyclipper.com/"><img src="https://www.duxburyclipper.com/wp-content/uploads/2019/01/logo-1-2.png" alt="Duxbury Clipper"></a></div>
 <div class="header">
-  <a href="https://www.duxburyclipper.com/" target="_blank">&#8962; Home</a>
-  <a href="https://www.duxburyclipper.com/category/news/" target="_blank">News</a>
-  <a href="https://www.duxburyclipper.com/category/features/" target="_blank">Features</a>
-  <a href="https://www.duxburyclipper.com/category/sports/" target="_blank">Sports</a>
-  <a href="https://www.duxburyclipper.com/category/opinion/" target="_blank">Opinion</a>
-  <a href="https://www.duxburyclipper.com/obituaries/" target="_blank" class="active">Obituaries</a>
-  <a href="https://www.duxburyclipper.com/category/classifieds/" target="_blank">Classifieds</a>
-  <a href="https://www.duxburyclipper.com/marketplace/" target="_blank">Marketplace</a>
-  <a href="https://www.duxburyclipper.com/subscribe/" target="_blank">Subscribe</a>
+  <a href="https://www.duxburyclipper.com/">&#8962; Home</a>
+  <a href="https://www.duxburyclipper.com/category/news/">News</a>
+  <a href="https://www.duxburyclipper.com/category/features/">Features</a>
+  <a href="https://www.duxburyclipper.com/category/sports/">Sports</a>
+  <a href="https://www.duxburyclipper.com/category/opinion/">Opinion</a>
+  <a href="https://www.duxburyclipper.com/obituaries/" class="active">Obituaries</a>
+  <a href="https://www.duxburyclipper.com/category/classifieds/">Classifieds</a>
+  <a href="https://www.duxburyclipper.com/marketplace/">Marketplace</a>
+  <a href="https://www.duxburyclipper.com/subscribe/">Subscribe</a>
 </div>
 <div class="wrap">
   <div class="steps">
@@ -1007,7 +1007,7 @@ OBIT_PAGE = """<!DOCTYPE html>
           <li><strong>Funeral or Memorial Details:</strong> Include the date, time, and location of services, and whether they are public or private. Mention viewing hours or burial if applicable.</li>
           <li><strong>Donations or Tributes:</strong> Optionally suggest a charity for donations in lieu of flowers.</li>
         </ol>
-        <p style="margin:8px 0 0;">If you are unsure what to write, we encourage you to <a href="https://www.duxburyclipper.com/obituaries/" target="_blank" style="color:#1a3a1a;">review previously published obituary notices</a> on our website.</p>
+        <p style="margin:8px 0 0;">If you are unsure what to write, we encourage you to <a href="https://www.duxburyclipper.com/obituaries/" style="color:#1a3a1a;">review previously published obituary notices</a> on our website.</p>
       </div>
       <textarea id="obit_text" rows="12" placeholder="Type or paste your obituary here..." required></textarea>
       <div class="word-bar" id="word_bar">0 words — base fee covers up to 300</div>
