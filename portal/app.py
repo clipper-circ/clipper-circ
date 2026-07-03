@@ -81,9 +81,7 @@ def _reset_reminder_flags(sub):
 
 @app.route("/")
 def index():
-    if current_subscriber():
-        return redirect(url_for("account"))
-    return redirect(url_for("login"))
+    return redirect(url_for("obituary"))
 
 
 @app.route("/login", methods=["GET", "POST"])
