@@ -60,27 +60,27 @@ _SCHEDULE = {
 _DEFAULT_TEMPLATES = {
     "reminder_35": {
         "subject": "Your Duxbury Clipper subscription — time to renew soon",
-        "body": "Your subscription expires on {expiration_date} — about 5 issues from now.\n\nTo keep your weekly Clipper coming, please renew at your convenience.\n\nThank you for supporting your hometown paper!",
+        "body": "Your subscription expires on {expiration_date} — about 5 issues from now.\n\nTo keep your weekly Clipper coming without any interruption, please renew at your convenience.\n\nThank you for supporting your hometown paper!",
     },
     "reminder_21": {
         "subject": "Reminder: Your Duxbury Clipper subscription expires soon",
-        "body": "Just a reminder — your subscription expires on {expiration_date} (about 3 issues away).\n\nDon't miss a single issue. Renew now.",
+        "body": "Just a friendly reminder — your subscription expires on {expiration_date}, about 3 issues from now.\n\nRenew now to make sure you don't miss a single edition.",
     },
     "reminder_14": {
-        "subject": "2 issues left — please renew your Duxbury Clipper subscription",
-        "body": "You have about 2 issues remaining on your Duxbury Clipper subscription (expires {expiration_date}).\n\nRenew today to avoid any interruption in delivery.",
+        "subject": "Only 2 issues left on your Duxbury Clipper subscription",
+        "body": "Your Duxbury Clipper subscription expires on {expiration_date} — you have about 2 issues remaining.\n\nPlease renew today to avoid any interruption in your home delivery.",
     },
     "expire_day": {
         "subject": "Your Duxbury Clipper subscription expires today",
-        "body": "Your Duxbury Clipper subscription expires today.\n\nGood news — we'll keep delivering your paper for up to 4 more weeks while you renew. Please don't let it lapse!",
+        "body": "Your Duxbury Clipper subscription expires today.\n\nThe good news — we'll continue delivering your paper for up to 4 more weeks as a courtesy while you renew. Please don't let it lapse!",
     },
     "grace_14": {
         "subject": "Action needed: Your Duxbury Clipper subscription is past due",
-        "body": "Your Duxbury Clipper subscription expired on {expiration_date}.\n\nWe've continued delivering your paper as a courtesy, but delivery will stop in about 2 weeks if we don't hear from you.",
+        "body": "Your Duxbury Clipper subscription expired on {expiration_date}.\n\nWe've continued delivering your paper as a courtesy, but home delivery will stop in about 2 weeks if we don't hear from you.\n\nWe'd love to keep you on our list — please renew when you get a chance.",
     },
     "grace_final": {
-        "subject": "Final notice: Duxbury Clipper delivery stopping this week",
-        "body": "We're sorry to say that your Duxbury Clipper home delivery will stop this week unless you renew.\n\nYour subscription expired on {expiration_date} and we haven't received a renewal. We'd love to keep you on our list!\n\nWe hope to hear from you — thank you for being a loyal reader.",
+        "subject": "Final notice — Duxbury Clipper delivery stopping this week",
+        "body": "We're sorry to say that your Duxbury Clipper home delivery will stop this week unless you renew.\n\nYour subscription expired on {expiration_date} and we haven't yet received a renewal. We truly value your readership and hope to keep you on our list.\n\nThank you for being a loyal reader of your hometown paper.",
     },
 }
 
@@ -142,7 +142,18 @@ def send_email(to_email: str, subject: str, html: str, subscriber_name: str) -> 
 
 # ── Email templates ────────────────────────────────────────────────────────────
 
-def _base(first_name: str, body_html: str, btn_html: str, price: str = "", portal_link: str = "#") -> str:
+def _base(first_name: str, body_html: str, btn_html: str, price: str = "", portal_link: str = "#",
+          plan_label: str = "") -> str:
+    plan_box = ""
+    if plan_label or price:
+        plan_box = (
+            f'<table width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 20px;">'
+            f'<tr><td style="background:#f0f7f0;border-left:4px solid #2e7d32;border-radius:4px;padding:12px 16px;">'
+            f'<p style="margin:0;font-size:13px;color:#555;line-height:1.8;">'
+            + (f'<strong>Plan:</strong> {plan_label}<br>' if plan_label else '')
+            + (f'<strong>Renewal rate:</strong> {price}/year' if price else '')
+            + '</p></td></tr></table>'
+        )
     return f"""<!DOCTYPE html>
 <html><head><meta charset="UTF-8"></head>
 <body style="margin:0;padding:0;background:#f4f4f4;font-family:Georgia,serif;">
@@ -150,20 +161,25 @@ def _base(first_name: str, body_html: str, btn_html: str, price: str = "", porta
   <tr><td align="center">
     <table width="600" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:8px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.08);">
 
-      <!-- Header banner -->
-      <tr><td style="background:#1a3a1a;padding:24px 36px;">
-        <p style="margin:0;color:#ffffff;font-size:22px;font-weight:bold;letter-spacing:1px;">The Duxbury Clipper</p>
-        <p style="margin:2px 0 0;color:#c8e6c9;font-size:13px;font-style:italic;">Your Hometown Newspaper Since 1950</p>
+      <!-- Header banner with logo -->
+      <tr><td style="background:#1a3a1a;padding:20px 36px;text-align:center;">
+        <img src="https://www.duxburyclipper.com/wp-content/uploads/2019/01/logo-1-2.png"
+             alt="The Duxbury Clipper"
+             style="max-width:220px;height:auto;display:block;margin:0 auto;">
       </td></tr>
 
       <!-- Body -->
       <tr><td style="padding:32px 36px;">
         <p style="margin:0 0 18px;font-size:16px;color:#222;">Dear {first_name},</p>
+        {plan_box}
         {body_html}
         {btn_html}
+        <p style="text-align:center;font-size:12px;color:#aaa;margin:-8px 0 20px;">
+          Prefer to pay by check? Mail to: The Duxbury Clipper, P.O. Box 1656, Duxbury, MA 02331
+        </p>
       </td></tr>
 
-      <!-- Check option -->
+      <!-- Account link -->
       <tr><td style="padding:0 36px 20px;">
         <p style="margin:0;font-size:13px;color:#666;line-height:1.6;">
           You can also <a href="{portal_link}" style="color:#2e7d32;">log into your account</a> to update your mailing address, change your subscription type, or place your delivery on hold.
@@ -173,7 +189,7 @@ def _base(first_name: str, body_html: str, btn_html: str, price: str = "", porta
       <!-- Footer -->
       <tr><td style="background:#f9f9f9;border-top:1px solid #eee;padding:18px 36px;">
         <p style="margin:0;font-size:12px;color:#999;line-height:1.9;">
-          You're receiving this because you subscribe to the Duxbury Clipper print edition.<br>
+          You're receiving this email because you have an active print subscription to the Duxbury Clipper.<br>
           Questions? Reply to this email or call <strong>781-934-2811</strong> during regular business hours.<br>
           The Duxbury Clipper &nbsp;•&nbsp; P.O. Box 1656, Duxbury, MA 02331<br>
           <a href="https://www.duxburyclipper.com" style="color:#2e7d32;">www.duxburyclipper.com</a>
@@ -205,13 +221,15 @@ def _body_paragraphs(text: str) -> str:
 def _make_email(key: str, sub: Subscriber, portal_link: str,
                 btn_label: str = "Renew My Subscription",
                 btn_color: str = "#2e7d32") -> tuple[str, str]:
-    from models import PLAN_PRICES
+    from models import PLAN_PRICES, PLAN_LABELS
     tmpl = _get_template(key)
     subject = _fill(tmpl["subject"], sub)
     body_text = _fill(tmpl["body"], sub)
     first = sub.full_name.split()[0] if sub.full_name else sub.full_name
     price = f"${PLAN_PRICES.get(sub.plan, 0):.2f}"
-    html = _base(first, _body_paragraphs(body_text), _renew_btn(portal_link, btn_label, btn_color), price=price, portal_link=portal_link)
+    plan_label = PLAN_LABELS.get(sub.plan, "")
+    html = _base(first, _body_paragraphs(body_text), _renew_btn(portal_link, btn_label, btn_color),
+                 price=price, portal_link=portal_link, plan_label=plan_label)
     return subject, html
 
 
