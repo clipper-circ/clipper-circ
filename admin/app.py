@@ -2568,8 +2568,6 @@ Dear Jane,
                         st.warning("Enter an email address first.")
                     else:
                         try:
-                            from dotenv import load_dotenv as _lde
-                            _lde("/Users/joshcutler/clipper-circ/.env", override=True)
                             import resend as _resend
                             _resend.api_key = os.environ.get("RESEND_API_KEY", "")
                             from_email = os.environ.get("FROM_EMAIL", "subscribe@duxburyclipper.net")
