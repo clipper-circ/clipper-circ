@@ -81,7 +81,7 @@ def _reset_reminder_flags(sub):
 
 @app.route("/")
 def index():
-    return redirect(url_for("obituary"))
+    return redirect(url_for("obituary_form"))
 
 
 @app.route("/login", methods=["GET", "POST"])
