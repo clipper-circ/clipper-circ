@@ -2453,7 +2453,6 @@ elif page == "📰 Obituaries":
                 c2.markdown(f"**Email:** {s.submitter_email or '—'}")
                 c2.markdown(f"**Phone:** {s.submitter_phone or '—'}")
                 c2.markdown(f"**Relation:** {s.relation or '—'}")
-                c2.markdown(f"**Publication:** {s.pub_timing or '—'}")
                 st.markdown(f"**Amount Charged:** ${float(s.amount_paid or 0):.2f}  |  **Card:** {s.card_description or '—'}  |  **Confirmation:** `{s.stripe_pi_id or '—'}`")
                 st.divider()
                 st.markdown("**Obituary Text:**")
