@@ -548,7 +548,8 @@ def create_checkout():
         plan_code = PlanCode(selected_plan)
     except ValueError:
         plan_code = sub.plan
-    price_cents = int(PLAN_PRICES[plan_code] * 100)
+    test_amount = request.form.get("test_amount")
+    price_cents = 100 if test_amount else int(PLAN_PRICES[plan_code] * 100)
     checkout_params = {
         "payment_method_types": ["card"],
         "mode": "subscription",

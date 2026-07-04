@@ -370,6 +370,15 @@
         </form>
         <p style="font-size:0.8em;color:#999;text-align:center;margin:0 0 16px;">Sets up automatic annual renewal. Cancel anytime from this page.</p>
 
+        {# TEMPORARY TEST OPTION — remove before launch #}
+        <form method="post" action="{{ url_for('create_checkout') }}" style="margin-bottom:8px;">
+          <input type="hidden" name="plan" value="{{ subscriber.plan.value }}">
+          <input type="hidden" name="test_amount" value="1">
+          <button type="submit" style="width:100%;padding:10px;background:#f9f9f9;border:1px dashed #ccc;border-radius:6px;font-size:0.85em;color:#888;cursor:pointer;">
+            🧪 Test only — $1 recurring subscription
+          </button>
+        </form>
+
         {% if paypal_client_id %}
         <form method="post" action="{{ url_for('create_paypal_order') }}">
           <input type="hidden" name="plan" value="{{ subscriber.plan.value }}">
