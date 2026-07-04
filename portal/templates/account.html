@@ -6,7 +6,7 @@
   .acct-card { background:#fff; border:1px solid #ddd; border-radius:8px; overflow:hidden; box-shadow:0 2px 8px rgba(0,0,0,0.07); margin-bottom:24px; }
 
   /* Green tab strip */
-  .acct-tabs { background:#1a3a1a; display:flex; flex-wrap:wrap; }
+  .acct-tabs { background:#2e7d32; display:flex; flex-wrap:wrap; }
   .acct-tabs a { color:rgba(255,255,255,0.75); text-decoration:none; padding:11px 18px; font-size:0.85em;
                  font-family:Georgia,serif; letter-spacing:0.03em; display:inline-block; border-bottom:3px solid transparent; }
   .acct-tabs a:hover { color:#fff; background:rgba(255,255,255,0.08); }
@@ -14,9 +14,9 @@
 
   /* Profile header */
   .acct-profile { display:flex; align-items:center; gap:20px; padding:24px 28px; border-bottom:1px solid #eee; }
-  .acct-avatar { width:64px; height:64px; border-radius:50%; background:#e8f5e9; border:2px solid #2e7d32;
-                 display:flex; align-items:center; justify-content:center; flex-shrink:0; }
-  .acct-avatar svg { width:36px; height:36px; fill:#2e7d32; }
+  .acct-avatar { width:64px; height:64px; border-radius:12px; overflow:hidden; flex-shrink:0;
+                 border:2px solid #ddd; box-shadow:0 1px 4px rgba(0,0,0,0.12); }
+  .acct-avatar img { width:100%; height:100%; object-fit:cover; object-position:center 30%; }
   .acct-profile-info { flex:1; }
   .acct-profile-info .acct-type { font-size:0.72em; font-weight:700; color:#2e7d32; text-transform:uppercase;
                                    letter-spacing:1.5px; margin-bottom:2px; }
@@ -50,9 +50,7 @@
   {# ── Profile header ── #}
   <div class="acct-profile">
     <div class="acct-avatar">
-      <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-        <path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"/>
-      </svg>
+      <img src="/static/mailbox.jpg" alt="Duxbury Clipper mailbox">
     </div>
     <div class="acct-profile-info">
       <div class="acct-type">Print Subscriber</div>
