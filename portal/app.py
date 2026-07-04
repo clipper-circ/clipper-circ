@@ -13,7 +13,7 @@ resend.api_key = os.environ.get("RESEND_API_KEY", "")
 
 from database import SessionLocal, engine
 from models import (Subscriber, Payment, DeliveryHold, PaymentAuditLog,
-                    SubscriberEventLog, SubscriberStatus, PaymentMethod,
+                    SubscriberEventLog, SubscriberStatus, PaymentMethod, PlanCode,
                     PLAN_LABELS, PLAN_PRICES, ObituarySubmission, Setting)
 from models import Base
 Base.metadata.create_all(bind=engine)  # ensure new tables exist on Railway
