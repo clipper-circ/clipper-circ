@@ -160,7 +160,7 @@ def _base(first_name: str, body_html: str, btn_html: str, price: str = "", porta
             f'<tr><td style="background:#f0f7f0;border-left:4px solid #2e7d32;border-radius:4px;padding:12px 16px;">'
             f'<p style="margin:0;font-size:13px;color:#555;line-height:1.8;">'
             + (f'<strong>Plan:</strong> {plan_label}<br>' if plan_label else '')
-            + (f'<strong>Renewal rate:</strong> {price}/year' + (f' &nbsp;•&nbsp; {per_issue}/issue' if per_issue else '') if price else '')
+            + (f'<strong>Renewal rate:</strong> {price}/year' + (f' &nbsp;•&nbsp; {per_issue}' if per_issue else '') if price else '')
             + '</p></td></tr></table>'
         )
     return f"""<!DOCTYPE html>
@@ -185,9 +185,6 @@ def _base(first_name: str, body_html: str, btn_html: str, price: str = "", porta
         {body_html}
         {plan_box}
         {btn_html}
-        <p style="text-align:center;font-size:12px;color:#aaa;margin:-8px 0 20px;">
-          Prefer to pay by check? Mail to: The Duxbury Clipper, P.O. Box 1656, Duxbury, MA 02331
-        </p>
       </td></tr>
 
       <!-- Account link -->
