@@ -81,6 +81,8 @@ def _reset_reminder_flags(sub):
 
 @app.route("/")
 def index():
+    if "portal.duxburyclipper" in request.host:
+        return redirect(url_for("login"))
     return redirect(url_for("obituary_form"))
 
 
