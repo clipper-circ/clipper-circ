@@ -97,7 +97,7 @@
     {% endif %}
     <div style="display:flex;gap:32px;flex-wrap:wrap;">
       <div style="flex:1;min-width:200px;">
-        <div style="font-size:0.78em;font-weight:700;color:#999;text-transform:uppercase;letter-spacing:1px;margin-bottom:10px;">Subscription Details</div>
+        <div style="font-size:0.78em;font-weight:700;color:#999;text-transform:uppercase;letter-spacing:1px;margin-bottom:10px;">Your Subscription Details</div>
         <table style="font-size:0.93em;">
           <tr><td style="color:#888;padding:5px 0;border:none;padding-right:16px;">Plan</td><td style="border:none;font-weight:700;">{{ plan_label }}</td></tr>
           <tr><td style="color:#888;padding:5px 0;border:none;padding-right:16px;">Start Date</td><td style="border:none;">{{ subscriber.start_date.strftime('%B %d, %Y') if subscriber.start_date else '—' }}</td></tr>
@@ -112,7 +112,7 @@
         </table>
       </div>
       <div style="flex:1;min-width:200px;">
-        <div style="font-size:0.78em;font-weight:700;color:#999;text-transform:uppercase;letter-spacing:1px;margin-bottom:10px;">Delivery Address</div>
+        <div style="font-size:0.78em;font-weight:700;color:#999;text-transform:uppercase;letter-spacing:1px;margin-bottom:10px;">Your Delivery Address</div>
         <div style="font-size:0.93em;line-height:1.8;color:#444;">
           {{ subscriber.address1 }}<br>
           {% if subscriber.address2 %}{{ subscriber.address2 }}<br>{% endif %}
