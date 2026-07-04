@@ -327,13 +327,14 @@ def request_email_change():
     s.pending_email               = new_email
     s.pending_email_token         = token
     s.pending_email_token_expires = datetime.utcnow() + timedelta(hours=24)
+    first_name = s.full_name.split()[0]
+    old_email  = s.email
     db.commit()
     db.close()
 
     verify_link = f"{BASE_URL}/verify-email/{token}"
     from_email  = os.environ.get("FROM_EMAIL","subscribe@duxburyclipper.net")
 
-    import sys
     sys.stderr.write(f"[EMAIL-CHANGE] key={resend.api_key[:10] if resend.api_key else 'EMPTY'} from={from_email} to={new_email}\n")
     sys.stderr.flush()
 
@@ -346,7 +347,7 @@ def request_email_change():
             "html": (
                 f"<div style='font-family:Arial,sans-serif;max-width:520px;margin:0 auto;padding:20px;'>"
                 f"<h2 style='color:#1a3a1a;'>Duxbury Clipper</h2>"
-                f"<p>Hi {s.full_name.split()[0]},</p>"
+                f"<p>Hi {first_name},</p>"
                 f"<p>We received a request to change the email address on your Clipper account to this address.</p>"
                 f"<p>Click below to confirm. This link expires in 24 hours.</p>"
                 f"<p style='text-align:center;margin:28px 0;'>"
@@ -358,15 +359,15 @@ def request_email_change():
             ),
         })
         # To old address: security notice
-        if s.email:
+        if old_email:
             resend.Emails.send({
                 "from": f"Duxbury Clipper <{from_email}>",
-                "to": s.email,
+                "to": old_email,
                 "subject": "Email change requested on your Duxbury Clipper account",
                 "html": (
                     f"<div style='font-family:Arial,sans-serif;max-width:520px;margin:0 auto;padding:20px;'>"
                     f"<h2 style='color:#1a3a1a;'>Duxbury Clipper</h2>"
-                    f"<p>Hi {s.full_name.split()[0]},</p>"
+                    f"<p>Hi {first_name},</p>"
                     f"<p>A request was made to change the email address on your Duxbury Clipper account "
                     f"from this address to <strong>{new_email}</strong>.</p>"
                     f"<p>A confirmation link has been sent to the new address. "
@@ -376,7 +377,8 @@ def request_email_change():
                 ),
             })
     except Exception as e:
-        print(f"[EMAIL ERROR] {e}")
+        sys.stderr.write(f"[EMAIL ERROR] {e}\n")
+        sys.stderr.flush()
 
     flash(f"A confirmation link has been sent to {new_email}. Click it to complete the change.")
     return redirect(url_for("account") + "?tab=contact")
@@ -412,7 +414,7 @@ def verify_email(token):
 
     session["subscriber_id"] = sub_id
     flash("Your email address has been updated successfully.")
-    return redirect(url_for("account") + "?tab=address")
+    return redirect(url_for("account") + "?tab=contact")
 
 
 @app.route("/update-name", methods=["POST"])
