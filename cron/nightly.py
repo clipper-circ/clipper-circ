@@ -147,12 +147,16 @@ def _base(first_name: str, body_html: str, btn_html: str, price: str = "", porta
           plan_label: str = "") -> str:
     plan_box = ""
     if plan_label or price:
+        try:
+            per_issue = f"${float(price.replace('$','')) / 52:.2f}"
+        except Exception:
+            per_issue = ""
         plan_box = (
             f'<table width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 20px;">'
             f'<tr><td style="background:#f0f7f0;border-left:4px solid #2e7d32;border-radius:4px;padding:12px 16px;">'
             f'<p style="margin:0;font-size:13px;color:#555;line-height:1.8;">'
             + (f'<strong>Plan:</strong> {plan_label}<br>' if plan_label else '')
-            + (f'<strong>Renewal rate:</strong> {price}/year' if price else '')
+            + (f'<strong>Renewal rate:</strong> {price}/year' + (f' &nbsp;•&nbsp; {per_issue}/issue' if per_issue else '') if price else '')
             + '</p></td></tr></table>'
         )
     return f"""<!DOCTYPE html>
