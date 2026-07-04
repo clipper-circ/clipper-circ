@@ -150,9 +150,9 @@ def _base(first_name: str, body_html: str, btn_html: str, price: str = "", porta
         try:
             cents = float(price.replace('$','')) / 52 * 100
             if cents < 100:
-                per_issue = f"{int(round(cents))} cents a week"
+                per_issue = f"Just {int(round(cents))} cents a week!"
             else:
-                per_issue = f"${cents/100:.2f} a week"
+                per_issue = f"Just ${cents/100:.2f} a week!"
         except Exception:
             per_issue = ""
         plan_box = (
