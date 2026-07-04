@@ -126,15 +126,6 @@
 
   {# ════════ ADDRESS ════════ #}
   <div class="tab-panel" id="panel-address">
-    <form method="post" action="/update-name" style="margin-bottom:20px;padding-bottom:20px;border-bottom:1px solid #ddd;">
-      <label style="font-size:0.78em;font-weight:700;color:#999;text-transform:uppercase;letter-spacing:1px;">Subscriber Name</label>
-      <div style="display:flex;gap:8px;margin-top:6px;">
-        <input type="text" name="full_name" value="{{ subscriber.full_name }}" required style="flex:1;">
-        <button type="submit" class="btn btn-sm" style="border-radius:4px;white-space:nowrap;"
-                onclick="return confirm('Update your subscriber name?')">Update Name</button>
-      </div>
-    </form>
-
     <div style="display:flex;gap:12px;margin-bottom:20px;flex-wrap:wrap;">
       <div style="flex:1;min-width:180px;padding:12px;border-radius:6px;border:2px solid {% if not subscriber.using_alt_address %}#2e7d32{% else %}#ddd{% endif %};background:{% if not subscriber.using_alt_address %}#e8f5e9{% else %}#f9f9f9{% endif %};">
         <div style="font-size:0.78em;font-weight:700;color:{% if not subscriber.using_alt_address %}#2e7d32{% else %}#999{% endif %};text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">
@@ -201,6 +192,15 @@
 
   {# ════════ CONTACT INFO ════════ #}
   <div class="tab-panel" id="panel-contact">
+    <form method="post" action="/update-name" style="margin-bottom:20px;padding-bottom:20px;border-bottom:1px solid #eee;">
+      <label style="font-size:0.78em;font-weight:700;color:#999;text-transform:uppercase;letter-spacing:1px;">Subscriber Name</label>
+      <div style="display:flex;gap:8px;margin-top:6px;">
+        <input type="text" name="full_name" value="{{ subscriber.full_name }}" required style="flex:1;">
+        <button type="submit" class="btn btn-sm" style="border-radius:4px;white-space:nowrap;"
+                onclick="return confirm('Update your subscriber name?')">Update Name</button>
+      </div>
+    </form>
+
     <div style="margin-bottom:20px;padding-bottom:20px;border-bottom:1px solid #eee;">
       <div style="font-size:0.78em;font-weight:700;color:#999;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">Primary Email Address</div>
       <div style="padding:10px 12px;background:#f9f9f9;border:1px solid #ddd;border-radius:4px;font-size:0.95em;">
