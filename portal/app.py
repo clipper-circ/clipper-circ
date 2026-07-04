@@ -348,7 +348,7 @@ def request_email_change():
                 f"<div style='font-family:Arial,sans-serif;max-width:520px;margin:0 auto;padding:20px;'>"
                 f"<h2 style='color:#1a3a1a;'>Duxbury Clipper</h2>"
                 f"<p>Hi {first_name},</p>"
-                f"<p>We received a request to change the email address on your Clipper account to this address.</p>"
+                f"<p>We received a request to change the email address on your Clipper home delivery account to this address.</p>"
                 f"<p>Click below to confirm. This link expires in 24 hours.</p>"
                 f"<p style='text-align:center;margin:28px 0;'>"
                 f"<a href='{verify_link}' style='background:#2e7d32;color:white;padding:14px 32px;"
