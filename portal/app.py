@@ -750,6 +750,27 @@ def stripe_webhook():
                         performed_by="Stripe",
                     ))
                     db.commit()
+                    if sub.email:
+                        try:
+                            from_email = os.environ.get("FROM_EMAIL", "subscribe@duxburyclipper.net")
+                            first_name = sub.full_name.split()[0]
+                            resend.Emails.send({
+                                "from": f"Duxbury Clipper <{from_email}>",
+                                "to": sub.email,
+                                "subject": "Your Duxbury Clipper subscription has been renewed",
+                                "html": (
+                                    f"<p>Dear {first_name},</p>"
+                                    f"<p>Thank you! Your Duxbury Clipper subscription has been renewed and will now renew automatically each year.</p>"
+                                    f"<p>Your subscription is active through <strong>{new_exp.strftime('%B %d, %Y')}</strong>.</p>"
+                                    f"<p>You can view your account or manage your subscription at any time: "
+                                    f"<a href='{BASE_URL}/account'>My Account</a>.</p>"
+                                    f"<p>Questions? Call 781-934-2811 or reply to this email.</p>"
+                                    f"<p>Thank you for being a loyal subscriber to the Duxbury Clipper!</p>"
+                                ),
+                            })
+                        except Exception as e:
+                            sys.stderr.write(f"[EMAIL ERROR] renewal confirmation: {e}\n")
+                            sys.stderr.flush()
                 else:
                     # One-time payment
                     amount = cs.get("amount_total", 0) / 100
