@@ -148,7 +148,11 @@ def _base(first_name: str, body_html: str, btn_html: str, price: str = "", porta
     plan_box = ""
     if plan_label or price:
         try:
-            per_issue = f"${float(price.replace('$','')) / 52:.2f}"
+            cents = float(price.replace('$','')) / 52 * 100
+            if cents < 100:
+                per_issue = f"{int(round(cents))} cents a week"
+            else:
+                per_issue = f"${cents/100:.2f} a week"
         except Exception:
             per_issue = ""
         plan_box = (
