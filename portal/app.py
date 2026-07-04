@@ -224,6 +224,9 @@ def update_address():
     db = SessionLocal()
     sub = db.query(Subscriber).filter_by(id=sub.id).first()
     old = f"{sub.address1}, {sub.city} {sub.state} {sub.zipcode}"
+    name = request.form.get("full_name","").strip()
+    if name:
+        sub.full_name = name
     sub.address1 = request.form.get("address1","").strip()
     sub.address2 = request.form.get("address2","").strip() or None
     sub.city     = request.form.get("city","").strip()
@@ -249,11 +252,12 @@ def save_alt_address():
         return redirect(url_for("login"))
     db = SessionLocal()
     s = db.query(Subscriber).filter_by(id=sub.id).first()
-    s.alt_address1 = request.form.get("alt_address1","").strip() or None
-    s.alt_address2 = request.form.get("alt_address2","").strip() or None
-    s.alt_city     = request.form.get("alt_city","").strip() or None
-    s.alt_state    = request.form.get("alt_state","").strip().upper() or None
-    s.alt_zipcode  = request.form.get("alt_zipcode","").strip() or None
+    s.alt_full_name = request.form.get("alt_full_name","").strip() or None
+    s.alt_address1  = request.form.get("alt_address1","").strip() or None
+    s.alt_address2  = request.form.get("alt_address2","").strip() or None
+    s.alt_city      = request.form.get("alt_city","").strip() or None
+    s.alt_state     = request.form.get("alt_state","").strip().upper() or None
+    s.alt_zipcode   = request.form.get("alt_zipcode","").strip() or None
     db.commit()
     db.close()
     flash("Alternate address saved.")
