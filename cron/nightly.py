@@ -171,8 +171,8 @@ def _base(first_name: str, body_html: str, btn_html: str, price: str = "", porta
       <!-- Body -->
       <tr><td style="padding:32px 36px;">
         <p style="margin:0 0 18px;font-size:16px;color:#222;">Dear {first_name},</p>
-        {plan_box}
         {body_html}
+        {plan_box}
         {btn_html}
         <p style="text-align:center;font-size:12px;color:#aaa;margin:-8px 0 20px;">
           Prefer to pay by check? Mail to: The Duxbury Clipper, P.O. Box 1656, Duxbury, MA 02331
@@ -189,8 +189,6 @@ def _base(first_name: str, body_html: str, btn_html: str, price: str = "", porta
       <!-- Footer -->
       <tr><td style="background:#f9f9f9;border-top:1px solid #eee;padding:18px 36px;">
         <p style="margin:0;font-size:12px;color:#999;line-height:1.9;">
-          You're receiving this email because you have an active print subscription to the Duxbury Clipper.<br>
-          Questions? Reply to this email or call <strong>781-934-2811</strong> during regular business hours.<br>
           The Duxbury Clipper &nbsp;•&nbsp; P.O. Box 1656, Duxbury, MA 02331<br>
           <a href="https://www.duxburyclipper.com" style="color:#2e7d32;">www.duxburyclipper.com</a>
         </p>
