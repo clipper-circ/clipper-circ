@@ -334,7 +334,8 @@
 
         <table style="margin-top:16px;">
           <tr><th>Amount</th><td><strong id="price-display" style="font-size:1.1em;">${{ "%.2f"|format(price) }}</strong> / year</td></tr>
-          <tr><th>Per Issue</th><td id="per-issue-display">${{ "%.2f"|format(price / 52) }}</td></tr>
+          {% set per_issue = price / 52 %}
+          <tr><th>Per Issue</th><td id="per-issue-display">{% if per_issue < 1 %}{{ (per_issue * 100)|int }} cents per week{% else %}${{ "%.2f"|format(per_issue) }} per week{% endif %}</td></tr>
         </table>
 
         <div style="margin-top:20px;padding:14px;background:#e8f5e9;border-radius:4px;font-size:0.88em;color:#2e7d32;">
@@ -398,7 +399,8 @@
     planSelect.addEventListener('change', function() {
       var price = this.options[this.selectedIndex].dataset.price;
       document.getElementById('price-display').textContent = '$' + parseFloat(price).toFixed(2);
-      document.getElementById('per-issue-display').textContent = '$' + (parseFloat(price) / 52).toFixed(2);
+      var perIssue = parseFloat(price) / 52;
+      document.getElementById('per-issue-display').textContent = perIssue < 1 ? Math.round(perIssue * 100) + ' cents per week' : '$' + perIssue.toFixed(2) + ' per week';
       document.querySelectorAll('.btn-price').forEach(function(el) {
         el.textContent = el.textContent.replace(/\$[\d.]+/, '$' + parseFloat(price).toFixed(2));
       });
