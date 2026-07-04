@@ -49,15 +49,6 @@
 
 <div class="acct-card">
 
-  {# ── Tab strip ── #}
-  <div class="acct-tabs">
-    <a onclick="switchTab('subscription')" id="tab-subscription" class="active">Subscription</a>
-    <a onclick="switchTab('address')"      id="tab-address">Address</a>
-    <a onclick="switchTab('contact')"      id="tab-contact">Contact Info</a>
-    <a onclick="switchTab('history')"      id="tab-history">Order History</a>
-    <a onclick="switchTab('extras')"       id="tab-extras">Extras</a>
-  </div>
-
   {# ── Profile header ── #}
   <div class="acct-profile">
     <div class="acct-avatar">
@@ -83,6 +74,15 @@
     <div class="acct-profile-actions">
       <a href="{{ url_for('renew_self') }}" class="btn btn-sm">Renew</a>
     </div>
+  </div>
+
+  {# ── Tab strip ── #}
+  <div class="acct-tabs">
+    <a onclick="switchTab('subscription')" id="tab-subscription" class="active">Subscription</a>
+    <a onclick="switchTab('address')"      id="tab-address">Address</a>
+    <a onclick="switchTab('contact')"      id="tab-contact">Contact Info</a>
+    <a onclick="switchTab('history')"      id="tab-history">Order History</a>
+    <a onclick="switchTab('extras')"       id="tab-extras">Extras</a>
   </div>
 
   {# ── Tab panels (all rendered, JS toggles visibility) ── #}
