@@ -727,13 +727,23 @@ def stripe_webhook():
                 sub.status             = SubscriberStatus.ACTIVE
 
                 if cs.get("mode") == "subscription":
-                    # Recurring — save subscription ID, set expiration; payment recorded in invoice.paid
                     sub.stripe_subscription_id = cs.get("subscription")
                     sub.auto_renew = True
                     base = sub.expiration_date if (sub.expiration_date and sub.expiration_date >= date.today()) else date.today()
                     new_exp = base.replace(year=base.year + 1)
                     sub.expiration_date = new_exp
                     _reset_reminder_flags(sub)
+                    amount = cs.get("amount_total", 0) / 100
+                    pmt = Payment(
+                        subscriber_id=sub.id, amount=amount,
+                        payment_method=PaymentMethod.CREDIT_CARD,
+                        stripe_payment_intent_id=cs.get("payment_intent"),
+                        period_start=date.today(), period_end=new_exp,
+                        entered_by="Stripe (subscriber)",
+                        paid_at=datetime.utcnow(),
+                    )
+                    db.add(pmt)
+                    db.flush()
                     db.add(SubscriberEventLog(
                         subscriber_id=sub.id, event_type="SUBSCRIPTION_STARTED",
                         description=f"Auto-renew subscription started. Expiration set to {new_exp}.",
