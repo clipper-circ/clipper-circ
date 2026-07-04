@@ -172,7 +172,7 @@ def _base(first_name: str, body_html: str, btn_html: str, price: str = "", porta
 
       <!-- Header banner with logo -->
       <tr><td style="background:#1a3a1a;padding:24px 36px;text-align:center;">
-        <div style="display:inline-block;background:#ffffff;border-radius:12px;padding:12px 24px;">
+        <div style="display:inline-block;background:#ffffff;border-radius:10px;padding:8px 20px;">
           <img src="https://www.duxburyclipper.com/wp-content/uploads/2019/01/logo-1-2.png"
                alt="The Duxbury Clipper"
                style="max-width:200px;height:auto;display:block;">
