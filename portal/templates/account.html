@@ -114,7 +114,7 @@
       <div style="flex:1;min-width:200px;">
         <div style="font-size:0.78em;font-weight:700;color:#999;text-transform:uppercase;letter-spacing:1px;margin-bottom:10px;">Your Delivery Address</div>
         <div style="font-size:0.93em;line-height:1.8;color:#444;">
-          <strong>{{ subscriber.full_name }}</strong><br>
+          {{ subscriber.full_name }}<br>
           {{ subscriber.address1 }}<br>
           {% if subscriber.address2 %}{{ subscriber.address2 }}<br>{% endif %}
           {{ subscriber.city }}, {{ subscriber.state }} {{ subscriber.zipcode }}
