@@ -130,7 +130,8 @@
       <label style="font-size:0.78em;font-weight:700;color:#999;text-transform:uppercase;letter-spacing:1px;">Subscriber Name</label>
       <div style="display:flex;gap:8px;margin-top:6px;">
         <input type="text" name="full_name" value="{{ subscriber.full_name }}" required style="flex:1;">
-        <button type="submit" class="btn btn-sm" style="border-radius:4px;white-space:nowrap;">Save Name</button>
+        <button type="submit" class="btn btn-sm" style="border-radius:4px;white-space:nowrap;"
+                onclick="return confirm('Update your subscriber name?')">Update Name</button>
       </div>
     </form>
 
