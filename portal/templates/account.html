@@ -235,7 +235,8 @@
 
   {# ════════ ORDER HISTORY ════════ #}
   <div class="tab-panel" id="panel-history">
-    {% set EVENT_ICONS = {'EMAIL_CHANGED':'✉️','ADDRESS_SWITCHED':'🔄','ADDRESS_UPDATED':'📬'} %}
+    {% set EVENT_ICONS = {'EMAIL_CHANGED':'✉️','ADDRESS_SWITCHED':'🔄','ADDRESS_UPDATED':'📬','NAME_UPDATED':'✏️'} %}
+    {% set EVENT_LABELS = {'EMAIL_CHANGED':'Email Changed','ADDRESS_SWITCHED':'Address Switched','ADDRESS_UPDATED':'Address Updated','NAME_UPDATED':'Name Updated'} %}
     {% if payments or events %}
     <table>
       <thead><tr><th>Date</th><th>Description</th><th>Amount</th><th>Detail</th></tr></thead>
@@ -256,7 +257,7 @@
           {% else %}{% set e = row.obj %}
           <tr style="background:#fafafa;">
             <td style="white-space:nowrap;">{{ e.event_at.strftime('%b %d, %Y') }}</td>
-            <td>{{ EVENT_ICONS.get(e.event_type, '📋') }} {{ e.event_type.replace('_',' ').title() }}</td>
+            <td>{{ EVENT_ICONS.get(e.event_type, '📋') }} {{ EVENT_LABELS.get(e.event_type, e.event_type.replace('_',' ').title()) }}</td>
             <td style="color:#aaa;">—</td>
             <td style="color:#666;font-size:0.85em;">{{ e.description }}</td>
           </tr>

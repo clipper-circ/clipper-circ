@@ -423,12 +423,19 @@ def update_name():
     db = SessionLocal()
     s = db.query(Subscriber).filter_by(id=sub.id).first()
     name = request.form.get("full_name","").strip()
-    if name:
+    if name and name != s.full_name:
+        old_name = s.full_name
         s.full_name = name
+        db.add(SubscriberEventLog(
+            subscriber_id=s.id,
+            event_type="NAME_UPDATED",
+            description=f"Name changed from: {old_name} → {name}",
+            performed_by="subscriber",
+        ))
         db.commit()
         flash("Name updated.")
     db.close()
-    return redirect(url_for("account") + "?tab=address")
+    return redirect(url_for("account") + "?tab=contact")
 
 
 @app.route("/update-contact", methods=["POST"])
