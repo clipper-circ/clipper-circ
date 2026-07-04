@@ -126,10 +126,13 @@
 
   {# ════════ ADDRESS ════════ #}
   <div class="tab-panel" id="panel-address">
-    <div style="margin-bottom:16px;font-size:0.93em;color:#444;">
-      <div style="font-size:0.78em;font-weight:700;color:#999;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">Subscriber Name</div>
-      {{ subscriber.full_name }}
-    </div>
+    <form method="post" action="/update-name" style="margin-bottom:20px;padding-bottom:20px;border-bottom:1px solid #ddd;">
+      <label style="font-size:0.78em;font-weight:700;color:#999;text-transform:uppercase;letter-spacing:1px;">Subscriber Name</label>
+      <div style="display:flex;gap:8px;margin-top:6px;">
+        <input type="text" name="full_name" value="{{ subscriber.full_name }}" required style="flex:1;">
+        <button type="submit" class="btn btn-sm" style="border-radius:4px;white-space:nowrap;">Save Name</button>
+      </div>
+    </form>
 
     <div style="display:flex;gap:12px;margin-bottom:20px;flex-wrap:wrap;">
       <div style="flex:1;min-width:180px;padding:12px;border-radius:6px;border:2px solid {% if not subscriber.using_alt_address %}#2e7d32{% else %}#ddd{% endif %};background:{% if not subscriber.using_alt_address %}#e8f5e9{% else %}#f9f9f9{% endif %};">

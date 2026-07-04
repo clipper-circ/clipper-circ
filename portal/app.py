@@ -415,6 +415,22 @@ def verify_email(token):
     return redirect(url_for("account") + "?tab=address")
 
 
+@app.route("/update-name", methods=["POST"])
+def update_name():
+    sub = current_subscriber()
+    if not sub:
+        return redirect(url_for("login"))
+    db = SessionLocal()
+    s = db.query(Subscriber).filter_by(id=sub.id).first()
+    name = request.form.get("full_name","").strip()
+    if name:
+        s.full_name = name
+        db.commit()
+        flash("Name updated.")
+    db.close()
+    return redirect(url_for("account") + "?tab=address")
+
+
 @app.route("/update-contact", methods=["POST"])
 def update_contact():
     sub = current_subscriber()
