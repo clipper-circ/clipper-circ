@@ -2,319 +2,300 @@
 {% block title %}My Account — Duxbury Clipper{% endblock %}
 {% block content %}
 
-{# ── Page header ── #}
-<div class="page-header">
-  <div>
-    <h1>{{ subscriber.full_name }}</h1>
-    <span class="acct-num">Account: #{{ subscriber.simplecirc_id or subscriber.id }}</span>
-  </div>
-  <div>
-    <a href="{{ url_for('renew_self') }}" class="btn">RENEW</a>
-  </div>
-</div>
+<style>
+  .acct-card { background:#fff; border:1px solid #ddd; border-radius:8px; overflow:hidden; box-shadow:0 2px 8px rgba(0,0,0,0.07); margin-bottom:24px; }
 
-{# ── Tabs ── #}
+  /* Green tab strip */
+  .acct-tabs { background:#1a3a1a; display:flex; flex-wrap:wrap; }
+  .acct-tabs a { color:rgba(255,255,255,0.75); text-decoration:none; padding:11px 18px; font-size:0.85em;
+                 font-family:Georgia,serif; letter-spacing:0.03em; display:inline-block; border-bottom:3px solid transparent; }
+  .acct-tabs a:hover { color:#fff; background:rgba(255,255,255,0.08); }
+  .acct-tabs a.active { color:#fff; border-bottom:3px solid #fff; font-weight:700; }
+
+  /* Profile header */
+  .acct-profile { display:flex; align-items:center; gap:20px; padding:24px 28px; border-bottom:1px solid #eee; }
+  .acct-avatar { width:64px; height:64px; border-radius:50%; background:#e8f5e9; border:2px solid #2e7d32;
+                 display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+  .acct-avatar svg { width:36px; height:36px; fill:#2e7d32; }
+  .acct-profile-info { flex:1; }
+  .acct-profile-info .acct-type { font-size:0.72em; font-weight:700; color:#2e7d32; text-transform:uppercase;
+                                   letter-spacing:1.5px; margin-bottom:2px; }
+  .acct-profile-info h2 { margin:0 0 2px; font-size:1.25em; color:#1a3a1a; }
+  .acct-profile-info .acct-meta { font-size:0.85em; color:#777; line-height:1.7; }
+  .acct-profile-actions { display:flex; flex-direction:column; gap:8px; align-items:flex-end; flex-shrink:0; }
+
+  /* Card body */
+  .acct-body { padding:24px 28px; }
+
+  @media (max-width:620px) {
+    .acct-profile { flex-wrap:wrap; }
+    .acct-profile-actions { align-items:flex-start; flex-direction:row; }
+    .acct-tabs a { padding:10px 12px; font-size:0.8em; }
+  }
+</style>
+
 {% set tab = request.args.get('tab', 'subscription') %}
-<div class="tabs">
-  <a href="?tab=subscription" class="tab-link {% if tab=='subscription' %}active{% endif %}">📋 Subscription</a>
-  <a href="?tab=address"      class="tab-link {% if tab=='address'      %}active{% endif %}">📬 Address</a>
-  <a href="?tab=contact"      class="tab-link {% if tab=='contact'      %}active{% endif %}">👤 Contact Info</a>
-  <a href="?tab=history"      class="tab-link {% if tab=='history'      %}active{% endif %}">💳 Order History</a>
-  <a href="?tab=holds"        class="tab-link {% if tab=='holds'        %}active{% endif %}">✋ Delivery Hold</a>
-</div>
 
-{# ════════════════════════ SUBSCRIPTION TAB ════════════════════════ #}
-{% if tab == 'subscription' %}
-<div class="two-col">
+<div class="acct-card">
 
-  <div class="card" style="flex:1.4;">
-    <div style="display:flex;justify-content:space-between;align-items:flex-start;">
-      <img src="/static/logo.png" alt="Duxbury Clipper" style="height:44px;">
-      <a href="{{ url_for('renew_self') }}" class="btn btn-sm">RENEW</a>
-    </div>
-    <div style="margin-top:16px;line-height:2;font-size:0.95em;">
-      {% if subscriber.status.value == 'ACTIVE' %}
-        <span class="badge badge-active">ACTIVE</span>
-      {% elif subscriber.status.value == 'GRACE' %}
-        <span class="badge badge-grace">GRACE PERIOD</span>
-      {% else %}
-        <span class="badge badge-expired">{{ subscriber.status.value }}</span>
-      {% endif %}
-      &nbsp; <strong>{{ plan_label }}</strong><br>
-      Expires <strong>{{ subscriber.expiration_date.strftime('%m/%d/%Y') if subscriber.expiration_date else '—' }}</strong>
-      &nbsp;·&nbsp; <strong>{{ issues_left }}</strong> issue{{ 's' if issues_left != 1 else '' }} remaining<br>
-      Auto-renew:
-      {% if subscriber.auto_renew %}
-        <strong>On</strong>
-      {% else %}
-        <strong style="color:#c62828;">Off</strong>
-      {% endif %}
-    </div>
-    {% if subscriber.status.value in ['GRACE','EXPIRED'] %}
-    <div style="margin-top:14px;padding:12px;background:#fff3cd;border:1px solid #ffc107;border-radius:4px;font-size:0.88em;">
-      ⚠️ Your subscription has lapsed. Renew now to avoid delivery stopping.
-    </div>
-    {% endif %}
-    <div style="margin-top:18px;border-top:1px solid #eee;padding-top:14px;line-height:1.9;font-size:0.9em;">
-      <strong>{{ subscriber.full_name }}</strong><br>
-      {{ subscriber.address1 }}<br>
-      {% if subscriber.address2 %}{{ subscriber.address2 }}<br>{% endif %}
-      {{ subscriber.city }}, {{ subscriber.state }} {{ subscriber.zipcode }}
-      <br>
-      <a href="?tab=address" style="font-size:0.85em;color:#2e7d32;">Edit address →</a>
-      &nbsp;&nbsp;
-      <a href="?tab=contact" style="font-size:0.85em;color:#2e7d32;">Edit contact info →</a>
-    </div>
+  {# ── Tab strip ── #}
+  <div class="acct-tabs">
+    <a href="?tab=subscription" {% if tab=='subscription' %}class="active"{% endif %}>Subscription</a>
+    <a href="?tab=address"      {% if tab=='address'      %}class="active"{% endif %}>Address</a>
+    <a href="?tab=contact"      {% if tab=='contact'      %}class="active"{% endif %}>Contact Info</a>
+    <a href="?tab=history"      {% if tab=='history'      %}class="active"{% endif %}>Order History</a>
+    <a href="?tab=extras"       {% if tab=='extras'       %}class="active"{% endif %}>Extras</a>
   </div>
 
-  <div class="card" style="flex:1;display:flex;align-items:center;justify-content:center;padding:16px;">
-    <img src="/static/mailbox.jpg" alt="Your Duxbury Clipper mailbox"
-         style="width:100%;border-radius:8px;">
-  </div>
-
-</div>
-
-{# ════════════════════════ ORDER HISTORY TAB ════════════════════════ #}
-{% elif tab == 'history' %}
-<div class="card">
-  <h2>Account History</h2>
-  {% set EVENT_ICONS = {
-    'EMAIL_CHANGED':    '✉️',
-    'ADDRESS_SWITCHED': '🔄',
-    'ADDRESS_UPDATED':  '📬',
-  } %}
-  {% if payments or events %}
-  <table>
-    <thead>
-      <tr><th>Date</th><th>Description</th><th>Amount</th><th>Detail</th></tr>
-    </thead>
-    <tbody>
-      {# Merge payments + events sorted by date descending #}
-      {% set rows = [] %}
-      {% for p in payments %}
-        {% set _ = rows.append({'date': p.paid_at, 'type': 'payment', 'obj': p}) %}
-      {% endfor %}
-      {% for e in events %}
-        {% set _ = rows.append({'date': e.event_at, 'type': 'event', 'obj': e}) %}
-      {% endfor %}
-      {% for row in rows | sort(attribute='date', reverse=True) %}
-        {% if row.type == 'payment' %}
-        {% set p = row.obj %}
-        <tr>
-          <td style="white-space:nowrap;">{{ p.paid_at.strftime('%b %d, %Y') if p.paid_at else '—' }}</td>
-          <td>
-            💳 Renewal — {{ plan_label }}
-            {% if p.period_start and p.period_end %}
-              <span style="color:#888;font-size:0.85em;display:block;">{{ p.period_start }} – {{ p.period_end }}</span>
-            {% endif %}
-          </td>
-          <td><strong>${{ "%.2f"|format(p.amount) }}</strong></td>
-          <td style="color:#666;font-size:0.85em;">{{ p.payment_method.value.replace('_',' ').title() }}
-            {% if p.check_number %} #{{ p.check_number }}{% endif %}
-          </td>
-        </tr>
+  {# ── Profile header ── #}
+  <div class="acct-profile">
+    <div class="acct-avatar">
+      <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"/>
+      </svg>
+    </div>
+    <div class="acct-profile-info">
+      <div class="acct-type">Print Subscriber</div>
+      <h2>{{ subscriber.full_name }}</h2>
+      <div class="acct-meta">
+        Account #{{ subscriber.simplecirc_id or subscriber.id }}
+        &nbsp;·&nbsp;
+        {% if subscriber.status.value == 'ACTIVE' %}
+          <span class="badge badge-active">Active</span>
+        {% elif subscriber.status.value == 'GRACE' %}
+          <span class="badge badge-grace">Grace Period</span>
         {% else %}
-        {% set e = row.obj %}
-        <tr style="background:#fafafa;">
-          <td style="white-space:nowrap;">{{ e.event_at.strftime('%b %d, %Y') }}</td>
-          <td>
-            {{ EVENT_ICONS.get(e.event_type, '📋') }}
-            {{ e.event_type.replace('_',' ').title() }}
-          </td>
-          <td style="color:#aaa;">—</td>
-          <td style="color:#666;font-size:0.85em;">{{ e.description }}</td>
-        </tr>
+          <span class="badge badge-expired">{{ subscriber.status.value.title() }}</span>
         {% endif %}
-      {% endfor %}
-    </tbody>
-  </table>
-  {% else %}
-  <p style="color:#888;font-size:0.9em;">No history yet.</p>
-  {% endif %}
-</div>
-
-{# ════════════════════════ ADDRESS TAB ════════════════════════ #}
-{% elif tab == 'address' %}
-
-<div class="card">
-  <h2>Delivery Address</h2>
-
-  {# Active address indicator #}
-  <div style="display:flex;gap:12px;margin-bottom:20px;">
-    <div style="flex:1;padding:12px;border-radius:6px;border:2px solid {% if not subscriber.using_alt_address %}#2e7d32{% else %}#ddd{% endif %};background:{% if not subscriber.using_alt_address %}#e8f5e9{% else %}#f9f9f9{% endif %};">
-      <div style="font-size:0.78em;font-weight:700;color:{% if not subscriber.using_alt_address %}#2e7d32{% else %}#999{% endif %};text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">
-        {% if not subscriber.using_alt_address %}✓ Active — {% endif %}Primary Mailing Address
-      </div>
-      <div style="font-size:0.88em;line-height:1.7;color:#444;">
-        {{ subscriber.address1 }}<br>
-        {% if subscriber.address2 %}{{ subscriber.address2 }}<br>{% endif %}
-        {{ subscriber.city }}, {{ subscriber.state }} {{ subscriber.zipcode }}
+        &nbsp;·&nbsp; Expires {{ subscriber.expiration_date.strftime('%m/%d/%Y') if subscriber.expiration_date else '—' }}
+        <br>
+        {{ subscriber.email or 'No email on file' }}
       </div>
     </div>
-    <div style="flex:1;padding:12px;border-radius:6px;border:2px solid {% if subscriber.using_alt_address %}#2e7d32{% else %}#ddd{% endif %};background:{% if subscriber.using_alt_address %}#e8f5e9{% else %}#f9f9f9{% endif %};">
-      <div style="font-size:0.78em;font-weight:700;color:{% if subscriber.using_alt_address %}#2e7d32{% else %}#999{% endif %};text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">
-        {% if subscriber.using_alt_address %}✓ Active — {% endif %}Alternate Address
-      </div>
-      {% if subscriber.alt_address1 %}
-      <div style="font-size:0.88em;line-height:1.7;color:#444;">
-        {{ subscriber.alt_address1 }}<br>
-        {% if subscriber.alt_address2 %}{{ subscriber.alt_address2 }}<br>{% endif %}
-        {{ subscriber.alt_city }}, {{ subscriber.alt_state }} {{ subscriber.alt_zipcode }}
-      </div>
-      {% else %}
-      <div style="font-size:0.85em;color:#bbb;font-style:italic;">Not set</div>
-      {% endif %}
+    <div class="acct-profile-actions">
+      <a href="{{ url_for('renew_self') }}" class="btn btn-sm">Renew</a>
     </div>
   </div>
 
-  {% if subscriber.alt_address1 %}
-  <form method="post" action="/toggle-address"
-        onsubmit="return confirm('Switch delivery to your {{ 'primary' if subscriber.using_alt_address else 'alternate' }} address?')">
-    <button type="submit" class="btn btn-outline" style="width:100%;border-radius:4px;margin-bottom:20px;">
-      Switch to {{ 'Primary' if subscriber.using_alt_address else 'Alternate' }} Address
-    </button>
-  </form>
-  {% endif %}
+  {# ── Tab content ── #}
+  <div class="acct-body">
 
-  {# Edit primary address #}
-  <details {% if not subscriber.alt_address1 %}open{% endif %}>
-    <summary style="cursor:pointer;font-weight:700;font-size:0.9em;color:#444;padding:8px 0;border-top:1px solid #eee;">
-      Edit Primary Address
-    </summary>
-    <form method="post" action="/update-address" style="margin-top:12px;">
-      <div>
-        <label>Address</label>
-        <input type="text" name="address1" value="{{ subscriber.address1 }}" required>
-      </div>
-      <div>
-        <label>Address 2 (optional)</label>
-        <input type="text" name="address2" value="{{ subscriber.address2 or '' }}" placeholder="Apt, unit, etc.">
-      </div>
-      <div class="row">
-        <div style="flex:3;"><label>City</label><input type="text" name="city" value="{{ subscriber.city }}" required></div>
-        <div style="flex:0.6;"><label>State</label><input type="text" name="state" value="{{ subscriber.state }}" maxlength="2" required></div>
-        <div style="flex:1;"><label>Zip</label><input type="text" name="zipcode" value="{{ subscriber.zipcode }}" required></div>
-      </div>
-      <button type="submit" class="btn" style="margin-top:14px;">Save Primary Address</button>
-    </form>
-  </details>
+  {# ════════ SUBSCRIPTION ════════ #}
+  {% if tab == 'subscription' %}
 
-  {# Edit alternate address #}
-  <details style="margin-top:4px;">
-    <summary style="cursor:pointer;font-weight:700;font-size:0.9em;color:#444;padding:8px 0;border-top:1px solid #eee;">
-      {{ 'Edit' if subscriber.alt_address1 else 'Add' }} Alternate Address
-      <span style="font-weight:normal;color:#999;font-size:0.88em;"> (e.g. summer home, winter address)</span>
-    </summary>
-    <form method="post" action="/save-alt-address" style="margin-top:12px;">
-      <div>
-        <label>Address</label>
-        <input type="text" name="alt_address1" value="{{ subscriber.alt_address1 or '' }}" required>
-      </div>
-      <div>
-        <label>Address 2 (optional)</label>
-        <input type="text" name="alt_address2" value="{{ subscriber.alt_address2 or '' }}" placeholder="Apt, unit, etc.">
-      </div>
-      <div class="row">
-        <div style="flex:3;"><label>City</label><input type="text" name="alt_city" value="{{ subscriber.alt_city or '' }}" required></div>
-        <div style="flex:0.6;"><label>State</label><input type="text" name="alt_state" value="{{ subscriber.alt_state or '' }}" maxlength="2" required></div>
-        <div style="flex:1;"><label>Zip</label><input type="text" name="alt_zipcode" value="{{ subscriber.alt_zipcode or '' }}" required></div>
-      </div>
-      <button type="submit" class="btn" style="margin-top:14px;">Save Alternate Address</button>
-    </form>
-  </details>
-
-</div>
-
-{# ════════════════════════ CONTACT INFO TAB ════════════════════════ #}
-{% elif tab == 'contact' %}
-
-<div class="card">
-  <h2>Contact Information</h2>
-
-  <div style="margin-bottom:20px;padding-bottom:20px;border-bottom:1px solid #eee;font-size:0.95em;line-height:2;color:#444;">
-    <strong>{{ subscriber.full_name }}</strong><br>
-    📧 {{ subscriber.email or 'No email on file' }}<br>
-    📞 {{ subscriber.phone or 'No phone on file' }}
-  </div>
-
-  <div style="margin-bottom:20px;padding-bottom:20px;border-bottom:1px solid #eee;">
-    <label style="margin-top:0;">Primary Email Address</label>
-    <div style="margin-top:6px;padding:10px 12px;background:#f9f9f9;border:1px solid #ddd;border-radius:4px;font-size:0.95em;">
-      {{ subscriber.email or 'None on file' }}
-    </div>
-    {% if subscriber.pending_email %}
-    <div style="margin-top:8px;padding:8px 12px;background:#fff8e1;border:1px solid #ffe082;border-radius:4px;font-size:0.85em;color:#f57f17;">
-      ⏳ Change to <strong>{{ subscriber.pending_email }}</strong> is pending — check that inbox for a confirmation link.
+    {% if subscriber.status.value in ['GRACE','EXPIRED'] %}
+    <div style="margin-bottom:20px;padding:12px 16px;background:#fff3cd;border:1px solid #ffc107;border-radius:4px;font-size:0.9em;">
+      ⚠️ Your subscription has lapsed. <a href="{{ url_for('renew_self') }}" style="color:#c62828;font-weight:700;">Renew now</a> to avoid delivery stopping.
     </div>
     {% endif %}
-    <form method="post" action="/request-email-change" style="margin-top:10px;display:flex;gap:8px;">
-      <input type="email" name="new_email" placeholder="New email address" required style="flex:1;">
-      <button type="submit" class="btn btn-outline btn-sm" style="border-radius:4px;white-space:nowrap;">Change Email</button>
+
+    <div style="display:flex;gap:32px;flex-wrap:wrap;">
+      <div style="flex:1;min-width:200px;">
+        <div style="font-size:0.78em;font-weight:700;color:#999;text-transform:uppercase;letter-spacing:1px;margin-bottom:10px;">Subscription Details</div>
+        <table style="font-size:0.93em;">
+          <tr><td style="color:#888;padding:5px 0;border:none;padding-right:16px;">Plan</td><td style="border:none;font-weight:700;">{{ plan_label }}</td></tr>
+          <tr><td style="color:#888;padding:5px 0;border:none;padding-right:16px;">Expires</td><td style="border:none;">{{ subscriber.expiration_date.strftime('%B %d, %Y') if subscriber.expiration_date else '—' }}</td></tr>
+          <tr><td style="color:#888;padding:5px 0;border:none;padding-right:16px;">Issues left</td><td style="border:none;">{{ issues_left }}</td></tr>
+          <tr><td style="color:#888;padding:5px 0;border:none;padding-right:16px;">Auto-renew</td>
+              <td style="border:none;">
+                {% if subscriber.auto_renew %}<span style="color:#2e7d32;font-weight:700;">On</span>
+                {% else %}<span style="color:#c62828;font-weight:700;">Off</span>{% endif %}
+              </td>
+          </tr>
+        </table>
+      </div>
+      <div style="flex:1;min-width:200px;">
+        <div style="font-size:0.78em;font-weight:700;color:#999;text-transform:uppercase;letter-spacing:1px;margin-bottom:10px;">Delivery Address</div>
+        <div style="font-size:0.93em;line-height:1.8;color:#444;">
+          {{ subscriber.address1 }}<br>
+          {% if subscriber.address2 %}{{ subscriber.address2 }}<br>{% endif %}
+          {{ subscriber.city }}, {{ subscriber.state }} {{ subscriber.zipcode }}
+          <br>
+          <a href="?tab=address" style="font-size:0.85em;color:#2e7d32;">Edit →</a>
+        </div>
+      </div>
+    </div>
+
+  {# ════════ ORDER HISTORY ════════ #}
+  {% elif tab == 'history' %}
+
+    {% set EVENT_ICONS = {'EMAIL_CHANGED':'✉️','ADDRESS_SWITCHED':'🔄','ADDRESS_UPDATED':'📬'} %}
+    {% if payments or events %}
+    <table>
+      <thead>
+        <tr><th>Date</th><th>Description</th><th>Amount</th><th>Detail</th></tr>
+      </thead>
+      <tbody>
+        {% set rows = [] %}
+        {% for p in payments %}{% set _ = rows.append({'date': p.paid_at, 'type': 'payment', 'obj': p}) %}{% endfor %}
+        {% for e in events %}{% set _ = rows.append({'date': e.event_at, 'type': 'event', 'obj': e}) %}{% endfor %}
+        {% for row in rows | sort(attribute='date', reverse=True) %}
+          {% if row.type == 'payment' %}{% set p = row.obj %}
+          <tr>
+            <td style="white-space:nowrap;">{{ p.paid_at.strftime('%b %d, %Y') if p.paid_at else '—' }}</td>
+            <td>💳 Renewal — {{ plan_label }}
+              {% if p.period_start and p.period_end %}<span style="color:#888;font-size:0.85em;display:block;">{{ p.period_start }} – {{ p.period_end }}</span>{% endif %}
+            </td>
+            <td><strong>${{ "%.2f"|format(p.amount) }}</strong></td>
+            <td style="color:#666;font-size:0.85em;">{{ p.payment_method.value.replace('_',' ').title() }}{% if p.check_number %} #{{ p.check_number }}{% endif %}</td>
+          </tr>
+          {% else %}{% set e = row.obj %}
+          <tr style="background:#fafafa;">
+            <td style="white-space:nowrap;">{{ e.event_at.strftime('%b %d, %Y') }}</td>
+            <td>{{ EVENT_ICONS.get(e.event_type, '📋') }} {{ e.event_type.replace('_',' ').title() }}</td>
+            <td style="color:#aaa;">—</td>
+            <td style="color:#666;font-size:0.85em;">{{ e.description }}</td>
+          </tr>
+          {% endif %}
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <p style="color:#888;font-size:0.9em;">No history yet.</p>
+    {% endif %}
+
+  {# ════════ ADDRESS ════════ #}
+  {% elif tab == 'address' %}
+
+    <div style="display:flex;gap:12px;margin-bottom:20px;flex-wrap:wrap;">
+      <div style="flex:1;min-width:180px;padding:12px;border-radius:6px;border:2px solid {% if not subscriber.using_alt_address %}#2e7d32{% else %}#ddd{% endif %};background:{% if not subscriber.using_alt_address %}#e8f5e9{% else %}#f9f9f9{% endif %};">
+        <div style="font-size:0.78em;font-weight:700;color:{% if not subscriber.using_alt_address %}#2e7d32{% else %}#999{% endif %};text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">
+          {% if not subscriber.using_alt_address %}✓ Active — {% endif %}Primary Address
+        </div>
+        <div style="font-size:0.88em;line-height:1.7;color:#444;">
+          {{ subscriber.address1 }}<br>
+          {% if subscriber.address2 %}{{ subscriber.address2 }}<br>{% endif %}
+          {{ subscriber.city }}, {{ subscriber.state }} {{ subscriber.zipcode }}
+        </div>
+      </div>
+      <div style="flex:1;min-width:180px;padding:12px;border-radius:6px;border:2px solid {% if subscriber.using_alt_address %}#2e7d32{% else %}#ddd{% endif %};background:{% if subscriber.using_alt_address %}#e8f5e9{% else %}#f9f9f9{% endif %};">
+        <div style="font-size:0.78em;font-weight:700;color:{% if subscriber.using_alt_address %}#2e7d32{% else %}#999{% endif %};text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">
+          {% if subscriber.using_alt_address %}✓ Active — {% endif %}Alternate Address
+        </div>
+        {% if subscriber.alt_address1 %}
+        <div style="font-size:0.88em;line-height:1.7;color:#444;">
+          {{ subscriber.alt_address1 }}<br>
+          {% if subscriber.alt_address2 %}{{ subscriber.alt_address2 }}<br>{% endif %}
+          {{ subscriber.alt_city }}, {{ subscriber.alt_state }} {{ subscriber.alt_zipcode }}
+        </div>
+        {% else %}
+        <div style="font-size:0.85em;color:#bbb;font-style:italic;">Not set</div>
+        {% endif %}
+      </div>
+    </div>
+
+    {% if subscriber.alt_address1 %}
+    <form method="post" action="/toggle-address" onsubmit="return confirm('Switch delivery to your {{ 'primary' if subscriber.using_alt_address else 'alternate' }} address?')">
+      <button type="submit" class="btn btn-outline" style="width:100%;border-radius:4px;margin-bottom:20px;">
+        Switch to {{ 'Primary' if subscriber.using_alt_address else 'Alternate' }} Address
+      </button>
     </form>
-    <p style="font-size:0.8em;color:#aaa;margin-top:6px;margin-bottom:0;">
-      A confirmation link will be sent to the new address before any change is made.
+    {% endif %}
+
+    <details {% if not subscriber.alt_address1 %}open{% endif %}>
+      <summary style="cursor:pointer;font-weight:700;font-size:0.9em;color:#444;padding:8px 0;border-top:1px solid #eee;">Edit Primary Address</summary>
+      <form method="post" action="/update-address" style="margin-top:12px;">
+        <div><label>Address</label><input type="text" name="address1" value="{{ subscriber.address1 }}" required></div>
+        <div><label>Address 2 (optional)</label><input type="text" name="address2" value="{{ subscriber.address2 or '' }}" placeholder="Apt, unit, etc."></div>
+        <div class="row">
+          <div style="flex:3;"><label>City</label><input type="text" name="city" value="{{ subscriber.city }}" required></div>
+          <div style="flex:0.6;"><label>State</label><input type="text" name="state" value="{{ subscriber.state }}" maxlength="2" required></div>
+          <div style="flex:1;"><label>Zip</label><input type="text" name="zipcode" value="{{ subscriber.zipcode }}" required></div>
+        </div>
+        <button type="submit" class="btn" style="margin-top:14px;">Save Primary Address</button>
+      </form>
+    </details>
+
+    <details style="margin-top:4px;">
+      <summary style="cursor:pointer;font-weight:700;font-size:0.9em;color:#444;padding:8px 0;border-top:1px solid #eee;">
+        {{ 'Edit' if subscriber.alt_address1 else 'Add' }} Alternate Address
+        <span style="font-weight:normal;color:#999;font-size:0.88em;"> (e.g. summer home, winter address)</span>
+      </summary>
+      <form method="post" action="/save-alt-address" style="margin-top:12px;">
+        <div><label>Address</label><input type="text" name="alt_address1" value="{{ subscriber.alt_address1 or '' }}" required></div>
+        <div><label>Address 2 (optional)</label><input type="text" name="alt_address2" value="{{ subscriber.alt_address2 or '' }}" placeholder="Apt, unit, etc."></div>
+        <div class="row">
+          <div style="flex:3;"><label>City</label><input type="text" name="alt_city" value="{{ subscriber.alt_city or '' }}" required></div>
+          <div style="flex:0.6;"><label>State</label><input type="text" name="alt_state" value="{{ subscriber.alt_state or '' }}" maxlength="2" required></div>
+          <div style="flex:1;"><label>Zip</label><input type="text" name="alt_zipcode" value="{{ subscriber.alt_zipcode or '' }}" required></div>
+        </div>
+        <button type="submit" class="btn" style="margin-top:14px;">Save Alternate Address</button>
+      </form>
+    </details>
+
+  {# ════════ CONTACT INFO ════════ #}
+  {% elif tab == 'contact' %}
+
+    <div style="margin-bottom:20px;padding-bottom:20px;border-bottom:1px solid #eee;">
+      <div style="font-size:0.78em;font-weight:700;color:#999;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">Primary Email Address</div>
+      <div style="padding:10px 12px;background:#f9f9f9;border:1px solid #ddd;border-radius:4px;font-size:0.95em;">
+        {{ subscriber.email or 'None on file' }}
+      </div>
+      {% if subscriber.pending_email %}
+      <div style="margin-top:8px;padding:8px 12px;background:#fff8e1;border:1px solid #ffe082;border-radius:4px;font-size:0.85em;color:#f57f17;">
+        ⏳ Change to <strong>{{ subscriber.pending_email }}</strong> is pending — check that inbox for a confirmation link.
+      </div>
+      {% endif %}
+      <form method="post" action="/request-email-change" style="margin-top:10px;display:flex;gap:8px;">
+        <input type="email" name="new_email" placeholder="New email address" required style="flex:1;">
+        <button type="submit" class="btn btn-outline btn-sm" style="border-radius:4px;white-space:nowrap;">Change Email</button>
+      </form>
+      <p style="font-size:0.8em;color:#aaa;margin-top:6px;margin-bottom:0;">A confirmation link will be sent to the new address before any change is made.</p>
+    </div>
+
+    <form method="post" action="/update-contact">
+      <div class="row">
+        <div>
+          <label>Phone Number</label>
+          <input type="text" name="phone" value="{{ subscriber.phone or '' }}" placeholder="e.g. 781-555-1234">
+        </div>
+        <div>
+          <label>Backup Email <span style="font-weight:normal;color:#999;">(recommended)</span></label>
+          <input type="text" name="backup_email" value="{{ subscriber.backup_email or '' }}" placeholder="e.g. spouse@example.com">
+          <p style="font-size:0.8em;color:#aaa;margin-top:4px;margin-bottom:0;">Used if we can't reach your primary address.</p>
+        </div>
+      </div>
+      <button type="submit" class="btn" style="margin-top:16px;">Save Contact Info</button>
+    </form>
+
+  {# ════════ EXTRAS ════════ #}
+  {% elif tab == 'extras' %}
+
+    <div style="font-size:0.78em;font-weight:700;color:#999;text-transform:uppercase;letter-spacing:1px;margin-bottom:16px;">Delivery Hold</div>
+    <p style="font-size:0.9em;color:#666;margin-top:0;">
+      Going on vacation or snowbirding for the winter? Schedule a hold and we'll pause delivery for that period. <strong>Your subscription does not run down while on hold</strong> — the hold period is added back to your expiration date.
     </p>
-  </div>
-
-  <form method="post" action="/update-contact">
-    <div class="row">
-      <div>
-        <label>Phone Number</label>
-        <input type="text" name="phone" value="{{ subscriber.phone or '' }}" placeholder="e.g. 781-555-1234">
+    <form method="post" action="/add-hold">
+      <div class="row">
+        <div><label>Hold Start</label><input type="date" name="hold_start" required></div>
+        <div><label>Hold End</label><input type="date" name="hold_end" required></div>
       </div>
-      <div>
-        <label>Backup Email <span style="font-weight:normal;color:#999;">(recommended)</span></label>
-        <input type="text" name="backup_email" value="{{ subscriber.backup_email or '' }}" placeholder="e.g. spouse@example.com">
-        <p style="font-size:0.8em;color:#aaa;margin-top:4px;margin-bottom:0;">Used if we can't reach your primary address.</p>
-      </div>
-    </div>
-    <button type="submit" class="btn" style="margin-top:16px;">Save Contact Info</button>
-  </form>
-</div>
+      <button type="submit" class="btn" style="margin-top:16px;">Schedule Hold</button>
+    </form>
 
-{# ════════════════════════ DELIVERY HOLD TAB ════════════════════════ #}
-{% elif tab == 'holds' %}
+    {% if holds %}
+    <div style="font-size:0.78em;font-weight:700;color:#999;text-transform:uppercase;letter-spacing:1px;margin:28px 0 12px;">Scheduled Holds</div>
+    <table>
+      <thead><tr><th>Start</th><th>End</th><th></th></tr></thead>
+      <tbody>
+        {% for hold in holds %}
+        <tr>
+          <td>{{ hold.hold_start.strftime('%b %d, %Y') }}</td>
+          <td>{{ hold.hold_end.strftime('%b %d, %Y') }}</td>
+          <td style="text-align:right;">
+            <form method="post" action="/remove-hold/{{ hold.id }}" style="margin:0;">
+              <button type="submit" class="btn btn-danger btn-sm">Remove</button>
+            </form>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% endif %}
 
-<div class="card">
-  <h2>Pause Your Delivery</h2>
-  <p style="font-size:0.9em;color:#666;margin-top:0;">
-    Going on vacation or snowbirding for the winter? Schedule a hold and we'll pause delivery for that period. <strong>Your subscription does not run down while on hold</strong> — the hold period is added back to your expiration date so you don't lose a single issue.
-  </p>
-  <form method="post" action="/add-hold">
-    <div class="row">
-      <div>
-        <label>Hold Start</label>
-        <input type="date" name="hold_start" required>
-      </div>
-      <div>
-        <label>Hold End</label>
-        <input type="date" name="hold_end" required>
-      </div>
-    </div>
-    <button type="submit" class="btn" style="margin-top:16px;">Schedule Hold</button>
-  </form>
-
-  {% if holds %}
-  <h2 style="margin-top:28px;">Scheduled Holds</h2>
-  <table>
-    <thead><tr><th>Start</th><th>End</th><th></th></tr></thead>
-    <tbody>
-      {% for hold in holds %}
-      <tr>
-        <td>{{ hold.hold_start.strftime('%b %d, %Y') }}</td>
-        <td>{{ hold.hold_end.strftime('%b %d, %Y') }}</td>
-        <td style="text-align:right;">
-          <form method="post" action="/remove-hold/{{ hold.id }}" style="margin:0;">
-            <button type="submit" class="btn btn-danger btn-sm">Remove</button>
-          </form>
-        </td>
-      </tr>
-      {% endfor %}
-    </tbody>
-  </table>
   {% endif %}
-</div>
 
-{% endif %}
+  </div>{# /acct-body #}
+</div>{# /acct-card #}
 
 {% endblock %}
