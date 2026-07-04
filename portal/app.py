@@ -293,15 +293,25 @@ def toggle_autorenew():
         return redirect(url_for("login"))
     db = SessionLocal()
     s = db.query(Subscriber).filter_by(id=sub.id).first()
-    # If checkbox was checked, turn on; otherwise toggle
     if "auto_renew" in request.form:
         s.auto_renew = True
+        if s.stripe_subscription_id:
+            try:
+                stripe.Subscription.modify(s.stripe_subscription_id, cancel_at_period_end=False)
+            except Exception:
+                pass
+        flash("Auto-renew enabled.")
     else:
-        s.auto_renew = not s.auto_renew
+        s.auto_renew = False
+        if s.stripe_subscription_id:
+            try:
+                stripe.Subscription.modify(s.stripe_subscription_id, cancel_at_period_end=True)
+            except Exception:
+                pass
+        flash("Auto-renew disabled. Your subscription will not renew automatically.")
     db.commit()
     db.close()
-    flash("Auto-renew " + ("enabled." if s.auto_renew else "disabled."))
-    return redirect(url_for("renew_self"))
+    return redirect(url_for("account") + "?tab=renew")
 
 
 @app.route("/request-email-change", methods=["POST"])
@@ -539,22 +549,28 @@ def create_checkout():
     except ValueError:
         plan_code = sub.plan
     price_cents = int(PLAN_PRICES[plan_code] * 100)
-    checkout = stripe.checkout.Session.create(
-        payment_method_types=["card"],
-        mode="payment",
-        customer_email=sub.email,
-        line_items=[{
+    checkout_params = {
+        "payment_method_types": ["card"],
+        "mode": "subscription",
+        "line_items": [{
             "price_data": {
                 "currency": "usd",
                 "unit_amount": price_cents,
+                "recurring": {"interval": "year"},
                 "product_data": {"name": f"Duxbury Clipper — {PLAN_LABELS[plan_code]}"},
             },
             "quantity": 1,
         }],
-        metadata={"subscriber_id": str(sub.id), "plan": plan_code.value},
-        success_url=f"{BASE_URL}/renewal-success?session_id={{CHECKOUT_SESSION_ID}}",
-        cancel_url=f"{BASE_URL}/account?tab=renew",
-    )
+        "metadata": {"subscriber_id": str(sub.id), "plan": plan_code.value},
+        "subscription_data": {"metadata": {"subscriber_id": str(sub.id), "plan": plan_code.value}},
+        "success_url": f"{BASE_URL}/renewal-success?session_id={{CHECKOUT_SESSION_ID}}",
+        "cancel_url": f"{BASE_URL}/account?tab=renew",
+    }
+    if sub.stripe_customer_id:
+        checkout_params["customer"] = sub.stripe_customer_id
+    else:
+        checkout_params["customer_email"] = sub.email
+    checkout = stripe.checkout.Session.create(**checkout_params)
     return redirect(checkout.url)
 
 
@@ -679,40 +695,96 @@ def stripe_webhook():
         if sub_id:
             sub = db.query(Subscriber).filter_by(id=int(sub_id)).first()
             if sub:
-                amount = cs.get("amount_total", 0) / 100
                 new_plan = cs.get("metadata", {}).get("plan")
                 if new_plan:
                     try:
                         sub.plan = PlanCode(new_plan)
                     except ValueError:
                         pass
-                period_start = date.today()
-                period_end   = (sub.expiration_date or date.today()).replace(
-                    year=(sub.expiration_date or date.today()).year + 1)
-                sub.expiration_date = period_end
-                sub.status          = SubscriberStatus.ACTIVE
-                sub.payment_method  = PaymentMethod.CREDIT_CARD
                 sub.stripe_customer_id = cs.get("customer")
-                _reset_reminder_flags(sub)
+                sub.payment_method     = PaymentMethod.CREDIT_CARD
+                sub.status             = SubscriberStatus.ACTIVE
 
+                if cs.get("mode") == "subscription":
+                    # Recurring — save subscription ID, set expiration; payment recorded in invoice.paid
+                    sub.stripe_subscription_id = cs.get("subscription")
+                    sub.auto_renew = True
+                    base = sub.expiration_date if (sub.expiration_date and sub.expiration_date >= date.today()) else date.today()
+                    sub.expiration_date = base.replace(year=base.year + 1)
+                    _reset_reminder_flags(sub)
+                    db.commit()
+                else:
+                    # One-time payment
+                    amount = cs.get("amount_total", 0) / 100
+                    period_start = date.today()
+                    base = sub.expiration_date if (sub.expiration_date and sub.expiration_date >= date.today()) else date.today()
+                    period_end = base.replace(year=base.year + 1)
+                    sub.expiration_date = period_end
+                    _reset_reminder_flags(sub)
+                    pmt = Payment(
+                        subscriber_id=sub.id, amount=amount,
+                        payment_method=PaymentMethod.CREDIT_CARD,
+                        stripe_payment_intent_id=cs.get("payment_intent"),
+                        period_start=period_start, period_end=period_end,
+                        entered_by="Stripe (subscriber)",
+                        paid_at=datetime.utcnow(),
+                    )
+                    db.add(pmt)
+                    db.flush()
+                    db.add(PaymentAuditLog(
+                        action="CREATED", payment_id=pmt.id,
+                        subscriber_id=sub.id, subscriber_name=sub.full_name,
+                        amount=amount, payment_method="CREDIT_CARD",
+                        period_start=period_start, period_end=period_end,
+                        entered_by="Stripe (subscriber)",
+                    ))
+                    db.commit()
+
+    elif event["type"] == "invoice.paid":
+        invoice        = event["data"]["object"]
+        billing_reason = invoice.get("billing_reason", "")
+        subscription_id = invoice.get("subscription")
+        # Only process automatic renewals (not the first invoice, handled in checkout.session.completed)
+        if subscription_id and billing_reason == "subscription_cycle":
+            sub = db.query(Subscriber).filter_by(stripe_subscription_id=subscription_id).first()
+            if sub:
+                amount = invoice.get("amount_paid", 0) / 100
+                pi_id  = invoice.get("payment_intent")
+                period_start = date.today()
+                base = sub.expiration_date if (sub.expiration_date and sub.expiration_date >= date.today()) else date.today()
+                period_end = base.replace(year=base.year + 1)
+                sub.expiration_date = period_end
+                sub.status = SubscriberStatus.ACTIVE
+                sub.auto_renew = True
+                _reset_reminder_flags(sub)
+                sub_name = sub.full_name
+                sub_db_id = sub.id
                 pmt = Payment(
-                    subscriber_id=sub.id, amount=amount,
+                    subscriber_id=sub_db_id, amount=amount,
                     payment_method=PaymentMethod.CREDIT_CARD,
-                    stripe_payment_intent_id=cs.get("payment_intent"),
+                    stripe_payment_intent_id=pi_id,
                     period_start=period_start, period_end=period_end,
-                    entered_by="Stripe (subscriber)",
+                    entered_by="Stripe (auto-renew)",
                     paid_at=datetime.utcnow(),
                 )
                 db.add(pmt)
                 db.flush()
                 db.add(PaymentAuditLog(
                     action="CREATED", payment_id=pmt.id,
-                    subscriber_id=sub.id, subscriber_name=sub.full_name,
+                    subscriber_id=sub_db_id, subscriber_name=sub_name,
                     amount=amount, payment_method="CREDIT_CARD",
                     period_start=period_start, period_end=period_end,
-                    entered_by="Stripe (subscriber)",
+                    entered_by="Stripe (auto-renew)",
                 ))
                 db.commit()
+
+    elif event["type"] == "customer.subscription.deleted":
+        subscription = event["data"]["object"]
+        sub = db.query(Subscriber).filter_by(stripe_subscription_id=subscription.get("id")).first()
+        if sub:
+            sub.auto_renew = False
+            sub.stripe_subscription_id = None
+            db.commit()
 
     elif event["type"] == "invoice.payment_failed":
         invoice     = event["data"]["object"]
@@ -720,16 +792,14 @@ def stripe_webhook():
         sub = db.query(Subscriber).filter_by(stripe_customer_id=customer_id).first()
         if sub and sub.email:
             try:
-                import resend as r
-                r.api_key = os.environ.get("RESEND_API_KEY","")
-                from_email = os.environ.get("FROM_EMAIL","subscribe@duxburyclipper.com")
-                r.Emails.send({
+                from_email = os.environ.get("FROM_EMAIL", "subscribe@duxburyclipper.net")
+                resend.Emails.send({
                     "from": f"Duxbury Clipper <{from_email}>",
                     "to": sub.email,
                     "subject": "Problem with your Duxbury Clipper renewal",
                     "html": (f"<p>Dear {sub.full_name},</p>"
-                             f"<p>We were unable to process your renewal. "
-                             f"<a href='{BASE_URL}/renew'>Click here to renew</a>.</p>"
+                             f"<p>We were unable to process your automatic renewal. "
+                             f"<a href='{BASE_URL}/account?tab=renew'>Click here to update your payment and renew</a>.</p>"
                              f"<p>Questions? Call 781-934-2811.</p>"),
                 })
             except Exception:
