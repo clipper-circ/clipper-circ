@@ -108,8 +108,15 @@
           <tr><td style="color:#888;padding:5px 0;border:none;padding-right:16px;">Issues left</td><td style="border:none;{% if issues_left < 5 %}color:#c62828;font-weight:700;{% endif %}">{{ issues_left }}</td></tr>
           <tr><td style="color:#888;padding:5px 0;border:none;padding-right:16px;">Auto-renew</td>
               <td style="border:none;">
-                {% if subscriber.auto_renew %}<span style="color:#2e7d32;font-weight:700;">On</span>
-                {% else %}<span style="color:#c62828;font-weight:700;">Off</span>{% endif %}
+                {% if subscriber.stripe_subscription_id %}
+                  <span style="color:#2e7d32;font-weight:700;">✓ Active</span>
+                  <a href="#" onclick="switchTab('renew');return false;" style="font-size:0.82em;color:#2e7d32;margin-left:8px;">Manage →</a>
+                {% elif subscriber.auto_renew %}
+                  <span style="color:#2e7d32;font-weight:700;">On</span>
+                {% else %}
+                  <span style="color:#c62828;font-weight:700;">Off</span>
+                  <a href="#" onclick="switchTab('renew');return false;" style="font-size:0.82em;color:#2e7d32;margin-left:8px;">Set up →</a>
+                {% endif %}
               </td>
           </tr>
         </table>
