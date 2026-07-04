@@ -163,10 +163,12 @@ def _base(first_name: str, body_html: str, btn_html: str, price: str = "", porta
     <table width="600" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:8px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.08);">
 
       <!-- Header banner with logo -->
-      <tr><td style="background:#1a3a1a;padding:20px 36px;text-align:center;">
-        <img src="https://www.duxburyclipper.com/wp-content/uploads/2019/01/logo-1-2.png"
-             alt="The Duxbury Clipper"
-             style="max-width:220px;height:auto;display:block;margin:0 auto;">
+      <tr><td style="background:#1a3a1a;padding:24px 36px;text-align:center;">
+        <div style="display:inline-block;background:#ffffff;border-radius:12px;padding:12px 24px;">
+          <img src="https://www.duxburyclipper.com/wp-content/uploads/2019/01/logo-1-2.png"
+               alt="The Duxbury Clipper"
+               style="max-width:200px;height:auto;display:block;">
+        </div>
       </td></tr>
 
       <!-- Body -->
