@@ -2569,19 +2569,15 @@ Dear Jane,
                     else:
                         try:
                             import resend as _resend
+                            import sys, os as _os
+                            sys.path.insert(0, _os.path.dirname(_os.path.dirname(_os.path.abspath(__file__))))
+                            from cron.nightly import _base, _body_paragraphs, _renew_btn
                             _resend.api_key = os.environ.get("RESEND_API_KEY", "")
                             from_email = os.environ.get("FROM_EMAIL", "subscribe@duxburyclipper.net")
                             _subj = subj.replace("{first_name}", "Jane").replace("{full_name}", "Jane Subscriber").replace("{expiration_date}", "August 15, 2026")
-                            _paras = "".join(f'<p style="margin:0 0 16px;font-size:15px;color:#333;line-height:1.7;">{p.strip()}</p>' for p in preview_body.split("\n\n") if p.strip())
-                            _btn = (f'<table width="100%" cellpadding="0" cellspacing="0" style="margin:28px 0 20px;"><tr><td align="center">'
-                                    f'<a href="#" style="background:#2e7d32;color:#ffffff;padding:14px 36px;border-radius:6px;text-decoration:none;font-weight:bold;font-size:16px;font-family:Arial,sans-serif;display:inline-block;">Renew My Subscription</a>'
-                                    f'</td></tr></table>')
-                            _html = (f'<!DOCTYPE html><html><body style="margin:0;padding:0;background:#f4f4f4;font-family:Georgia,serif;">'
-                                     f'<table width="100%" cellpadding="0" cellspacing="0" style="background:#f4f4f4;padding:30px 0;"><tr><td align="center">'
-                                     f'<table width="600" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:8px;">'
-                                     f'<tr><td style="background:#1a3a1a;padding:24px 36px;"><p style="margin:0;color:#fff;font-size:22px;font-weight:bold;">The Duxbury Clipper</p></td></tr>'
-                                     f'<tr><td style="padding:32px 36px;"><p style="margin:0 0 18px;font-size:16px;color:#222;">Dear Jane,</p>{_paras}{_btn}</td></tr>'
-                                     f'</table></td></tr></table></body></html>')
+                            _body_text = preview_body.replace("{first_name}", "Jane").replace("{full_name}", "Jane Subscriber").replace("{expiration_date}", "August 15, 2026").replace("{price}", "$50.00")
+                            _html = _base("Jane", _body_paragraphs(_body_text), _renew_btn("#"),
+                                          price="$50.00", portal_link="#", plan_label="Duxbury/Plymouth County")
                             _resend.Emails.send({"from": f"Duxbury Clipper <{from_email}>", "to": test_addr, "subject": f"[TEST] {_subj}", "html": _html})
                             st.success(f"✓ Test email sent to {test_addr}")
                         except Exception as e:
