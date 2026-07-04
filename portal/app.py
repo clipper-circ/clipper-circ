@@ -26,6 +26,8 @@ app.config["SESSION_COOKIE_SAMESITE"] = "Lax"
 stripe.api_key = os.environ.get("STRIPE_SECRET_KEY", "")
 STRIPE_PUBLISHABLE_KEY = os.environ.get("STRIPE_PUBLISHABLE_KEY", "")
 STRIPE_WEBHOOK_SECRET  = os.environ.get("STRIPE_WEBHOOK_SECRET", "")
+OBIT_STRIPE_SECRET_KEY     = os.environ.get("OBIT_STRIPE_SECRET_KEY", "")
+OBIT_STRIPE_PUBLISHABLE_KEY = os.environ.get("OBIT_STRIPE_PUBLISHABLE_KEY", "")
 PAYPAL_CLIENT_ID       = os.environ.get("PAYPAL_CLIENT_ID", "")
 PAYPAL_CLIENT_SECRET   = os.environ.get("PAYPAL_CLIENT_SECRET", "")
 PAYPAL_MODE            = os.environ.get("PAYPAL_MODE", "sandbox")
@@ -579,7 +581,10 @@ def create_checkout():
         checkout_params["customer"] = sub.stripe_customer_id
     else:
         checkout_params["customer_email"] = sub.email
-    checkout = stripe.checkout.Session.create(**checkout_params)
+    sub_key = os.environ.get("STRIPE_SECRET_KEY", "")
+    sys.stderr.write(f"[CHECKOUT] using key prefix: {sub_key[:14]}\n")
+    sys.stderr.flush()
+    checkout = stripe.checkout.Session.create(**checkout_params, api_key=sub_key)
     return redirect(checkout.url)
 
 
@@ -1595,7 +1600,7 @@ document.getElementById('submit-btn').addEventListener('click', async function()
 
 @app.route("/obituary")
 def obituary_form():
-    pk = os.environ.get("STRIPE_PUBLISHABLE_KEY", "")
+    pk = OBIT_STRIPE_PUBLISHABLE_KEY or STRIPE_PUBLISHABLE_KEY
     page = OBIT_PAGE.replace("STRIPE_PK_PLACEHOLDER", pk)
     return page, 200, {"Content-Type": "text/html"}
 
@@ -1633,6 +1638,7 @@ def obituary_submit():
             payment_method_types=["card"],
             description=f"Obituary notice — {deceased_name}",
             receipt_email=email,
+            api_key=OBIT_STRIPE_SECRET_KEY or None,
         )
         if pi.status != "succeeded":
             return jsonify({"error": f"Payment status: {pi.status}"}), 400
@@ -1644,7 +1650,7 @@ def obituary_submit():
     amount_paid = amount_cents / 100
     confirmation_code = pi.id
     try:
-        pm_obj   = stripe.PaymentMethod.retrieve(pm_id)
+        pm_obj   = stripe.PaymentMethod.retrieve(pm_id, api_key=OBIT_STRIPE_SECRET_KEY or None)
         card_brand = pm_obj.card.brand.capitalize()
         card_last4 = pm_obj.card.last4
         card_desc  = f"{card_brand} ending in {card_last4}"
