@@ -308,7 +308,7 @@ def request_email_change():
     new_email = request.form.get("new_email","").strip().lower()
     if not new_email:
         flash("Please enter a new email address.")
-        return redirect(url_for("account") + "?tab=address")
+        return redirect(url_for("account") + "?tab=contact")
 
     db = SessionLocal()
     s = db.query(Subscriber).filter_by(id=sub.id).first()
@@ -321,7 +321,7 @@ def request_email_change():
     if existing:
         db.close()
         flash("That email address is already associated with another account.")
-        return redirect(url_for("account") + "?tab=address")
+        return redirect(url_for("account") + "?tab=contact")
 
     token = secrets.token_urlsafe(32)
     s.pending_email               = new_email
@@ -379,7 +379,7 @@ def request_email_change():
         print(f"[EMAIL ERROR] {e}")
 
     flash(f"A confirmation link has been sent to {new_email}. Click it to complete the change.")
-    return redirect(url_for("account") + "?tab=address")
+    return redirect(url_for("account") + "?tab=contact")
 
 
 @app.route("/verify-email/<token>")

@@ -315,6 +315,13 @@
     document.getElementById('tab-' + name).classList.add('active');
   }
 
+  // Activate tab from URL parameter on page load
+  (function() {
+    var params = new URLSearchParams(window.location.search);
+    var tab = params.get('tab');
+    if (tab && document.getElementById('tab-' + tab)) switchTab(tab);
+  })();
+
   // Loading bar on initial page load
   (function() {
     var bar = document.getElementById('load-bar');
