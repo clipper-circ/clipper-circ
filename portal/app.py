@@ -368,7 +368,7 @@ def request_email_change():
                     f"<div style='font-family:Arial,sans-serif;max-width:520px;margin:0 auto;padding:20px;'>"
                     f"<h2 style='color:#1a3a1a;'>Duxbury Clipper</h2>"
                     f"<p>Hi {first_name},</p>"
-                    f"<p>A request was made to change the email address on your Duxbury Clipper account "
+                    f"<p>A request was made to change the email address on your Duxbury Clipper home delivery account "
                     f"from this address to <strong>{new_email}</strong>.</p>"
                     f"<p>A confirmation link has been sent to the new address. "
                     f"If you did not make this request, please contact us immediately.</p>"
