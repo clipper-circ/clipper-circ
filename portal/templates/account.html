@@ -245,8 +245,8 @@
 
   {# ════════ ORDER HISTORY ════════ #}
   <div class="tab-panel" id="panel-history">
-    {% set EVENT_ICONS = {'EMAIL_CHANGED':'✉️','ADDRESS_SWITCHED':'🔄','ADDRESS_UPDATED':'📬','NAME_UPDATED':'✏️'} %}
-    {% set EVENT_LABELS = {'EMAIL_CHANGED':'Email Changed','ADDRESS_SWITCHED':'Address Switched','ADDRESS_UPDATED':'Address Updated','NAME_UPDATED':'Name Updated'} %}
+    {% set EVENT_ICONS = {'EMAIL_CHANGED':'✉️','ADDRESS_SWITCHED':'🔄','ADDRESS_UPDATED':'📬','NAME_UPDATED':'✏️','AUTO_RENEW_ENABLED':'✅','AUTO_RENEW_CANCELLED':'❌','SUBSCRIPTION_STARTED':'🔁','SUBSCRIPTION_RENEWED':'🔁'} %}
+    {% set EVENT_LABELS = {'EMAIL_CHANGED':'Email Changed','ADDRESS_SWITCHED':'Address Switched','ADDRESS_UPDATED':'Address Updated','NAME_UPDATED':'Name Updated','AUTO_RENEW_ENABLED':'Auto-Renew Enabled','AUTO_RENEW_CANCELLED':'Auto-Renew Cancelled','SUBSCRIPTION_STARTED':'Auto-Renew Started','SUBSCRIPTION_RENEWED':'Auto-Renewed'} %}
     {% if payments or events %}
     <table>
       <thead><tr><th>Date</th><th>Description</th><th>Amount</th><th>Detail</th></tr></thead>

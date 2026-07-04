@@ -300,6 +300,10 @@ def toggle_autorenew():
                 stripe.Subscription.modify(s.stripe_subscription_id, cancel_at_period_end=False)
             except Exception:
                 pass
+        db.add(SubscriberEventLog(
+            subscriber_id=s.id, event_type="AUTO_RENEW_ENABLED",
+            description="Auto-renew re-enabled by subscriber.", performed_by="subscriber",
+        ))
         flash("Auto-renew enabled.")
     else:
         s.auto_renew = False
@@ -308,6 +312,10 @@ def toggle_autorenew():
                 stripe.Subscription.modify(s.stripe_subscription_id, cancel_at_period_end=True)
             except Exception:
                 pass
+        db.add(SubscriberEventLog(
+            subscriber_id=s.id, event_type="AUTO_RENEW_CANCELLED",
+            description="Auto-renew cancelled by subscriber.", performed_by="subscriber",
+        ))
         flash("Auto-renew disabled. Your subscription will not renew automatically.")
     db.commit()
     db.close()
@@ -711,8 +719,14 @@ def stripe_webhook():
                     sub.stripe_subscription_id = cs.get("subscription")
                     sub.auto_renew = True
                     base = sub.expiration_date if (sub.expiration_date and sub.expiration_date >= date.today()) else date.today()
-                    sub.expiration_date = base.replace(year=base.year + 1)
+                    new_exp = base.replace(year=base.year + 1)
+                    sub.expiration_date = new_exp
                     _reset_reminder_flags(sub)
+                    db.add(SubscriberEventLog(
+                        subscriber_id=sub.id, event_type="SUBSCRIPTION_STARTED",
+                        description=f"Auto-renew subscription started. Expiration set to {new_exp}.",
+                        performed_by="Stripe",
+                    ))
                     db.commit()
                 else:
                     # One-time payment
@@ -776,6 +790,11 @@ def stripe_webhook():
                     amount=amount, payment_method="CREDIT_CARD",
                     period_start=period_start, period_end=period_end,
                     entered_by="Stripe (auto-renew)",
+                ))
+                db.add(SubscriberEventLog(
+                    subscriber_id=sub_db_id, event_type="SUBSCRIPTION_RENEWED",
+                    description=f"Auto-renew payment of ${amount:.2f} processed. Expiration extended to {period_end}.",
+                    performed_by="Stripe",
                 ))
                 db.commit()
 
