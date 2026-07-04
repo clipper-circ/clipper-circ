@@ -57,26 +57,32 @@ DEFAULT_SETTINGS = {
         "reminder_35": {
             "subject": "Your Duxbury Clipper subscription — time to renew soon",
             "body": "Your subscription expires on {expiration_date} — about 5 issues from now.\n\nTo keep your weekly Clipper coming, please renew at your convenience.\n\nOr mail a check to: The Duxbury Clipper, P.O. Box 1656, Duxbury, MA 02331\n\nThank you for supporting your hometown paper!",
+            "btn_color": "#2e7d32", "box_color": "#2e7d32",
         },
         "reminder_21": {
             "subject": "Reminder: Your Duxbury Clipper subscription expires soon",
             "body": "Just a reminder — your subscription expires on {expiration_date} (about 3 issues away).\n\nDon't miss a single issue. Renew now.\n\nOr send a check to: The Duxbury Clipper, P.O. Box 1656, Duxbury, MA 02331",
+            "btn_color": "#2e7d32", "box_color": "#2e7d32",
         },
         "reminder_14": {
             "subject": "2 issues left — please renew your Duxbury Clipper subscription",
             "body": "You have about 2 issues remaining on your Duxbury Clipper subscription (expires {expiration_date}).\n\nRenew today to avoid any interruption in delivery.\n\nOr mail a check to: The Duxbury Clipper, P.O. Box 1656, Duxbury, MA 02331",
+            "btn_color": "#2e7d32", "box_color": "#2e7d32",
         },
         "expire_day": {
             "subject": "Your Duxbury Clipper subscription expires today",
             "body": "Your Duxbury Clipper subscription expires today.\n\nGood news — we'll keep delivering your paper for up to 4 more weeks while you renew. Please don't let it lapse!\n\nOr mail a check to: The Duxbury Clipper, P.O. Box 1656, Duxbury, MA 02331",
+            "btn_color": "#e65100", "box_color": "#e65100",
         },
         "grace_14": {
             "subject": "Action needed: Your Duxbury Clipper subscription is past due",
             "body": "Your Duxbury Clipper subscription expired on {expiration_date}.\n\nWe've continued delivering your paper as a courtesy, but delivery will stop in about 2 weeks if we don't hear from you.\n\nOr mail a check to: The Duxbury Clipper, P.O. Box 1656, Duxbury, MA 02331",
+            "btn_color": "#c62828", "box_color": "#c62828",
         },
         "grace_final": {
             "subject": "Final notice: Duxbury Clipper delivery stopping this week",
             "body": "We're sorry to say that your Duxbury Clipper home delivery will stop this week unless you renew.\n\nYour subscription expired on {expiration_date} and we haven't received a renewal. We'd love to keep you on our list!\n\nOr call us at 781-934-2811 or mail a check to: The Duxbury Clipper, P.O. Box 1656, Duxbury, MA 02331\n\nWe hope to hear from you — thank you for being a loyal reader.",
+            "btn_color": "#c62828", "box_color": "#c62828",
         },
     },
 }
@@ -2542,7 +2548,10 @@ elif page == "⚙️ Settings":
                 subj = st.text_input("Subject line", value=tmpl.get("subject",""), key=f"subj_{key}")
                 body = st.text_area("Body copy", value=tmpl.get("body",""), height=200, key=f"body_{key}",
                     help="Plain text. Use {first_name}, {full_name}, {expiration_date} as placeholders.")
-                new_templates[key] = {"subject": subj, "body": body}
+                col_a, col_b = st.columns(2)
+                btn_color = col_a.color_picker("Button color", value=tmpl.get("btn_color", "#2e7d32"), key=f"btn_color_{key}")
+                box_color = col_b.color_picker("Accent box color", value=tmpl.get("box_color", "#2e7d32"), key=f"box_color_{key}")
+                new_templates[key] = {"subject": subj, "body": body, "btn_color": btn_color, "box_color": box_color}
 
                 st.markdown("**Preview** *(placeholders filled with sample data)*")
                 preview_body = body.replace("{first_name}", "Jane").replace("{full_name}", "Jane Subscriber").replace("{expiration_date}", "August 15, 2026")
@@ -2551,12 +2560,15 @@ elif page == "⚙️ Settings":
 <strong style="font-size:1.05em;color:#1a3a1a;">The Duxbury Clipper</strong><br>
 <span style="color:#888;font-size:0.85em;">P.O. Box 1656 • Duxbury, MA 02331 • 781-934-2811</span>
 <hr style="border:none;border-top:1px solid #ddd;margin:10px 0;">
+<div style="background:#f9f9f9;border-left:4px solid {box_color};border-radius:4px;padding:10px 14px;margin:12px 0;font-size:0.88em;color:#555;">
+<strong>Plan:</strong> Duxbury/Plymouth County<br><strong>Renewal rate:</strong> $50.00/year &nbsp;•&nbsp; Just 96 cents a week!
+</div>
 Dear Jane,
 
 {preview_body}
 
 <div style="text-align:center;margin:16px 0;">
-  <span style="background:#2e7d32;color:white;padding:10px 24px;border-radius:6px;font-weight:bold;">Renew My Subscription</span>
+  <span style="background:{btn_color};color:white;padding:10px 24px;border-radius:6px;font-weight:bold;">Renew My Subscription</span>
 </div>
 </div>""", unsafe_allow_html=True)
 
@@ -2575,9 +2587,10 @@ Dear Jane,
                             _resend.api_key = os.environ.get("RESEND_API_KEY", "")
                             from_email = os.environ.get("FROM_EMAIL", "subscribe@duxburyclipper.net")
                             _subj = subj.replace("{first_name}", "Jane").replace("{full_name}", "Jane Subscriber").replace("{expiration_date}", "August 15, 2026")
-                            _body_text = preview_body.replace("{first_name}", "Jane").replace("{full_name}", "Jane Subscriber").replace("{expiration_date}", "August 15, 2026").replace("{price}", "$50.00")
-                            _html = _base("Jane", _body_paragraphs(_body_text), _renew_btn("#"),
-                                          price="$50.00", portal_link="#", plan_label="Duxbury/Plymouth County")
+                            _body_text = preview_body.replace("{price}", "$50.00")
+                            _html = _base("Jane", _body_paragraphs(_body_text), _renew_btn("#", color=btn_color),
+                                          price="$50.00", portal_link="#", plan_label="Duxbury/Plymouth County",
+                                          box_color=box_color)
                             _resend.Emails.send({"from": f"Duxbury Clipper <{from_email}>", "to": test_addr, "subject": f"[TEST] {_subj}", "html": _html})
                             st.success(f"✓ Test email sent to {test_addr}")
                         except Exception as e:

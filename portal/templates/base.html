@@ -5,33 +5,35 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>{% block title %}Duxbury Clipper{% endblock %}</title>
 <style>
-  * { box-sizing: border-box; }
-  body { font-family: Arial, sans-serif; margin: 0; padding: 0; background: #f5f5f5; color: #222; }
+  *, *::before, *::after { box-sizing: border-box; }
+  body { font-family: Georgia, serif; background: #f9f9f7; color: #222; margin: 0; padding: 0; }
 
-  /* Top nav bar */
-  .topbar { background: #222; color: #fff; padding: 10px 30px; display: flex; justify-content: space-between; align-items: center; font-size: 0.9em; }
-  .topbar a { color: #ccc; text-decoration: none; margin-left: 20px; }
-  .topbar a:hover { color: #fff; }
+  /* Masthead */
+  .masthead { background: white; text-align: center; padding: 20px 24px 12px; border-bottom: 1px solid #ddd; }
+  .masthead img { max-width: 520px; width: 90%; height: auto; }
+
+  /* Green nav bar */
+  .sitenav { background: #1a3a1a; padding: 0; display: flex; align-items: stretch; justify-content: center; flex-wrap: wrap; }
+  .sitenav a { color: white; font-size: 0.85em; text-decoration: none; padding: 10px 14px;
+               display: inline-flex; align-items: center; letter-spacing: 0.03em;
+               font-family: Georgia, serif; font-weight: normal; }
+  .sitenav a:hover { background: rgba(255,255,255,0.15); }
+  .sitenav a.active { background: rgba(255,255,255,0.12); font-weight: 700; }
 
   /* Main content wrapper */
-  .page { max-width: 900px; margin: 30px auto; padding: 0 20px 60px; }
-
-  /* Page header: logo + account info */
-  .page-header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 24px; }
-  .page-header img { height: 60px; }
-  .page-header-right { text-align: right; font-size: 0.9em; color: #555; }
-  .page-header h1 { font-size: 1.8em; margin: 0 0 2px; text-transform: uppercase; letter-spacing: 1px; }
-  .page-header .acct-num { font-size: 1em; color: #888; }
-
-  /* Tabs */
-  .tabs { display: flex; border-bottom: 2px solid #ddd; margin-bottom: 24px; gap: 4px; }
-  .tab-link { padding: 10px 18px; text-decoration: none; color: #555; font-size: 0.95em; border: 1px solid transparent; border-bottom: none; border-radius: 4px 4px 0 0; }
-  .tab-link.active { background: #fff; border-color: #ddd; color: #2e7d32; font-weight: 700; margin-bottom: -2px; border-bottom: 2px solid #fff; }
-  .tab-link:hover:not(.active) { background: #f0f0f0; }
+  .page { max-width: 900px; margin: 32px auto; padding: 0 20px 60px; }
 
   /* Cards */
   .card { background: #fff; border: 1px solid #ddd; border-radius: 6px; padding: 24px; margin-bottom: 20px; }
   .card h2 { margin: 0 0 16px; font-size: 1.1em; border-bottom: 1px solid #eee; padding-bottom: 10px; }
+
+  /* Tabs */
+  .tabs { display: flex; border-bottom: 2px solid #ddd; margin-bottom: 24px; gap: 4px; }
+  .tab-link { padding: 10px 18px; text-decoration: none; color: #555; font-size: 0.95em;
+              border: 1px solid transparent; border-bottom: none; border-radius: 4px 4px 0 0; font-family: Arial, sans-serif; }
+  .tab-link.active { background: #fff; border-color: #ddd; color: #2e7d32; font-weight: 700;
+                     margin-bottom: -2px; border-bottom: 2px solid #fff; }
+  .tab-link:hover:not(.active) { background: #f0f0f0; }
 
   /* Two-column card layout */
   .two-col { display: flex; gap: 20px; }
@@ -43,18 +45,18 @@
   th { color: #888; font-size: 0.8em; text-transform: uppercase; font-weight: 600; }
 
   /* Forms */
-  label { display: block; margin-top: 12px; font-weight: bold; font-size: 0.85em; color: #444; }
+  label { display: block; margin-top: 12px; font-weight: bold; font-size: 0.85em; color: #444; font-family: Arial, sans-serif; }
   input[type=text], input[type=email], input[type=password], input[type=date] {
     width: 100%; padding: 9px 10px; margin-top: 4px; border: 1px solid #ccc;
-    border-radius: 4px; font-size: 0.95em;
+    border-radius: 4px; font-size: 0.95em; font-family: Georgia, serif;
   }
   .row { display: flex; gap: 12px; }
   .row > * { flex: 1; }
 
   /* Buttons */
   .btn { display: inline-block; padding: 10px 22px; background: #2e7d32; color: #fff;
-         border: none; border-radius: 20px; cursor: pointer; font-size: 0.95em;
-         text-decoration: none; font-weight: 700; }
+         border: none; border-radius: 4px; cursor: pointer; font-size: 0.95em;
+         text-decoration: none; font-weight: 700; font-family: Georgia, serif; }
   .btn:hover { background: #1a5c1e; }
   .btn-outline { background: transparent; color: #2e7d32; border: 2px solid #2e7d32; }
   .btn-outline:hover { background: #e8f5e9; }
@@ -64,24 +66,22 @@
 
   /* Flash messages */
   .flash { padding: 12px 16px; margin: 0 0 16px; border-radius: 4px;
-           background: #d4edda; border: 1px solid #c3e6cb; color: #155724; }
+           background: #d4edda; border: 1px solid #c3e6cb; color: #155724; font-family: Arial, sans-serif; }
   .flash.error { background: #f8d7da; border-color: #f5c6cb; color: #721c24; }
 
   /* Status badges */
-  .badge { display: inline-block; padding: 3px 10px; border-radius: 10px; font-size: 0.8em; font-weight: 700; }
+  .badge { display: inline-block; padding: 3px 10px; border-radius: 10px; font-size: 0.8em; font-weight: 700; font-family: Arial, sans-serif; }
   .badge-active  { background: #e8f5e9; color: #2e7d32; }
   .badge-grace   { background: #fff8e1; color: #f57f17; }
   .badge-expired { background: #fde8e8; color: #c62828; }
 
   /* Footer */
-  footer { text-align: center; font-size: 0.85em; color: #888; margin-top: 16px; line-height: 1.5; }
+  footer { text-align: center; font-size: 0.85em; color: #888; margin-top: 16px; line-height: 1.5; font-family: Arial, sans-serif; }
   footer a { color: #2e7d32; }
 
   @media (max-width: 620px) {
     .page { padding: 0 12px 40px; margin: 16px auto; }
     .two-col { flex-direction: column; }
-    .page-header { flex-direction: column; align-items: flex-start; gap: 8px; }
-    .page-header-right { text-align: left; }
     .tabs { flex-wrap: wrap; }
     .card { padding: 16px; }
     input[type=text], input[type=email], input[type=password], input[type=date] { font-size: 1em; }
@@ -91,14 +91,23 @@
 </head>
 <body>
 
-<div class="topbar">
-  <span style="font-size:0.8em;opacity:0.75;letter-spacing:0.5px;">🗞️ Duxbury Clipper — Print Subscriber Account</span>
-  <div>
-    {% if session.subscriber_id %}
-    <a href="{{ url_for('account') }}">My Account Home</a>
-    <a href="{{ url_for('logout') }}">Log Out</a>
-    {% endif %}
-  </div>
+<div class="masthead">
+  <a href="https://www.duxburyclipper.com/" rel="noreferrer">
+    <img src="https://www.duxburyclipper.com/wp-content/uploads/2019/01/logo-1-2.png" alt="Duxbury Clipper">
+  </a>
+</div>
+
+<div class="sitenav">
+  <a href="https://www.duxburyclipper.com/" rel="noreferrer">&#8962; Home</a>
+  <a href="https://www.duxburyclipper.com/subscribe/" rel="noreferrer">Subscribe</a>
+  <a href="https://www.duxburyclipper.com/category/news/" rel="noreferrer">News</a>
+  {% if session.subscriber_id %}
+  <a href="{{ url_for('account') }}" {% if request.endpoint == 'account' %}class="active"{% endif %}>My Account</a>
+  <a href="{{ url_for('renew_self') }}" {% if request.endpoint == 'renew_self' %}class="active"{% endif %}>Renew</a>
+  <a href="{{ url_for('logout') }}">Log Out</a>
+  {% else %}
+  <a href="{{ url_for('login') }}" {% if request.endpoint == 'login' %}class="active"{% endif %}>Subscriber Login</a>
+  {% endif %}
 </div>
 
 <div class="page">
@@ -109,6 +118,7 @@
 </div>
 
 <footer>
+  The Duxbury Clipper &nbsp;•&nbsp; P.O. Box 1656, Duxbury, MA 02331 &nbsp;•&nbsp;
   <a href="https://www.duxburyclipper.com">www.duxburyclipper.com</a>
 </footer>
 

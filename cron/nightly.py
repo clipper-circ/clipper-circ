@@ -61,26 +61,32 @@ _DEFAULT_TEMPLATES = {
     "reminder_35": {
         "subject": "Your Duxbury Clipper subscription — time to renew soon",
         "body": "Your subscription expires on {expiration_date} — about 5 issues from now.\n\nTo keep your weekly Clipper coming without any interruption, please renew at your convenience.\n\nThank you for supporting your hometown paper!",
+        "btn_color": "#2e7d32", "box_color": "#2e7d32",
     },
     "reminder_21": {
         "subject": "Reminder: Your Duxbury Clipper subscription expires soon",
         "body": "Just a friendly reminder — your subscription expires on {expiration_date}, about 3 issues from now.\n\nRenew now to make sure you don't miss a single edition.",
+        "btn_color": "#2e7d32", "box_color": "#2e7d32",
     },
     "reminder_14": {
         "subject": "Only 2 issues left on your Duxbury Clipper subscription",
         "body": "Your Duxbury Clipper subscription expires on {expiration_date} — you have about 2 issues remaining.\n\nPlease renew today to avoid any interruption in your home delivery.",
+        "btn_color": "#2e7d32", "box_color": "#2e7d32",
     },
     "expire_day": {
         "subject": "Your Duxbury Clipper subscription expires today",
         "body": "Your Duxbury Clipper subscription expires today.\n\nThe good news — we'll continue delivering your paper for up to 4 more weeks as a courtesy while you renew. Please don't let it lapse!",
+        "btn_color": "#e65100", "box_color": "#e65100",
     },
     "grace_14": {
         "subject": "Action needed: Your Duxbury Clipper subscription is past due",
         "body": "Your Duxbury Clipper subscription expired on {expiration_date}.\n\nWe've continued delivering your paper as a courtesy, but home delivery will stop in about 2 weeks if we don't hear from you.\n\nWe'd love to keep you on our list — please renew when you get a chance.",
+        "btn_color": "#c62828", "box_color": "#c62828",
     },
     "grace_final": {
         "subject": "Final notice — Duxbury Clipper delivery stopping this week",
         "body": "We're sorry to say that your Duxbury Clipper home delivery will stop this week unless you renew.\n\nYour subscription expired on {expiration_date} and we haven't yet received a renewal. We truly value your readership and hope to keep you on our list.\n\nThank you for being a loyal reader of your hometown paper.",
+        "btn_color": "#c62828", "box_color": "#c62828",
     },
 }
 
@@ -144,7 +150,7 @@ def send_email(to_email: str, subject: str, html: str, subscriber_name: str) -> 
 # ── Email templates ────────────────────────────────────────────────────────────
 
 def _base(first_name: str, body_html: str, btn_html: str, price: str = "", portal_link: str = "#",
-          plan_label: str = "") -> str:
+          plan_label: str = "", box_color: str = "#2e7d32") -> str:
     plan_box = ""
     if plan_label or price:
         try:
@@ -155,9 +161,10 @@ def _base(first_name: str, body_html: str, btn_html: str, price: str = "", porta
                 per_issue = f"Just ${cents/100:.2f} a week!"
         except Exception:
             per_issue = ""
+        # Lighten box background based on color
         plan_box = (
             f'<table width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 20px;">'
-            f'<tr><td style="background:#f0f7f0;border-left:4px solid #2e7d32;border-radius:4px;padding:12px 16px;">'
+            f'<tr><td style="background:#f9f9f9;border-left:4px solid {box_color};border-radius:4px;padding:12px 16px;">'
             f'<p style="margin:0;font-size:13px;color:#555;line-height:1.8;">'
             + (f'<strong>Plan:</strong> {plan_label}<br>' if plan_label else '')
             + (f'<strong>Renewal rate:</strong> {price}/year' + (f' &nbsp;•&nbsp; {per_issue}' if per_issue else '') if price else '')
@@ -224,10 +231,11 @@ def _body_paragraphs(text: str) -> str:
 
 
 def _make_email(key: str, sub: Subscriber, portal_link: str,
-                btn_label: str = "Renew My Subscription",
-                btn_color: str = "#2e7d32") -> tuple[str, str]:
+                btn_label: str = "Renew My Subscription") -> tuple[str, str]:
     from models import PLAN_PRICES, PLAN_LABELS
     tmpl = _get_template(key)
+    btn_color = tmpl.get("btn_color", "#2e7d32")
+    box_color = tmpl.get("box_color", "#2e7d32")
     subject = _fill(tmpl["subject"], sub)
     body_text = _fill(tmpl["body"], sub)
     parts = sub.full_name.split() if sub.full_name else []
@@ -235,7 +243,7 @@ def _make_email(key: str, sub: Subscriber, portal_link: str,
     price = f"${PLAN_PRICES.get(sub.plan, 0):.2f}"
     plan_label = PLAN_LABELS.get(sub.plan, "")
     html = _base(first, _body_paragraphs(body_text), _renew_btn(portal_link, btn_label, btn_color),
-                 price=price, portal_link=portal_link, plan_label=plan_label)
+                 price=price, portal_link=portal_link, plan_label=plan_label, box_color=box_color)
     return subject, html
 
 
@@ -249,13 +257,13 @@ def email_14_days(sub: Subscriber, portal_link: str) -> tuple[str, str]:
     return _make_email("reminder_14", sub, portal_link)
 
 def email_expire_day(sub: Subscriber, portal_link: str) -> tuple[str, str]:
-    return _make_email("expire_day", sub, portal_link, "Renew Before Delivery Stops", "#c62828")
+    return _make_email("expire_day", sub, portal_link, "Renew Before Delivery Stops")
 
 def email_grace_14(sub: Subscriber, portal_link: str) -> tuple[str, str]:
-    return _make_email("grace_14", sub, portal_link, "Renew Now — Keep My Paper Coming", "#c62828")
+    return _make_email("grace_14", sub, portal_link, "Renew Now — Keep My Paper Coming")
 
 def email_grace_final(sub: Subscriber, portal_link: str) -> tuple[str, str]:
-    return _make_email("grace_final", sub, portal_link, "Renew and Keep My Subscription", "#c62828")
+    return _make_email("grace_final", sub, portal_link, "Renew and Keep My Subscription")
 
 
 # ── Main logic ─────────────────────────────────────────────────────────────────
