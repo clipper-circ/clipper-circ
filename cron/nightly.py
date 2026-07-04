@@ -190,8 +190,7 @@ def _base(first_name: str, body_html: str, btn_html: str, price: str = "", porta
       <!-- Footer -->
       <tr><td style="background:#f9f9f9;border-top:1px solid #eee;padding:18px 36px;">
         <p style="margin:0;font-size:12px;color:#999;line-height:1.9;">
-          The Duxbury Clipper &nbsp;•&nbsp; P.O. Box 1656, Duxbury, MA 02331<br>
-          <a href="https://www.duxburyclipper.com" style="color:#2e7d32;">www.duxburyclipper.com</a>
+          The Duxbury Clipper &nbsp;•&nbsp; P.O. Box 1656, Duxbury, MA 02331 &nbsp;•&nbsp; <a href="https://www.duxburyclipper.com" style="color:#2e7d32;">www.duxburyclipper.com</a>
         </p>
       </td></tr>
 
