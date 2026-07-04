@@ -72,12 +72,9 @@
         <button type="submit" class="btn" style="width:100%;margin-top:18px;border-radius:4px;padding:12px;font-size:1em;">Log In</button>
       </form>
 
-      <div style="text-align:center;margin:16px 0 0;color:#bbb;font-size:0.85em;font-weight:700;letter-spacing:1px;">— OR —</div>
+      <div style="text-align:center;margin:16px 0 0;color:#888;font-size:0.84em;font-weight:700;letter-spacing:0.5px;">— OR, don't know your account number? —</div>
 
       <div style="margin-top:14px;padding-top:14px;border-top:1px solid #eee;">
-        <p style="font-size:0.84em;color:#888;text-align:center;margin:0 0 10px;">
-          Don't know your account number?
-        </p>
         <form method="post" action="{{ url_for('email_lookup') }}">
           <input type="email" name="email" placeholder="Your email address on file" required
                  style="width:100%;padding:9px 10px;border:1px solid #ccc;border-radius:4px;font-size:0.88em;box-sizing:border-box;">
