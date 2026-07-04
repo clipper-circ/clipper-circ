@@ -213,6 +213,10 @@ def account():
         plan_label=PLAN_LABELS[sub.plan],
         issues_left=issues,
         stripe_key=STRIPE_PUBLISHABLE_KEY,
+        price=PLAN_PRICES[sub.plan],
+        all_plans=[(k,v,PLAN_PRICES[k]) for k,v in PLAN_LABELS.items()
+                   if k.value not in ("COMPLIMENTARY","GIFT")],
+        paypal_client_id=PAYPAL_CLIENT_ID,
     )
 
 
@@ -514,24 +518,10 @@ def remove_hold(hold_id):
 
 @app.route("/renew")
 def renew_self():
-    """Subscriber clicks Renew from their account page."""
     sub = current_subscriber()
     if not sub:
         return redirect(url_for("login"))
-    db = SessionLocal()
-    sub = db.query(Subscriber).filter_by(id=sub.id).first()
-    db.close()
-    issues = _issues_left(sub.expiration_date)
-    return render_template("renew.html",
-        subscriber=sub,
-        plan_label=PLAN_LABELS[sub.plan],
-        price=PLAN_PRICES[sub.plan],
-        issues_left=issues,
-        all_plans=[(k,v,PLAN_PRICES[k]) for k,v in PLAN_LABELS.items()
-                   if k.value not in ("COMPLIMENTARY","GIFT")],
-        stripe_key=STRIPE_PUBLISHABLE_KEY,
-        paypal_client_id=PAYPAL_CLIENT_ID,
-    )
+    return redirect(url_for("account") + "?tab=renew")
 
 
 @app.route("/create-checkout", methods=["POST"])
@@ -563,7 +553,7 @@ def create_checkout():
         }],
         metadata={"subscriber_id": str(sub.id), "plan": plan_code.value},
         success_url=f"{BASE_URL}/renewal-success?session_id={{CHECKOUT_SESSION_ID}}",
-        cancel_url=f"{BASE_URL}/renew",
+        cancel_url=f"{BASE_URL}/account?tab=renew",
     )
     return redirect(checkout.url)
 
