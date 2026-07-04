@@ -95,7 +95,8 @@ def _get_template(key: str) -> dict:
 def _fill(template_str: str, sub: "Subscriber") -> str:
     from models import PLAN_PRICES
     exp = sub.expiration_date.strftime("%B %d, %Y") if sub.expiration_date else "—"
-    first = sub.full_name.split()[0] if sub.full_name else sub.full_name
+    parts = sub.full_name.split() if sub.full_name else []
+    first = sub.full_name if (not parts or parts[0].lower() in ("the", "estate", "family")) else parts[0]
     price = f"${PLAN_PRICES.get(sub.plan, 0):.2f}"
     return (template_str
             .replace("{full_name}", sub.full_name)
@@ -223,7 +224,8 @@ def _make_email(key: str, sub: Subscriber, portal_link: str,
     tmpl = _get_template(key)
     subject = _fill(tmpl["subject"], sub)
     body_text = _fill(tmpl["body"], sub)
-    first = sub.full_name.split()[0] if sub.full_name else sub.full_name
+    parts = sub.full_name.split() if sub.full_name else []
+    first = sub.full_name if (not parts or parts[0].lower() in ("the", "estate", "family")) else parts[0]
     price = f"${PLAN_PRICES.get(sub.plan, 0):.2f}"
     plan_label = PLAN_LABELS.get(sub.plan, "")
     html = _base(first, _body_paragraphs(body_text), _renew_btn(portal_link, btn_label, btn_color),
