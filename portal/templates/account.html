@@ -81,9 +81,9 @@
     <a onclick="switchTab('subscription')" id="tab-subscription" class="active">Subscription</a>
     <a onclick="switchTab('address')"      id="tab-address">Address</a>
     <a onclick="switchTab('contact')"      id="tab-contact">Contact Info</a>
+    <a onclick="switchTab('renew')"        id="tab-renew">Renew</a>
     <a onclick="switchTab('history')"      id="tab-history">Order History</a>
     <a onclick="switchTab('extras')"       id="tab-extras">Extras</a>
-    <a onclick="switchTab('renew')"        id="tab-renew">Renew</a>
   </div>
 
   {# ── Tab panels (all rendered, JS toggles visibility) ── #}
@@ -334,7 +334,7 @@
 
         <table style="margin-top:16px;">
           <tr><th>Amount</th><td><strong id="price-display" style="font-size:1.1em;">${{ "%.2f"|format(price) }}</strong> / year</td></tr>
-          <tr><th>Delivery</th><td>Weekly, every Wednesday</td></tr>
+          <tr><th>Per Issue</th><td id="per-issue-display">${{ "%.2f"|format(price / 52) }}</td></tr>
         </table>
 
         <div style="margin-top:20px;padding:14px;background:#e8f5e9;border-radius:4px;font-size:0.88em;color:#2e7d32;">
@@ -398,6 +398,7 @@
     planSelect.addEventListener('change', function() {
       var price = this.options[this.selectedIndex].dataset.price;
       document.getElementById('price-display').textContent = '$' + parseFloat(price).toFixed(2);
+      document.getElementById('per-issue-display').textContent = '$' + (parseFloat(price) / 52).toFixed(2);
       document.querySelectorAll('.btn-price').forEach(function(el) {
         el.textContent = el.textContent.replace(/\$[\d.]+/, '$' + parseFloat(price).toFixed(2));
       });
