@@ -184,14 +184,14 @@ def _base(first_name: str, body_html: str, btn_html: str, price: str = "", porta
 
       <!-- Account link -->
       <tr><td style="padding:0 36px 20px;">
-        <p style="margin:0;font-size:13px;color:#666;line-height:1.6;">
+        <p style="margin:0;font-size:13px;color:#666;line-height:1.6;text-align:center;">
           You can also <a href="{portal_link}" style="color:#2e7d32;">log into your account</a> to update your mailing address, change your subscription type, or place your delivery on hold.
         </p>
       </td></tr>
 
       <!-- Footer -->
       <tr><td style="background:#f9f9f9;border-top:1px solid #eee;padding:18px 36px;">
-        <p style="margin:0;font-size:12px;color:#999;line-height:1.9;">
+        <p style="margin:0;font-size:12px;color:#999;line-height:1.9;text-align:center;">
           The Duxbury Clipper &nbsp;•&nbsp; P.O. Box 1656, Duxbury, MA 02331 &nbsp;•&nbsp; <a href="https://www.duxburyclipper.com" style="color:#2e7d32;">www.duxburyclipper.com</a>
         </p>
       </td></tr>
