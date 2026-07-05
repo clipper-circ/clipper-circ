@@ -676,7 +676,7 @@ def subscribe_new():
     db.close()
 
     if pay_via == "paypal" and PAYPAL_CLIENT_ID:
-        return redirect(url_for("subscribe_paypal", subscriber_id=sub_id))
+        return redirect(url_for("subscribe_paypal", subscriber_id=sub_id, discount_code=discount_code))
 
     # Stripe checkout
     base_price = PLAN_PRICES[plan_code]
@@ -731,7 +731,16 @@ def subscribe_paypal(subscriber_id):
         db.close()
         return redirect(url_for("subscribe_new"))
     plan_code = sub.plan
-    price = f"{PLAN_PRICES[plan_code]:.2f}"
+    base_price = PLAN_PRICES[plan_code]
+    discount_code = request.args.get("discount_code", "").strip().upper()
+    if discount_code:
+        dc = db.query(DiscountCode).filter_by(code=discount_code, active=True).first()
+        if dc and (not dc.expires_at or dc.expires_at >= date.today()) and \
+                  (dc.max_uses is None or dc.use_count < dc.max_uses):
+            base_price = round(base_price * (1 - dc.discount_percent / 100), 2)
+            dc.use_count += 1
+            db.commit()
+    price = f"{base_price:.2f}"
     db.close()
 
     base = "https://api-m.sandbox.paypal.com" if PAYPAL_MODE == "sandbox" else "https://api-m.paypal.com"
