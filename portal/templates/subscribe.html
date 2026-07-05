@@ -94,35 +94,14 @@
 
         <input type="hidden" name="payment_method" id="payment_method_input" value="stripe">
 
-        <div class="card">
-          <h2>Payment</h2>
-          <p style="font-size:0.85em;color:#555;margin-top:0;">Your subscription will renew automatically each year. Cancel anytime.</p>
-
-          <button type="submit" name="pay_via" value="stripe" class="btn" style="width:100%;padding:14px;font-size:1em;border-radius:6px;margin-bottom:12px;" onclick="document.getElementById('payment_method_input').value='stripe'">
-            💳 &nbsp;Pay by Credit Card
-          </button>
-
-          {% if paypal_client_id %}
-          <button type="submit" name="pay_via" value="paypal" style="width:100%;padding:14px;background:#FFC439;color:#003087;border:none;border-radius:6px;font-size:1em;font-weight:700;cursor:pointer;" onclick="document.getElementById('payment_method_input').value='paypal'">
-            <img src="https://www.paypalobjects.com/webstatic/mktg/Logo/pp-logo-34px.png" alt="PayPal" style="height:18px;vertical-align:middle;margin-right:6px;">
-            Pay with PayPal
-          </button>
-          <p style="font-size:0.78em;color:#aaa;text-align:center;margin-top:6px;">PayPal subscriptions renew annually — you'll receive a reminder email before each renewal.</p>
-          {% endif %}
-
-          <p style="font-size:0.8em;color:#aaa;text-align:center;margin-top:14px;">
-            🔒 Secure payment. Your card info is never stored on our servers.
-          </p>
-        </div>
-
       </form>
     </div>
 
-    {# Right: summary #}
+    {# Right: summary + payment #}
     <div class="sub-summary-col">
       <img src="/static/mailbox.jpg" alt="Duxbury Clipper delivered to your door"
            style="width:100%;border-radius:10px;box-shadow:0 4px 16px rgba(0,0,0,0.12);margin-bottom:16px;">
-      <div class="card" style="position:sticky;top:20px;">
+      <div class="card" style="margin-bottom:16px;">
         <h2>Subscription Summary</h2>
         <table>
           <tr><th>Delivery</th><td>Every Wednesday</td></tr>
@@ -138,6 +117,27 @@
           Questions? Call <strong>781-934-2811</strong> or email
           <a href="mailto:subscribe@duxburyclipper.com" style="color:#2e7d32;">subscribe@duxburyclipper.com</a>
         </div>
+      </div>
+
+      <div class="card">
+        <h2>Payment</h2>
+        <p style="font-size:0.85em;color:#555;margin-top:0;">Your subscription will renew automatically each year. Cancel anytime.</p>
+
+        <button type="submit" form="subscribe-form" name="pay_via" value="stripe" class="btn" style="width:100%;padding:14px;font-size:1em;border-radius:6px;margin-bottom:12px;" onclick="document.getElementById('payment_method_input').value='stripe'">
+          💳 &nbsp;Pay by Credit Card
+        </button>
+
+        {% if paypal_client_id %}
+        <button type="submit" form="subscribe-form" name="pay_via" value="paypal" style="width:100%;padding:14px;background:#FFC439;color:#003087;border:none;border-radius:6px;font-size:1em;font-weight:700;cursor:pointer;" onclick="document.getElementById('payment_method_input').value='paypal'">
+          <img src="https://www.paypalobjects.com/webstatic/mktg/Logo/pp-logo-34px.png" alt="PayPal" style="height:18px;vertical-align:middle;margin-right:6px;">
+          Pay with PayPal
+        </button>
+        <p style="font-size:0.78em;color:#aaa;text-align:center;margin-top:6px;">PayPal subscriptions renew annually — you'll receive a reminder email before each renewal.</p>
+        {% endif %}
+
+        <p style="font-size:0.8em;color:#aaa;text-align:center;margin-top:14px;">
+          🔒 Secure payment. Your card info is never stored on our servers.
+        </p>
       </div>
     </div>
 
