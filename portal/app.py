@@ -678,18 +678,9 @@ def subscribe_new():
     if pay_via == "paypal" and PAYPAL_CLIENT_ID:
         return redirect(url_for("subscribe_paypal", subscriber_id=sub_id, discount_code=discount_code))
 
-    # Stripe checkout
-    base_price = PLAN_PRICES[plan_code]
-    if discount_code:
-        db2 = SessionLocal()
-        dc = db2.query(DiscountCode).filter_by(code=discount_code, active=True).first()
-        if dc and (not dc.expires_at or dc.expires_at >= date.today()) and \
-                  (dc.max_uses is None or dc.use_count < dc.max_uses):
-            base_price = round(base_price * (1 - dc.discount_percent / 100), 2)
-            dc.use_count += 1
-            db2.commit()
-        db2.close()
-    price_cents = int(base_price * 100)
+    # Stripe checkout — always full price; discount applied via Stripe coupon (duration=once)
+    price_cents = int(PLAN_PRICES[plan_code] * 100)
+    sub_key = os.environ.get("STRIPE_SECRET_KEY", "")
     checkout_params = {
         "payment_method_types": ["card"],
         "mode": "subscription",
@@ -712,7 +703,24 @@ def subscribe_new():
         "success_url": f"{BASE_URL}/subscribe/success?session_id={{CHECKOUT_SESSION_ID}}",
         "cancel_url": f"{BASE_URL}/subscribe",
     }
-    sub_key = os.environ.get("STRIPE_SECRET_KEY", "")
+    if discount_code:
+        db2 = SessionLocal()
+        dc = db2.query(DiscountCode).filter_by(code=discount_code, active=True).first()
+        if dc and (not dc.expires_at or dc.expires_at >= date.today()) and \
+                  (dc.max_uses is None or dc.use_count < dc.max_uses):
+            try:
+                stripe.Coupon.retrieve(discount_code, api_key=sub_key)
+            except stripe.error.InvalidRequestError:
+                stripe.Coupon.create(
+                    id=discount_code,
+                    percent_off=dc.discount_percent,
+                    duration="once",
+                    api_key=sub_key,
+                )
+            checkout_params["discounts"] = [{"coupon": discount_code}]
+            dc.use_count += 1
+            db2.commit()
+        db2.close()
     checkout = stripe.checkout.Session.create(**checkout_params, api_key=sub_key)
     return redirect(checkout.url)
 
