@@ -177,7 +177,8 @@ function toggleGift() {
   document.getElementById('gifter_name').required = checked;
   document.getElementById('gifter_email').required = checked;
   document.getElementById('phone-field').style.display = checked ? 'none' : 'block';
-  document.getElementById('email-label').textContent = checked ? 'Recipient\'s Email (for account login) *' : 'Email Address *';
+  document.getElementById('email-label').textContent = checked ? 'Recipient\'s Email (optional)' : 'Email Address *';
+  document.querySelector('input[name=email]').required = !checked;
 }
 const planPrices = { {% for code, label, price, desc in plans %}"{{ code }}": {{ price }}{% if not loop.last %}, {% endif %}{% endfor %} };
 function updatePlanDisplay() {
