@@ -18,7 +18,7 @@ from database import SessionLocal
 from models import (
     Subscriber, Payment, DeliveryHold, StaffUser, PaymentAuditLog, HoldAuditLog,
     SubscriberEventLog, AdminLoginLog, SubscriberStatus, PlanCode, PaymentMethod,
-    PLAN_LABELS, PLAN_PRICES, ObituarySubmission, Setting
+    PLAN_LABELS, PLAN_PRICES, ObituarySubmission, Setting, DiscountCode
 )
 import bcrypt
 import hashlib
@@ -2655,6 +2655,68 @@ Dear Jane,
                 settings["reminder_days"] = [rem1, rem2]
                 save_settings(settings)
                 st.success("Settings saved.")
+
+        st.divider()
+
+        # ── Discount Codes ─────────────────────────────────────────────────────
+        st.subheader("🏷️ Discount Codes")
+        codes = db.query(DiscountCode).order_by(DiscountCode.id.desc()).all()
+        if codes:
+            code_rows = []
+            for dc in codes:
+                code_rows.append({
+                    "Code": dc.code,
+                    "Discount": f"{dc.discount_percent}%",
+                    "Uses": f"{dc.use_count} / {'∞' if dc.max_uses is None else dc.max_uses}",
+                    "Expires": dc.expires_at.strftime("%m/%d/%Y") if dc.expires_at else "—",
+                    "Note": dc.note or "—",
+                    "Active": "✅" if dc.active else "❌",
+                })
+            sel = st.dataframe(pd.DataFrame(code_rows), use_container_width=True, hide_index=True,
+                               on_select="rerun", selection_mode="single-row", key="dc_table")
+            selected_rows = sel.selection.rows if sel.selection else []
+            if selected_rows:
+                dc = codes[selected_rows[0]]
+                col1, col2 = st.columns(2)
+                if col1.button("Toggle Active", key="dc_toggle"):
+                    dc.active = not dc.active
+                    db.commit()
+                    st.rerun()
+                if col2.button("Delete Code", key="dc_delete"):
+                    db.delete(dc)
+                    db.commit()
+                    st.rerun()
+        else:
+            st.caption("No discount codes yet.")
+
+        with st.form("add_discount_code"):
+            dc1, dc2, dc3 = st.columns([2, 1, 1])
+            new_code    = dc1.text_input("Code").strip().upper()
+            new_pct     = dc2.number_input("Discount %", min_value=1, max_value=100, value=10)
+            new_maxuses = dc3.number_input("Max Uses (0=unlimited)", min_value=0, value=0)
+            dc4, dc5    = st.columns([1, 2])
+            new_expires = dc4.date_input("Expires (optional)", value=None)
+            new_note    = dc5.text_input("Internal Note")
+            if st.form_submit_button("Create Code"):
+                if new_code:
+                    from datetime import date as ddate
+                    existing = db.query(DiscountCode).filter_by(code=new_code).first()
+                    if existing:
+                        st.error(f"Code {new_code} already exists.")
+                    else:
+                        dc_new = DiscountCode(
+                            code=new_code,
+                            discount_percent=int(new_pct),
+                            max_uses=int(new_maxuses) if new_maxuses > 0 else None,
+                            expires_at=new_expires if new_expires else None,
+                            note=new_note or None,
+                        )
+                        db.add(dc_new)
+                        db.commit()
+                        st.success(f"Code {new_code} created.")
+                        st.rerun()
+                else:
+                    st.error("Code is required.")
 
         st.divider()
 

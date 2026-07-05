@@ -106,7 +106,6 @@
   {% else %}
   <a href="{{ url_for('login') }}" {% if request.endpoint == 'login' %}class="active"{% endif %}>Subscriber Login</a>
   {% endif %}
-  <a href="{{ url_for('admin_discount_codes') }}" {% if request.endpoint == 'admin_discount_codes' %}class="active"{% endif %}>Discount Codes</a>
 </div>
 
 <div class="page">

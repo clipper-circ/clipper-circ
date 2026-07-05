@@ -570,14 +570,7 @@ def apply_discount():
 
 @app.route("/admin/discount-codes", methods=["GET", "POST"])
 def admin_discount_codes():
-    admin_pw = os.environ.get("ADMIN_PASSWORD", "")
-    if admin_pw and session.get("admin_auth") != admin_pw:
-        if request.method == "POST" and request.form.get("admin_password") == admin_pw:
-            session["admin_auth"] = admin_pw
-        elif request.form.get("admin_password"):
-            return render_template("discount_codes.html", codes=[], msg=None, auth_error=True)
-        else:
-            return render_template("discount_codes.html", codes=[], msg=None, auth_required=True)
+    return redirect("https://admin.duxburyclipper.net")
     db = SessionLocal()
     msg = None
     if request.method == "POST":
