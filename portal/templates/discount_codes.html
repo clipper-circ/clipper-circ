@@ -4,6 +4,18 @@
 
 <div style="max-width:860px;margin:0 auto;">
   <h1 style="font-size:1.4em;margin-bottom:4px;">Discount Codes</h1>
+
+  {% if auth_required or auth_error %}
+  <div class="card" style="max-width:340px;">
+    {% if auth_error %}<p style="color:#c62828;margin-top:0;">Incorrect password.</p>{% endif %}
+    <form method="post">
+      <label>Admin Password</label>
+      <input type="password" name="admin_password" autofocus required>
+      <button type="submit" class="btn" style="margin-top:12px;width:100%;">Log In</button>
+    </form>
+  </div>
+  {% else %}
+
   <p style="color:#666;margin-bottom:20px;">Create and manage one-time subscription discount codes.</p>
 
   {% if msg %}
@@ -92,6 +104,8 @@
     <p style="color:#aaa;">No discount codes yet.</p>
     {% endif %}
   </div>
+
+  {% endif %}{# end auth check #}
 </div>
 
 {% endblock %}

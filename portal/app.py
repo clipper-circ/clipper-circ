@@ -546,8 +546,9 @@ def renew_self():
 
 @app.route("/apply-discount", methods=["POST"])
 def apply_discount():
-    code = request.json.get("code", "").strip().upper()
-    plan_val = request.json.get("plan", "LOCAL")
+    data = request.get_json(silent=True) or {}
+    code = data.get("code", "").strip().upper()
+    plan_val = data.get("plan", "LOCAL")
     try:
         plan_code = PlanCode(plan_val)
     except ValueError:
@@ -569,8 +570,14 @@ def apply_discount():
 
 @app.route("/admin/discount-codes", methods=["GET", "POST"])
 def admin_discount_codes():
-    if not session.get("staff_user_id"):
-        return redirect(url_for("staff_login"))
+    admin_pw = os.environ.get("ADMIN_PASSWORD", "")
+    if admin_pw and session.get("admin_auth") != admin_pw:
+        if request.method == "POST" and request.form.get("admin_password") == admin_pw:
+            session["admin_auth"] = admin_pw
+        elif request.form.get("admin_password"):
+            return render_template("discount_codes.html", codes=[], msg=None, auth_error=True)
+        else:
+            return render_template("discount_codes.html", codes=[], msg=None, auth_required=True)
     db = SessionLocal()
     msg = None
     if request.method == "POST":
