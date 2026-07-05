@@ -1,0 +1,160 @@
+{% extends "base.html" %}
+{% block title %}Subscribe — Duxbury Clipper{% endblock %}
+{% block content %}
+
+<style>
+.sub-wrap { max-width:820px; margin:0 auto; }
+.sub-grid { display:flex; gap:28px; align-items:flex-start; margin-top:20px; }
+.sub-form-col { flex:1.4; min-width:0; }
+.sub-summary-col { flex:1; min-width:0; }
+.field-row { display:flex; gap:12px; }
+.field-row > div { flex:1; }
+@media (max-width:640px) {
+  .sub-grid { flex-direction:column; }
+  .field-row { flex-direction:column; gap:0; }
+}
+</style>
+
+<div class="sub-wrap">
+  <h1 style="font-size:1.5em;margin-bottom:4px;">Start Your Duxbury Clipper Subscription</h1>
+  <p style="color:#666;margin-bottom:0;">Fill out the form below to begin home delivery every Wednesday.</p>
+
+  {% with messages = get_flashed_messages() %}{% if messages %}
+    <div style="background:#fdecea;border:1px solid #e57373;border-radius:6px;padding:12px 16px;margin:16px 0;color:#c62828;">{{ messages[0] }}</div>
+  {% endif %}{% endwith %}
+
+  <div class="sub-grid">
+
+    {# Left: subscriber info form #}
+    <div class="sub-form-col">
+      <form method="post" action="{{ url_for('subscribe_new') }}" id="subscribe-form">
+
+        <div class="card" style="margin-bottom:20px;">
+          <h2>Your Information</h2>
+
+          <div class="field-row">
+            <div>
+              <label>First Name *</label>
+              <input type="text" name="first_name" required value="{{ form.first_name or '' }}">
+            </div>
+            <div>
+              <label>Last Name *</label>
+              <input type="text" name="last_name" required value="{{ form.last_name or '' }}">
+            </div>
+          </div>
+
+          <label style="margin-top:12px;">Email Address *</label>
+          <input type="email" name="email" required value="{{ form.email or '' }}" placeholder="you@example.com">
+
+          <label style="margin-top:12px;">Phone Number</label>
+          <input type="tel" name="phone" value="{{ form.phone or '' }}" placeholder="781-555-1234">
+        </div>
+
+        <div class="card" style="margin-bottom:20px;">
+          <h2>Delivery Address</h2>
+          <p style="font-size:0.85em;color:#888;margin-top:0;">Where should we deliver your paper?</p>
+
+          <label>Street Address *</label>
+          <input type="text" name="address1" required value="{{ form.address1 or '' }}" placeholder="123 Main Street">
+
+          <label style="margin-top:12px;">Apt / Unit</label>
+          <input type="text" name="address2" value="{{ form.address2 or '' }}" placeholder="Apt 2B (optional)">
+
+          <div class="field-row" style="margin-top:12px;">
+            <div style="flex:1.8;">
+              <label>City *</label>
+              <input type="text" name="city" required value="{{ form.city or '' }}">
+            </div>
+            <div style="flex:0.8;">
+              <label>State *</label>
+              <input type="text" name="state" required value="{{ form.state or 'MA' }}" maxlength="2" style="text-transform:uppercase;">
+            </div>
+            <div style="flex:1;">
+              <label>Zip Code *</label>
+              <input type="text" name="zipcode" required value="{{ form.zipcode or '' }}" placeholder="02331">
+            </div>
+          </div>
+        </div>
+
+        <div class="card" style="margin-bottom:20px;">
+          <h2>Subscription Plan</h2>
+
+          {% for code, label, price in plans %}
+          <label style="display:flex;align-items:center;gap:10px;padding:10px;border:1px solid #ddd;border-radius:6px;margin-bottom:8px;cursor:pointer;{% if loop.first %}border-color:#2e7d32;background:#f0f7f0;{% endif %}" id="plan-label-{{ code }}">
+            <input type="radio" name="plan" value="{{ code }}" {% if loop.first or form.plan == code %}checked{% endif %}
+                   onchange="updatePlanDisplay()" style="width:18px;height:18px;accent-color:#2e7d32;">
+            <span>
+              <strong>{{ label }}</strong>
+              <span style="color:#2e7d32;font-weight:700;margin-left:8px;">${{ "%.2f"|format(price) }}/yr</span>
+              <span style="font-size:0.8em;color:#888;display:block;">{{ (price/52*100)|int }} cents per week</span>
+            </span>
+          </label>
+          {% endfor %}
+        </div>
+
+        <input type="hidden" name="payment_method" id="payment_method_input" value="stripe">
+
+        <div class="card">
+          <h2>Payment</h2>
+          <p style="font-size:0.85em;color:#555;margin-top:0;">Your subscription will renew automatically each year. Cancel anytime.</p>
+
+          <button type="submit" name="pay_via" value="stripe" class="btn" style="width:100%;padding:14px;font-size:1em;border-radius:6px;margin-bottom:12px;" onclick="document.getElementById('payment_method_input').value='stripe'">
+            💳 &nbsp;Pay by Credit Card
+          </button>
+
+          {% if paypal_client_id %}
+          <button type="submit" name="pay_via" value="paypal" style="width:100%;padding:14px;background:#FFC439;color:#003087;border:none;border-radius:6px;font-size:1em;font-weight:700;cursor:pointer;" onclick="document.getElementById('payment_method_input').value='paypal'">
+            <img src="https://www.paypalobjects.com/webstatic/mktg/Logo/pp-logo-34px.png" alt="PayPal" style="height:18px;vertical-align:middle;margin-right:6px;">
+            Pay with PayPal
+          </button>
+          <p style="font-size:0.78em;color:#aaa;text-align:center;margin-top:6px;">PayPal subscriptions renew annually — you'll receive a reminder email before each renewal.</p>
+          {% endif %}
+
+          <p style="font-size:0.8em;color:#aaa;text-align:center;margin-top:14px;">
+            🔒 Secure payment. Your card info is never stored on our servers.
+          </p>
+        </div>
+
+      </form>
+    </div>
+
+    {# Right: summary #}
+    <div class="sub-summary-col">
+      <div class="card" style="position:sticky;top:20px;">
+        <h2>Subscription Summary</h2>
+        <table>
+          <tr><th>Delivery</th><td>Every Wednesday</td></tr>
+          <tr><th>Billing</th><td>Annual</td></tr>
+          <tr><th>Auto-renew</th><td style="color:#2e7d32;font-weight:700;">✓ Included</td></tr>
+          <tr><th>Amount</th><td><strong id="summary-price" style="font-size:1.1em;color:#2e7d32;">${{ "%.2f"|format(plans[0][2]) }}</strong>/yr</td></tr>
+        </table>
+        <div style="margin-top:16px;padding:12px;background:#e8f5e9;border-radius:4px;font-size:0.85em;color:#2e7d32;line-height:1.6;">
+          ✓ Cancel anytime from your account page.<br>
+          ✓ Delivery starts within 1–2 weeks of payment.
+        </div>
+        <div style="margin-top:12px;font-size:0.8em;color:#999;line-height:1.6;">
+          Questions? Call <strong>781-934-2811</strong> or email
+          <a href="mailto:subscribe@duxburyclipper.com" style="color:#2e7d32;">subscribe@duxburyclipper.com</a>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+const planPrices = { {% for code, label, price in plans %}"{{ code }}": {{ price }}{% if not loop.last %}, {% endif %}{% endfor %} };
+function updatePlanDisplay() {
+  const selected = document.querySelector('input[name=plan]:checked');
+  if (!selected) return;
+  document.getElementById('summary-price').textContent = '$' + parseFloat(planPrices[selected.value]).toFixed(2);
+  document.querySelectorAll('[id^=plan-label-]').forEach(el => {
+    el.style.borderColor = '#ddd';
+    el.style.background = '';
+  });
+  const lbl = document.getElementById('plan-label-' + selected.value);
+  if (lbl) { lbl.style.borderColor = '#2e7d32'; lbl.style.background = '#f0f7f0'; }
+}
+</script>
+
+{% endblock %}
