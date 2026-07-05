@@ -102,7 +102,7 @@
             </div>
             <div style="flex:0.8;">
               <label>State *</label>
-              <input type="text" name="state" required value="{{ form.state or 'MA' }}" maxlength="2" style="text-transform:uppercase;">
+              <input type="text" name="state" required value="{{ form.state or 'MA' }}" maxlength="2" style="text-transform:uppercase;" onchange="checkPlanState()">
             </div>
             <div style="flex:1;">
               <label>Zip Code *</label>
@@ -114,10 +114,14 @@
         <div class="card" style="margin-bottom:20px;">
           <h2>Subscription Plan</h2>
 
+          <div id="plan-state-warning" style="display:none;background:#fff3e0;border:1px solid #ffb74d;border-radius:6px;padding:10px 12px;margin-bottom:10px;font-size:0.85em;color:#e65100;">
+            ⚠️ This plan is only available for Massachusetts addresses. Please select <strong>Out-of-County</strong> or correct your state.
+          </div>
+
           {% for code, label, price, desc in plans %}
           <label style="display:flex;align-items:center;gap:10px;padding:10px;border:1px solid #ddd;border-radius:6px;margin-bottom:8px;cursor:pointer;{% if loop.first %}border-color:#2e7d32;background:#f0f7f0;{% endif %}" id="plan-label-{{ code }}">
             <input type="radio" name="plan" value="{{ code }}" {% if loop.first or form.plan == code %}checked{% endif %}
-                   onchange="updatePlanDisplay()" style="width:18px;height:18px;accent-color:#2e7d32;">
+                   onchange="updatePlanDisplay();checkPlanState();" style="width:18px;height:18px;accent-color:#2e7d32;">
             <span>
               <strong>{{ label }}</strong>
               <span style="color:#2e7d32;font-weight:700;margin-left:8px;">${{ "%.2f"|format(price) }}/yr</span>
@@ -192,6 +196,18 @@
 </div>
 
 <script>
+const MA_ONLY_PLANS = ["LOCAL", "SENIOR", "SNOWBIRD"];
+function checkPlanState() {
+  const plan = document.querySelector('input[name=plan]:checked')?.value || '';
+  const state = document.querySelector('input[name=state]').value.trim().toUpperCase();
+  const warn = document.getElementById('plan-state-warning');
+  if (MA_ONLY_PLANS.includes(plan) && state && state !== 'MA') {
+    warn.style.display = 'block';
+  } else {
+    warn.style.display = 'none';
+  }
+}
+
 function toggleGift() {
   const checked = document.getElementById('is_gift').checked;
   document.getElementById('gifter-section').style.display = checked ? 'block' : 'none';

@@ -654,6 +654,13 @@ def subscribe_new():
     except ValueError:
         plan_code = PlanCode.LOCAL
 
+    MA_ONLY_PLANS = {PlanCode.LOCAL, PlanCode.SENIOR, PlanCode.SNOWBIRD}
+    if plan_code in MA_ONLY_PLANS and state != "MA":
+        flash(f"The '{PLAN_LABELS[plan_code]}' plan is only available for Massachusetts mailing addresses. Please select the Out-of-County plan or correct your state.")
+        form = request.form.to_dict()
+        return render_template("subscribe.html", plans=plans, form=form,
+                               paypal_client_id=PAYPAL_CLIENT_ID)
+
     db = SessionLocal()
     sub = Subscriber(
         full_name=f"{first_name} {last_name}",
