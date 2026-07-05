@@ -568,7 +568,7 @@ def subscribe_new():
     is_gift          = bool(request.form.get("is_gift"))
     gifter_name      = request.form.get("gifter_name", "").strip()
     gifter_email     = request.form.get("gifter_email", "").strip()
-    gift_renewal     = request.form.get("gift_renewal", "notify")
+    gift_renewal     = request.form.get("gift_renewal", "auto")
     gift_auto_renew  = (gift_renewal == "auto")
 
     if not all([first_name, last_name, address1, city, state, zipcode]) or (not is_gift and not email):
@@ -962,7 +962,7 @@ def stripe_webhook():
                     meta = cs.get("metadata", {})
                     gifter_email    = meta.get("gifter_email", "")
                     gifter_name     = meta.get("gifter_name", "")
-                    gift_auto_renew = meta.get("gift_renewal", "notify") == "auto"
+                    gift_auto_renew = meta.get("gift_renewal", "auto") == "auto"
                     if gifter_email and not gift_auto_renew:
                         stripe_sub_id = cs.get("subscription")
                         if stripe_sub_id:
