@@ -143,7 +143,7 @@
           <tr><th>Delivery</th><td>Every Wednesday</td></tr>
           <tr><th>Billing</th><td>Annual</td></tr>
           <tr><th>Auto-renew</th><td style="color:#2e7d32;font-weight:700;">✓ Included</td></tr>
-          <tr><th>Amount</th><td><strong id="summary-price" style="font-size:1.1em;color:#2e7d32;">${{ "%.2f"|format(plans[0][2]) }}</strong>/yr</td></tr>
+          <tr><th>Amount</th><td><strong id="summary-price" style="font-size:1.1em;color:#2e7d32;">${{ "%.2f"|format(plans[0][2]) }}</strong>/yr<br><span id="summary-cpw" style="font-size:0.8em;color:#888;">{{ (plans[0][2]/52*100)|int }} cents per week</span></td></tr>
         </table>
         <div style="margin-top:16px;padding:12px;background:#e8f5e9;border-radius:4px;font-size:0.85em;color:#2e7d32;line-height:1.6;">
           ✓ Cancel anytime from your account page.<br>
@@ -193,7 +193,9 @@ const planPrices = { {% for code, label, price, desc in plans %}"{{ code }}": {{
 function updatePlanDisplay() {
   const selected = document.querySelector('input[name=plan]:checked');
   if (!selected) return;
-  document.getElementById('summary-price').textContent = '$' + parseFloat(planPrices[selected.value]).toFixed(2);
+  const price = parseFloat(planPrices[selected.value]);
+  document.getElementById('summary-price').textContent = '$' + price.toFixed(2);
+  document.getElementById('summary-cpw').textContent = Math.floor(price / 52 * 100) + ' cents per week';
   document.querySelectorAll('[id^=plan-label-]').forEach(el => {
     el.style.borderColor = '#ddd';
     el.style.background = '';
