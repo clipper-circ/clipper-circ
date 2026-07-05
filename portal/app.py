@@ -565,9 +565,10 @@ def subscribe_new():
     zipcode    = request.form.get("zipcode", "").strip()
     plan_val     = request.form.get("plan", "LOCAL")
     pay_via      = request.form.get("pay_via", "stripe")
-    is_gift      = bool(request.form.get("is_gift"))
-    gifter_name  = request.form.get("gifter_name", "").strip()
-    gifter_email = request.form.get("gifter_email", "").strip()
+    is_gift          = bool(request.form.get("is_gift"))
+    gifter_name      = request.form.get("gifter_name", "").strip()
+    gifter_email     = request.form.get("gifter_email", "").strip()
+    gift_auto_renew  = bool(request.form.get("gift_auto_renew"))
 
     if not all([first_name, last_name, address1, city, state, zipcode]) or (not is_gift and not email):
         flash("Please fill in all required fields.")
@@ -625,9 +626,11 @@ def subscribe_new():
             "quantity": 1,
         }],
         "metadata": {"subscriber_id": str(sub_id), "plan": plan_code.value, "is_new_subscriber": "true",
-                     "gifter_name": gifter_name, "gifter_email": gifter_email},
+                     "gifter_name": gifter_name, "gifter_email": gifter_email,
+                     "gift_auto_renew": "true" if gift_auto_renew else "false"},
         "subscription_data": {"metadata": {"subscriber_id": str(sub_id), "plan": plan_code.value, "is_new_subscriber": "true",
-                                           "gifter_name": gifter_name, "gifter_email": gifter_email}},
+                                           "gifter_name": gifter_name, "gifter_email": gifter_email,
+                                           "gift_auto_renew": "true" if gift_auto_renew else "false"}},
         "customer_email": gifter_email if is_gift else email,
         "success_url": f"{BASE_URL}/subscribe/success?session_id={{CHECKOUT_SESSION_ID}}",
         "cancel_url": f"{BASE_URL}/subscribe",
@@ -955,14 +958,26 @@ def stripe_webhook():
                         performed_by="Stripe",
                     ))
                     db.commit()
+                    meta = cs.get("metadata", {})
+                    gifter_email    = meta.get("gifter_email", "")
+                    gifter_name     = meta.get("gifter_name", "")
+                    gift_auto_renew = meta.get("gift_auto_renew", "true") == "true"
+                    if gifter_email and not gift_auto_renew:
+                        stripe_sub_id = cs.get("subscription")
+                        if stripe_sub_id:
+                            try:
+                                sub_key = os.environ.get("STRIPE_SECRET_KEY", "")
+                                stripe.Subscription.modify(stripe_sub_id, cancel_at_period_end=True, api_key=sub_key)
+                                sub.auto_renew = False
+                                db.commit()
+                            except Exception as e:
+                                sys.stderr.write(f"[WEBHOOK] failed to set cancel_at_period_end: {e}\n")
+                                sys.stderr.flush()
                     if sub.email:
                         try:
                             from_email = os.environ.get("FROM_EMAIL", "subscribe@duxburyclipper.net")
                             first_name = sub.full_name.split()[0]
-                            meta = cs.get("metadata", {})
                             is_new = meta.get("is_new_subscriber") == "true"
-                            gifter_name  = meta.get("gifter_name", "")
-                            gifter_email = meta.get("gifter_email", "")
                             if is_new:
                                 subject = "Welcome to the Duxbury Clipper!"
                                 html = _welcome_email_html(first_name, new_exp, BASE_URL)
@@ -974,15 +989,23 @@ def stripe_webhook():
                                 })
                                 if gifter_email:
                                     gifter_first = gifter_name.split()[0] if gifter_name else "there"
+                                    renew_note = (
+                                        "This subscription will renew automatically each year and your card will be charged. "
+                                        "You can cancel auto-renew anytime by calling 781-934-2811."
+                                        if gift_auto_renew else
+                                        "This is a one-year gift — it will not renew automatically. "
+                                        "You're welcome to renew it next year as another gift!"
+                                    )
                                     resend.Emails.send({
                                         "from": f"Duxbury Clipper <{from_email}>",
                                         "to": gifter_email,
-                                        "subject": f"Your gift subscription to the Duxbury Clipper is confirmed!",
+                                        "subject": "Your gift subscription to the Duxbury Clipper is confirmed!",
                                         "html": (
                                             f"<p>Dear {gifter_first},</p>"
                                             f"<p>Thank you for gifting a Duxbury Clipper subscription to <strong>{sub.full_name}</strong>!</p>"
                                             f"<p>Their home delivery subscription is now active through <strong>{new_exp.strftime('%B %d, %Y')}</strong>. "
                                             f"They will receive the Clipper every Wednesday.</p>"
+                                            f"<p>{renew_note}</p>"
                                             f"<p>Questions? Call 781-934-2811 or reply to this email.</p>"
                                             f"<p>Thank you for supporting the Duxbury Clipper!</p>"
                                         ),

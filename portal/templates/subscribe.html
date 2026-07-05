@@ -49,6 +49,10 @@
                 <input type="email" name="gifter_email" id="gifter_email" value="{{ form.gifter_email or '' }}" placeholder="your@email.com">
               </div>
             </div>
+            <label style="display:flex;align-items:center;gap:8px;margin-top:12px;cursor:pointer;font-size:0.88em;color:#333;">
+              <input type="checkbox" name="gift_auto_renew" id="gift_auto_renew" value="1" style="width:16px;height:16px;accent-color:#2e7d32;" {% if form.gift_auto_renew %}checked{% endif %}>
+              <span><strong>Renew automatically each year</strong> — my card will be charged annually until cancelled</span>
+            </label>
           </div>
 
           <p id="recipient-label" style="display:{% if form.is_gift %}block{% else %}none{% endif %};font-size:0.85em;font-weight:600;color:#555;margin:0 0 8px;">Recipient's Information</p>
