@@ -568,7 +568,8 @@ def subscribe_new():
     is_gift          = bool(request.form.get("is_gift"))
     gifter_name      = request.form.get("gifter_name", "").strip()
     gifter_email     = request.form.get("gifter_email", "").strip()
-    gift_auto_renew  = bool(request.form.get("gift_auto_renew"))
+    gift_renewal     = request.form.get("gift_renewal", "notify")
+    gift_auto_renew  = (gift_renewal == "auto")
 
     if not all([first_name, last_name, address1, city, state, zipcode]) or (not is_gift and not email):
         flash("Please fill in all required fields.")
@@ -627,10 +628,10 @@ def subscribe_new():
         }],
         "metadata": {"subscriber_id": str(sub_id), "plan": plan_code.value, "is_new_subscriber": "true",
                      "gifter_name": gifter_name, "gifter_email": gifter_email,
-                     "gift_auto_renew": "true" if gift_auto_renew else "false"},
+                     "gift_renewal": gift_renewal},
         "subscription_data": {"metadata": {"subscriber_id": str(sub_id), "plan": plan_code.value, "is_new_subscriber": "true",
                                            "gifter_name": gifter_name, "gifter_email": gifter_email,
-                                           "gift_auto_renew": "true" if gift_auto_renew else "false"}},
+                                           "gift_renewal": gift_renewal}},
         "customer_email": gifter_email if is_gift else email,
         "success_url": f"{BASE_URL}/subscribe/success?session_id={{CHECKOUT_SESSION_ID}}",
         "cancel_url": f"{BASE_URL}/subscribe",
@@ -961,7 +962,7 @@ def stripe_webhook():
                     meta = cs.get("metadata", {})
                     gifter_email    = meta.get("gifter_email", "")
                     gifter_name     = meta.get("gifter_name", "")
-                    gift_auto_renew = meta.get("gift_auto_renew", "true") == "true"
+                    gift_auto_renew = meta.get("gift_renewal", "notify") == "auto"
                     if gifter_email and not gift_auto_renew:
                         stripe_sub_id = cs.get("subscription")
                         if stripe_sub_id:
