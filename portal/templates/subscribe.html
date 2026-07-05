@@ -79,7 +79,7 @@
         <div class="card" style="margin-bottom:20px;">
           <h2>Subscription Plan</h2>
 
-          {% for code, label, price in plans %}
+          {% for code, label, price, desc in plans %}
           <label style="display:flex;align-items:center;gap:10px;padding:10px;border:1px solid #ddd;border-radius:6px;margin-bottom:8px;cursor:pointer;{% if loop.first %}border-color:#2e7d32;background:#f0f7f0;{% endif %}" id="plan-label-{{ code }}">
             <input type="radio" name="plan" value="{{ code }}" {% if loop.first or form.plan == code %}checked{% endif %}
                    onchange="updatePlanDisplay()" style="width:18px;height:18px;accent-color:#2e7d32;">
@@ -87,6 +87,7 @@
               <strong>{{ label }}</strong>
               <span style="color:#2e7d32;font-weight:700;margin-left:8px;">${{ "%.2f"|format(price) }}/yr</span>
               <span style="font-size:0.8em;color:#888;display:block;">{{ (price/52*100)|int }} cents per week</span>
+              {% if desc %}<span style="font-size:0.78em;color:#aaa;display:block;margin-top:2px;">{{ desc }}</span>{% endif %}
             </span>
           </label>
           {% endfor %}

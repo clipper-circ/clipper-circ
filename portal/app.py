@@ -14,7 +14,7 @@ resend.api_key = os.environ.get("RESEND_API_KEY", "")
 from database import SessionLocal, engine
 from models import (Subscriber, Payment, DeliveryHold, PaymentAuditLog,
                     SubscriberEventLog, SubscriberStatus, PaymentMethod, PlanCode,
-                    PLAN_LABELS, PLAN_PRICES, ObituarySubmission, Setting)
+                    PLAN_LABELS, PLAN_PRICES, PLAN_DESCRIPTIONS, ObituarySubmission, Setting)
 from models import Base
 Base.metadata.create_all(bind=engine)  # ensure new tables exist on Railway
 
@@ -546,7 +546,7 @@ def renew_self():
 
 @app.route("/subscribe", methods=["GET", "POST"])
 def subscribe_new():
-    plans = [(k, v, PLAN_PRICES[k]) for k, v in PLAN_LABELS.items()
+    plans = [(k, v, PLAN_PRICES[k], PLAN_DESCRIPTIONS.get(k, "")) for k, v in PLAN_LABELS.items()
              if k.value not in ("COMPLIMENTARY", "GIFT")]
 
     if request.method == "GET":

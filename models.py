@@ -62,6 +62,13 @@ PLAN_LABELS = {
     PlanCode.GIFT: "Gift Subscription",
 }
 
+PLAN_DESCRIPTIONS = {
+    PlanCode.LOCAL: "For a mailing address in Duxbury or anywhere in Plymouth County",
+    PlanCode.OUT_OF_COUNTY: "For a mailing address outside of Plymouth County",
+    PlanCode.SENIOR: "For a mailing address in Duxbury for a senior citizen",
+    PlanCode.SNOWBIRD: "For a mailing address in Duxbury for a senior citizen who spends winter elsewhere",
+}
+
 
 class Subscriber(Base):
     __tablename__ = "subscribers"
