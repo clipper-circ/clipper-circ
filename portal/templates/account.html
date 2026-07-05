@@ -356,7 +356,7 @@
         {% if subscriber.stripe_subscription_id and subscriber.auto_renew %}
         <div style="margin-top:16px;padding:14px;background:#e8f5e9;border-radius:4px;font-size:0.88em;color:#2e7d32;">
           ✓ Your subscription renews automatically each year — no action needed.
-          <form method="post" action="/toggle-autorenew" style="display:inline;margin-left:8px;" onsubmit="return confirm('Are you sure you want to turn off auto-renew? Your subscription will remain active until {{ subscriber.expiration_date.strftime(\'%B %d, %Y\') if subscriber.expiration_date else \'its expiration date\' }}, but will not renew after that.');">
+          <form method="post" action="/toggle-autorenew" style="display:inline;margin-left:8px;" onsubmit="return confirm('Are you sure you want to turn off auto-renew? Your subscription will remain active until {% if subscriber.expiration_date %}{{ subscriber.expiration_date.strftime("%B %d, %Y") }}{% else %}its expiration date{% endif %}, but will not renew after that.');">
             <button type="submit" style="background:none;border:none;color:#c0392b;cursor:pointer;font-size:0.9em;padding:0;text-decoration:underline;">Cancel auto-renew</button>
           </form>
         </div>
