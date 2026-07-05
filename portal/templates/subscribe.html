@@ -223,6 +223,16 @@ function updatePlanDisplay() {
   if (lbl) { lbl.style.borderColor = '#2e7d32'; lbl.style.background = '#f0f7f0'; }
 }
 
+function clearDiscount() {
+  activeDiscount = 0;
+  document.getElementById('discount_code_hidden').value = '';
+  document.getElementById('discount_code_input').value = '';
+  const msg = document.getElementById('discount-msg');
+  msg.style.display = 'none';
+  msg.innerHTML = '';
+  updatePlanDisplay();
+}
+
 async function applyDiscount() {
   const code = document.getElementById('discount_code_input').value.trim().toUpperCase();
   const plan = document.querySelector('input[name=plan]:checked')?.value || 'LOCAL';
@@ -241,7 +251,7 @@ async function applyDiscount() {
     msg.style.background = '#e8f5e9';
     msg.style.border = '1px solid #a5d6a7';
     msg.style.color = '#2e7d32';
-    msg.textContent = `✓ ${data.discount_percent}% discount applied — new price $${data.discounted.toFixed(2)}/yr`;
+    msg.innerHTML = `✓ ${data.discount_percent}% discount applied — new price $${data.discounted.toFixed(2)}/yr &nbsp;<a href="#" onclick="clearDiscount();return false;" style="color:#2e7d32;font-size:0.85em;">Remove</a>`;
     updatePlanDisplay();
   } else {
     activeDiscount = 0;
