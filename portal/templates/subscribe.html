@@ -100,7 +100,7 @@
 
     {# Right: summary + payment #}
     <div class="sub-summary-col">
-      <div class="card" style="margin-bottom:16px;">
+      <div class="card">
         <img src="/static/mailbox3.png" alt="Duxbury Clipper delivered to your door"
              style="width:100%;display:block;border-radius:8px;margin-bottom:16px;">
         <h2>Subscription Summary</h2>
@@ -114,15 +114,8 @@
           ✓ Cancel anytime from your account page.<br>
           ✓ Delivery usually starts within 1 week of payment.
         </div>
-        <div style="margin-top:12px;font-size:0.8em;color:#999;line-height:1.6;">
-          Questions? Call <strong>781-934-2811</strong> or email
-          <a href="mailto:subscribe@duxburyclipper.com" style="color:#2e7d32;">subscribe@duxburyclipper.com</a>
-        </div>
-      </div>
 
-      <div class="card">
-        <h2>Payment</h2>
-        <p style="font-size:0.85em;color:#555;margin-top:0;">Your subscription will renew automatically each year. Cancel anytime.</p>
+        <hr style="border:none;border-top:1px solid #eee;margin:20px 0;">
 
         <button type="submit" form="subscribe-form" name="pay_via" value="stripe" class="btn" style="width:100%;padding:14px;font-size:1em;border-radius:6px;margin-bottom:12px;" onclick="document.getElementById('payment_method_input').value='stripe'">
           💳 &nbsp;Pay by Credit Card
@@ -139,6 +132,10 @@
         <p style="font-size:0.8em;color:#aaa;text-align:center;margin-top:14px;">
           🔒 Secure payment. Your card info is never stored on our servers.
         </p>
+        <div style="margin-top:12px;font-size:0.8em;color:#999;line-height:1.6;text-align:center;">
+          Questions? Call <strong>781-934-2811</strong> or email
+          <a href="mailto:subscribe@duxburyclipper.com" style="color:#2e7d32;">subscribe@duxburyclipper.com</a>
+        </div>
       </div>
     </div>
 
