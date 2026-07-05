@@ -569,7 +569,7 @@ def subscribe_new():
     gifter_name  = request.form.get("gifter_name", "").strip()
     gifter_email = request.form.get("gifter_email", "").strip()
 
-    if not all([first_name, last_name, email, address1, city, state, zipcode]):
+    if not all([first_name, last_name, address1, city, state, zipcode]) or (not is_gift and not email):
         flash("Please fill in all required fields.")
         form = request.form.to_dict()
         return render_template("subscribe.html", plans=plans, form=form,
