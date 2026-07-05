@@ -162,7 +162,7 @@
               </div>
               <button type="button" onclick="applyDiscount()" class="btn" style="padding:9px 16px;white-space:nowrap;">Apply</button>
             </div>
-            <div id="discount-msg" style="font-size:0.85em;margin-top:6px;"></div>
+            <div id="discount-msg" style="display:none;margin-top:8px;padding:10px 12px;border-radius:6px;font-size:0.88em;font-weight:600;"></div>
           </div>
         </div>
 
@@ -226,15 +226,20 @@ async function applyDiscount() {
     body: JSON.stringify({code, plan})
   });
   const data = await res.json();
+  msg.style.display = 'block';
   if (data.valid) {
     activeDiscount = data.discount_percent;
     document.getElementById('discount_code_hidden').value = code;
+    msg.style.background = '#e8f5e9';
+    msg.style.border = '1px solid #a5d6a7';
     msg.style.color = '#2e7d32';
-    msg.textContent = `✓ ${data.discount_percent}% discount applied! New price: $${data.discounted.toFixed(2)}/yr`;
+    msg.textContent = `✓ ${data.discount_percent}% discount applied — new price $${data.discounted.toFixed(2)}/yr`;
     updatePlanDisplay();
   } else {
     activeDiscount = 0;
     document.getElementById('discount_code_hidden').value = '';
+    msg.style.background = '#fdecea';
+    msg.style.border = '1px solid #e57373';
     msg.style.color = '#c62828';
     msg.textContent = data.error;
   }
