@@ -66,10 +66,10 @@
 
           <div class="field-row" style="margin-top:12px;">
             <div style="flex:1.5;">
-              <label>Email Address *</label>
+              <label id="email-label">Email Address *</label>
               <input type="email" name="email" required value="{{ form.email or '' }}" placeholder="you@example.com">
             </div>
-            <div style="flex:1;">
+            <div style="flex:1;" id="phone-field">
               <label>Phone Number</label>
               <input type="tel" name="phone" value="{{ form.phone or '' }}" placeholder="781-555-1234">
             </div>
@@ -176,6 +176,8 @@ function toggleGift() {
   document.getElementById('info-heading').textContent = checked ? 'Subscription Information' : 'Your Information';
   document.getElementById('gifter_name').required = checked;
   document.getElementById('gifter_email').required = checked;
+  document.getElementById('phone-field').style.display = checked ? 'none' : 'block';
+  document.getElementById('email-label').textContent = checked ? 'Recipient\'s Email (for account login) *' : 'Email Address *';
 }
 const planPrices = { {% for code, label, price, desc in plans %}"{{ code }}": {{ price }}{% if not loop.last %}, {% endif %}{% endfor %} };
 function updatePlanDisplay() {
