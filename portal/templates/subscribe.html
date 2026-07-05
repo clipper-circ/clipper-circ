@@ -252,8 +252,8 @@ async function applyDiscount() {
   if (data.valid) {
     activeDiscount = data.discount_percent;
     document.getElementById('discount_code_hidden').value = code;
-    msg.style.background = '#e8f5e9';
-    msg.style.border = '1px solid #a5d6a7';
+    msg.style.background = '#fffde7';
+    msg.style.border = '1px solid #f9a825';
     msg.style.color = '#2e7d32';
     msg.innerHTML = `✓ ${data.discount_percent}% discount applied — new price $${data.discounted.toFixed(2)}/yr &nbsp;<a href="#" onclick="clearDiscount();return false;" style="color:#2e7d32;font-size:0.85em;">Remove</a>`;
     updatePlanDisplay();
