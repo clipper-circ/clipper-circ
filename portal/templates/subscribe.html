@@ -215,6 +215,10 @@ function updatePlanDisplay() {
   }
   document.getElementById('summary-price').textContent = '$' + price.toFixed(2);
   document.getElementById('summary-cpw').textContent = Math.floor(price / 52 * 100) + ' cents per week';
+  if (activeDiscount > 0) {
+    const msg = document.getElementById('discount-msg');
+    msg.innerHTML = `✓ ${activeDiscount}% discount applied — new price $${price.toFixed(2)}/yr &nbsp;<a href="#" onclick="clearDiscount();return false;" style="color:#2e7d32;font-size:0.85em;">Remove</a>`;
+  }
   document.querySelectorAll('[id^=plan-label-]').forEach(el => {
     el.style.borderColor = '#ddd';
     el.style.background = '';
