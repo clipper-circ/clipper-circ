@@ -146,7 +146,7 @@
 </div>
 
 <script>
-const planPrices = { {% for code, label, price in plans %}"{{ code }}": {{ price }}{% if not loop.last %}, {% endif %}{% endfor %} };
+const planPrices = { {% for code, label, price, desc in plans %}"{{ code }}": {{ price }}{% if not loop.last %}, {% endif %}{% endfor %} };
 function updatePlanDisplay() {
   const selected = document.querySelector('input[name=plan]:checked');
   if (!selected) return;
