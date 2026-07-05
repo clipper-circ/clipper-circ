@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+{% block title %}Discount Codes — Duxbury Clipper{% endblock %}
+{% block content %}
+
+<div style="max-width:860px;margin:0 auto;">
+  <h1 style="font-size:1.4em;margin-bottom:4px;">Discount Codes</h1>
+  <p style="color:#666;margin-bottom:20px;">Create and manage one-time subscription discount codes.</p>
+
+  {% if msg %}
+  <div style="background:#e8f5e9;border:1px solid #a5d6a7;border-radius:6px;padding:10px 14px;margin-bottom:16px;color:#2e7d32;">{{ msg }}</div>
+  {% endif %}
+
+  <div class="card" style="margin-bottom:24px;">
+    <h2>Create New Code</h2>
+    <form method="post">
+      <input type="hidden" name="action" value="create">
+      <div style="display:flex;gap:12px;flex-wrap:wrap;">
+        <div style="flex:1;min-width:140px;">
+          <label>Code *</label>
+          <input type="text" name="code" required placeholder="e.g. WELCOME10" style="text-transform:uppercase;">
+        </div>
+        <div style="flex:0 0 100px;">
+          <label>Discount % *</label>
+          <input type="number" name="discount_percent" required min="1" max="100" value="10">
+        </div>
+        <div style="flex:0 0 130px;">
+          <label>Max Uses</label>
+          <input type="number" name="max_uses" min="1" placeholder="Unlimited">
+        </div>
+        <div style="flex:0 0 150px;">
+          <label>Expires</label>
+          <input type="date" name="expires_at">
+        </div>
+        <div style="flex:2;min-width:180px;">
+          <label>Internal Note</label>
+          <input type="text" name="note" placeholder="e.g. New subscriber promo">
+        </div>
+      </div>
+      <button type="submit" class="btn" style="margin-top:14px;">Create Code</button>
+    </form>
+  </div>
+
+  <div class="card">
+    <h2>All Codes</h2>
+    {% if codes %}
+    <table style="width:100%;border-collapse:collapse;font-size:0.9em;">
+      <thead>
+        <tr style="border-bottom:2px solid #eee;text-align:left;">
+          <th style="padding:8px 10px;">Code</th>
+          <th style="padding:8px 10px;">Discount</th>
+          <th style="padding:8px 10px;">Uses</th>
+          <th style="padding:8px 10px;">Expires</th>
+          <th style="padding:8px 10px;">Note</th>
+          <th style="padding:8px 10px;">Status</th>
+          <th style="padding:8px 10px;"></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for dc in codes %}
+        <tr style="border-bottom:1px solid #f0f0f0;">
+          <td style="padding:8px 10px;font-weight:700;font-family:monospace;">{{ dc.code }}</td>
+          <td style="padding:8px 10px;">{{ dc.discount_percent }}%</td>
+          <td style="padding:8px 10px;">{{ dc.use_count }}{% if dc.max_uses %} / {{ dc.max_uses }}{% else %} / ∞{% endif %}</td>
+          <td style="padding:8px 10px;">{{ dc.expires_at.strftime('%m/%d/%Y') if dc.expires_at else '—' }}</td>
+          <td style="padding:8px 10px;color:#888;">{{ dc.note or '—' }}</td>
+          <td style="padding:8px 10px;">
+            {% if dc.active %}
+              <span style="color:#2e7d32;font-weight:700;">Active</span>
+            {% else %}
+              <span style="color:#999;">Inactive</span>
+            {% endif %}
+          </td>
+          <td style="padding:8px 10px;white-space:nowrap;">
+            <form method="post" style="display:inline;">
+              <input type="hidden" name="action" value="toggle">
+              <input type="hidden" name="dc_id" value="{{ dc.id }}">
+              <button type="submit" style="background:none;border:none;color:#2e7d32;cursor:pointer;font-size:0.85em;padding:0;margin-right:10px;">
+                {{ 'Deactivate' if dc.active else 'Activate' }}
+              </button>
+            </form>
+            <form method="post" style="display:inline;" onsubmit="return confirm('Delete this code?');">
+              <input type="hidden" name="action" value="delete">
+              <input type="hidden" name="dc_id" value="{{ dc.id }}">
+              <button type="submit" style="background:none;border:none;color:#c62828;cursor:pointer;font-size:0.85em;padding:0;">Delete</button>
+            </form>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <p style="color:#aaa;">No discount codes yet.</p>
+    {% endif %}
+  </div>
+</div>
+
+{% endblock %}

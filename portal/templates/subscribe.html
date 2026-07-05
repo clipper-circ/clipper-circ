@@ -128,6 +128,21 @@
           {% endfor %}
         </div>
 
+        <div style="margin-top:4px;">
+          <a href="#" id="discount-toggle" onclick="document.getElementById('discount-section').style.display='block';this.style.display='none';return false;" style="font-size:0.85em;color:#2e7d32;">Have a discount code?</a>
+          <div id="discount-section" style="display:{% if form.discount_code %}block{% else %}none{% endif %};margin-top:8px;">
+            <div style="display:flex;gap:8px;align-items:flex-end;">
+              <div style="flex:1;">
+                <label style="margin-top:0;">Discount Code</label>
+                <input type="text" id="discount_code_input" placeholder="Enter code" value="{{ form.discount_code or '' }}" style="text-transform:uppercase;">
+              </div>
+              <button type="button" onclick="applyDiscount()" class="btn" style="padding:9px 16px;margin-bottom:0;white-space:nowrap;">Apply</button>
+            </div>
+            <div id="discount-msg" style="font-size:0.85em;margin-top:6px;"></div>
+          </div>
+        </div>
+
+        <input type="hidden" name="discount_code" id="discount_code_hidden" value="{{ form.discount_code or '' }}">
         <input type="hidden" name="payment_method" id="payment_method_input" value="stripe">
 
       </form>
@@ -190,12 +205,42 @@ function toggleGift() {
   document.querySelector('input[name=email]').required = !checked;
 }
 const planPrices = { {% for code, label, price, desc in plans %}"{{ code }}": {{ price }}{% if not loop.last %}, {% endif %}{% endfor %} };
+let activeDiscount = 0; // percent
+
 function updatePlanDisplay() {
   const selected = document.querySelector('input[name=plan]:checked');
   if (!selected) return;
-  const price = parseFloat(planPrices[selected.value]);
+  let price = parseFloat(planPrices[selected.value]);
+  if (activeDiscount > 0) {
+    price = Math.round(price * (1 - activeDiscount / 100) * 100) / 100;
+  }
   document.getElementById('summary-price').textContent = '$' + price.toFixed(2);
   document.getElementById('summary-cpw').textContent = Math.floor(price / 52 * 100) + ' cents per week';
+async function applyDiscount() {
+  const code = document.getElementById('discount_code_input').value.trim().toUpperCase();
+  const plan = document.querySelector('input[name=plan]:checked')?.value || 'LOCAL';
+  const msg = document.getElementById('discount-msg');
+  if (!code) return;
+  const res = await fetch('/apply-discount', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({code, plan})
+  });
+  const data = await res.json();
+  if (data.valid) {
+    activeDiscount = data.discount_percent;
+    document.getElementById('discount_code_hidden').value = code;
+    msg.style.color = '#2e7d32';
+    msg.textContent = `✓ ${data.discount_percent}% discount applied! New price: $${data.discounted.toFixed(2)}/yr`;
+    updatePlanDisplay();
+  } else {
+    activeDiscount = 0;
+    document.getElementById('discount_code_hidden').value = '';
+    msg.style.color = '#c62828';
+    msg.textContent = data.error;
+  }
+}
+
   document.querySelectorAll('[id^=plan-label-]').forEach(el => {
     el.style.borderColor = '#ddd';
     el.style.background = '';

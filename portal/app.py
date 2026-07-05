@@ -14,7 +14,7 @@ resend.api_key = os.environ.get("RESEND_API_KEY", "")
 from database import SessionLocal, engine
 from models import (Subscriber, Payment, DeliveryHold, PaymentAuditLog,
                     SubscriberEventLog, SubscriberStatus, PaymentMethod, PlanCode,
-                    PLAN_LABELS, PLAN_PRICES, PLAN_DESCRIPTIONS, ObituarySubmission, Setting)
+                    PLAN_LABELS, PLAN_PRICES, PLAN_DESCRIPTIONS, ObituarySubmission, Setting, DiscountCode)
 from models import Base
 Base.metadata.create_all(bind=engine)  # ensure new tables exist on Railway
 
@@ -544,6 +544,71 @@ def renew_self():
     return redirect(url_for("account") + "?tab=renew")
 
 
+@app.route("/apply-discount", methods=["POST"])
+def apply_discount():
+    code = request.json.get("code", "").strip().upper()
+    plan_val = request.json.get("plan", "LOCAL")
+    try:
+        plan_code = PlanCode(plan_val)
+    except ValueError:
+        plan_code = PlanCode.LOCAL
+    db = SessionLocal()
+    dc = db.query(DiscountCode).filter_by(code=code, active=True).first()
+    db.close()
+    if not dc:
+        return jsonify(valid=False, error="Invalid or inactive discount code.")
+    if dc.expires_at and dc.expires_at < date.today():
+        return jsonify(valid=False, error="This discount code has expired.")
+    if dc.max_uses is not None and dc.use_count >= dc.max_uses:
+        return jsonify(valid=False, error="This discount code has reached its maximum uses.")
+    original = PLAN_PRICES[plan_code]
+    discounted = round(original * (1 - dc.discount_percent / 100), 2)
+    return jsonify(valid=True, discount_percent=dc.discount_percent,
+                   original=original, discounted=discounted)
+
+
+@app.route("/admin/discount-codes", methods=["GET", "POST"])
+def admin_discount_codes():
+    if not session.get("staff_user_id"):
+        return redirect(url_for("staff_login"))
+    db = SessionLocal()
+    msg = None
+    if request.method == "POST":
+        action = request.form.get("action")
+        if action == "create":
+            code = request.form.get("code", "").strip().upper()
+            pct  = int(request.form.get("discount_percent", 10))
+            note = request.form.get("note", "").strip()
+            max_uses = request.form.get("max_uses", "").strip()
+            expires  = request.form.get("expires_at", "").strip()
+            from datetime import date as ddate
+            dc = DiscountCode(
+                code=code, discount_percent=pct, note=note or None,
+                max_uses=int(max_uses) if max_uses else None,
+                expires_at=ddate.fromisoformat(expires) if expires else None,
+            )
+            db.add(dc)
+            db.commit()
+            msg = f"Code {code} created."
+        elif action == "toggle":
+            dc_id = int(request.form.get("dc_id"))
+            dc = db.query(DiscountCode).get(dc_id)
+            if dc:
+                dc.active = not dc.active
+                db.commit()
+                msg = f"Code {dc.code} {'activated' if dc.active else 'deactivated'}."
+        elif action == "delete":
+            dc_id = int(request.form.get("dc_id"))
+            dc = db.query(DiscountCode).get(dc_id)
+            if dc:
+                db.delete(dc)
+                db.commit()
+                msg = "Code deleted."
+    codes = db.query(DiscountCode).order_by(DiscountCode.id.desc()).all()
+    db.close()
+    return render_template("discount_codes.html", codes=codes, msg=msg)
+
+
 @app.route("/subscribe", methods=["GET", "POST"])
 def subscribe_new():
     plans = [(k, v, PLAN_PRICES[k], PLAN_DESCRIPTIONS.get(k, "")) for k, v in PLAN_LABELS.items()
@@ -570,6 +635,7 @@ def subscribe_new():
     gifter_email     = request.form.get("gifter_email", "").strip()
     gift_renewal     = request.form.get("gift_renewal", "auto")
     gift_auto_renew  = (gift_renewal == "auto")
+    discount_code    = request.form.get("discount_code", "").strip().upper()
 
     if not all([first_name, last_name, address1, city, state, zipcode]) or (not is_gift and not email):
         flash("Please fill in all required fields.")
@@ -613,7 +679,17 @@ def subscribe_new():
         return redirect(url_for("subscribe_paypal", subscriber_id=sub_id))
 
     # Stripe checkout
-    price_cents = int(PLAN_PRICES[plan_code] * 100)
+    base_price = PLAN_PRICES[plan_code]
+    if discount_code:
+        db2 = SessionLocal()
+        dc = db2.query(DiscountCode).filter_by(code=discount_code, active=True).first()
+        if dc and (not dc.expires_at or dc.expires_at >= date.today()) and \
+                  (dc.max_uses is None or dc.use_count < dc.max_uses):
+            base_price = round(base_price * (1 - dc.discount_percent / 100), 2)
+            dc.use_count += 1
+            db2.commit()
+        db2.close()
+    price_cents = int(base_price * 100)
     checkout_params = {
         "payment_method_types": ["card"],
         "mode": "subscription",

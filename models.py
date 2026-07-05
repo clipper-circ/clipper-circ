@@ -288,3 +288,17 @@ class Setting(Base):
 
     key   = Column(String(100), primary_key=True)
     value = Column(Text, nullable=True)
+
+
+class DiscountCode(Base):
+    __tablename__ = "discount_codes"
+
+    id               = Column(Integer, primary_key=True)
+    code             = Column(String(50), unique=True, nullable=False)
+    discount_percent = Column(Integer, nullable=False)          # e.g. 10 = 10% off
+    active           = Column(Boolean, default=True, nullable=False)
+    expires_at       = Column(Date, nullable=True)             # None = no expiry
+    max_uses         = Column(Integer, nullable=True)          # None = unlimited
+    use_count        = Column(Integer, default=0, nullable=False)
+    note             = Column(String(200), nullable=True)      # internal label
+    created_at       = Column(DateTime, default=datetime.utcnow)
