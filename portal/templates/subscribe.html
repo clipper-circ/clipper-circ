@@ -204,7 +204,7 @@ function toggleGift() {
   document.querySelector('input[name=email]').required = !checked;
 }
 const planPrices = { {% for code, label, price, desc in plans %}"{{ code }}": {{ price }}{% if not loop.last %}, {% endif %}{% endfor %} };
-let activeDiscount = 0; // percent
+let activeDiscount = 0;
 
 function updatePlanDisplay() {
   const selected = document.querySelector('input[name=plan]:checked');
@@ -215,6 +215,14 @@ function updatePlanDisplay() {
   }
   document.getElementById('summary-price').textContent = '$' + price.toFixed(2);
   document.getElementById('summary-cpw').textContent = Math.floor(price / 52 * 100) + ' cents per week';
+  document.querySelectorAll('[id^=plan-label-]').forEach(el => {
+    el.style.borderColor = '#ddd';
+    el.style.background = '';
+  });
+  const lbl = document.getElementById('plan-label-' + selected.value);
+  if (lbl) { lbl.style.borderColor = '#2e7d32'; lbl.style.background = '#f0f7f0'; }
+}
+
 async function applyDiscount() {
   const code = document.getElementById('discount_code_input').value.trim().toUpperCase();
   const plan = document.querySelector('input[name=plan]:checked')?.value || 'LOCAL';
@@ -243,14 +251,6 @@ async function applyDiscount() {
     msg.style.color = '#c62828';
     msg.textContent = data.error;
   }
-}
-
-  document.querySelectorAll('[id^=plan-label-]').forEach(el => {
-    el.style.borderColor = '#ddd';
-    el.style.background = '';
-  });
-  const lbl = document.getElementById('plan-label-' + selected.value);
-  if (lbl) { lbl.style.borderColor = '#2e7d32'; lbl.style.background = '#f0f7f0'; }
 }
 </script>
 
