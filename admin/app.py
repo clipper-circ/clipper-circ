@@ -2689,6 +2689,8 @@ Dear Jane,
         else:
             st.caption("No discount codes yet.")
 
+        st.caption("⚠️ If you change the discount % on an existing code, you must also delete the matching coupon in the Stripe dashboard — otherwise Stripe will still apply the old percentage. Easiest fix: retire the old code and create a new one with a different name.")
+
         with st.form("add_discount_code"):
             dc1, dc2, dc3 = st.columns([2, 1, 1])
             new_code    = dc1.text_input("Code").strip().upper()
