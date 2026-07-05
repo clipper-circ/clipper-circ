@@ -52,11 +52,11 @@
             <p style="margin:12px 0 8px;font-size:0.85em;font-weight:700;color:#333;">When the subscription expires:</p>
             <label style="display:flex;align-items:center;gap:8px;margin-bottom:8px;cursor:pointer;font-size:0.88em;color:#333;">
               <input type="radio" name="gift_renewal" value="auto" style="width:16px;height:16px;accent-color:#2e7d32;" {% if form.gift_renewal == 'auto' %}checked{% endif %}>
-              <span><strong>Renew automatically</strong> — my card will be charged annually, cancel anytime before renewal.</span>
+              <span>Renew automatically — my card will be charged annually, cancel anytime before renewal.</span>
             </label>
             <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:0.88em;color:#333;">
               <input type="radio" name="gift_renewal" value="notify" style="width:16px;height:16px;accent-color:#2e7d32;" {% if not form.gift_renewal or form.gift_renewal == 'notify' %}checked{% endif %}>
-              <span><strong>Send renewal notice to recipient</strong> — they'll receive a reminder to renew on their own</span>
+              <span>Send renewal notice to recipient — they'll receive a reminder to renew on their own</span>
             </label>
           </div>
 
