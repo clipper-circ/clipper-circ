@@ -563,10 +563,19 @@ def subscribe_new():
     city       = request.form.get("city", "").strip()
     state      = request.form.get("state", "").strip().upper()
     zipcode    = request.form.get("zipcode", "").strip()
-    plan_val   = request.form.get("plan", "LOCAL")
-    pay_via    = request.form.get("pay_via", "stripe")
+    plan_val     = request.form.get("plan", "LOCAL")
+    pay_via      = request.form.get("pay_via", "stripe")
+    is_gift      = bool(request.form.get("is_gift"))
+    gifter_name  = request.form.get("gifter_name", "").strip()
+    gifter_email = request.form.get("gifter_email", "").strip()
 
     if not all([first_name, last_name, email, address1, city, state, zipcode]):
+        flash("Please fill in all required fields.")
+        form = request.form.to_dict()
+        return render_template("subscribe.html", plans=plans, form=form,
+                               paypal_client_id=PAYPAL_CLIENT_ID)
+
+    if is_gift and not (gifter_name and gifter_email):
         flash("Please fill in all required fields.")
         form = request.form.to_dict()
         return render_template("subscribe.html", plans=plans, form=form,
@@ -615,9 +624,11 @@ def subscribe_new():
             },
             "quantity": 1,
         }],
-        "metadata": {"subscriber_id": str(sub_id), "plan": plan_code.value, "is_new_subscriber": "true"},
-        "subscription_data": {"metadata": {"subscriber_id": str(sub_id), "plan": plan_code.value, "is_new_subscriber": "true"}},
-        "customer_email": email,
+        "metadata": {"subscriber_id": str(sub_id), "plan": plan_code.value, "is_new_subscriber": "true",
+                     "gifter_name": gifter_name, "gifter_email": gifter_email},
+        "subscription_data": {"metadata": {"subscriber_id": str(sub_id), "plan": plan_code.value, "is_new_subscriber": "true",
+                                           "gifter_name": gifter_name, "gifter_email": gifter_email}},
+        "customer_email": gifter_email if is_gift else email,
         "success_url": f"{BASE_URL}/subscribe/success?session_id={{CHECKOUT_SESSION_ID}}",
         "cancel_url": f"{BASE_URL}/subscribe",
     }
@@ -948,10 +959,34 @@ def stripe_webhook():
                         try:
                             from_email = os.environ.get("FROM_EMAIL", "subscribe@duxburyclipper.net")
                             first_name = sub.full_name.split()[0]
-                            is_new = cs.get("metadata", {}).get("is_new_subscriber") == "true"
+                            meta = cs.get("metadata", {})
+                            is_new = meta.get("is_new_subscriber") == "true"
+                            gifter_name  = meta.get("gifter_name", "")
+                            gifter_email = meta.get("gifter_email", "")
                             if is_new:
                                 subject = "Welcome to the Duxbury Clipper!"
                                 html = _welcome_email_html(first_name, new_exp, BASE_URL)
+                                resend.Emails.send({
+                                    "from": f"Duxbury Clipper <{from_email}>",
+                                    "to": sub.email,
+                                    "subject": subject,
+                                    "html": html,
+                                })
+                                if gifter_email:
+                                    gifter_first = gifter_name.split()[0] if gifter_name else "there"
+                                    resend.Emails.send({
+                                        "from": f"Duxbury Clipper <{from_email}>",
+                                        "to": gifter_email,
+                                        "subject": f"Your gift subscription to the Duxbury Clipper is confirmed!",
+                                        "html": (
+                                            f"<p>Dear {gifter_first},</p>"
+                                            f"<p>Thank you for gifting a Duxbury Clipper subscription to <strong>{sub.full_name}</strong>!</p>"
+                                            f"<p>Their home delivery subscription is now active through <strong>{new_exp.strftime('%B %d, %Y')}</strong>. "
+                                            f"They will receive the Clipper every Wednesday.</p>"
+                                            f"<p>Questions? Call 781-934-2811 or reply to this email.</p>"
+                                            f"<p>Thank you for supporting the Duxbury Clipper!</p>"
+                                        ),
+                                    })
                             else:
                                 subject = "Your Duxbury Clipper subscription has been renewed"
                                 html = (
@@ -963,12 +998,12 @@ def stripe_webhook():
                                     f"<p>Questions? Call 781-934-2811 or reply to this email.</p>"
                                     f"<p>Thank you for being a loyal subscriber to the Duxbury Clipper!</p>"
                                 )
-                            resend.Emails.send({
-                                "from": f"Duxbury Clipper <{from_email}>",
-                                "to": sub.email,
-                                "subject": subject,
-                                "html": html,
-                            })
+                                resend.Emails.send({
+                                    "from": f"Duxbury Clipper <{from_email}>",
+                                    "to": sub.email,
+                                    "subject": subject,
+                                    "html": html,
+                                })
                         except Exception as e:
                             sys.stderr.write(f"[EMAIL ERROR] subscription confirmation: {e}\n")
                             sys.stderr.flush()

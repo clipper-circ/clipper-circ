@@ -32,7 +32,28 @@
       <form method="post" action="{{ url_for('subscribe_new') }}" id="subscribe-form">
 
         <div class="card" style="margin-bottom:20px;">
-          <h2>Your Information</h2>
+          <h2 id="info-heading">Your Information</h2>
+
+          <label style="display:flex;align-items:center;gap:8px;margin-bottom:14px;cursor:pointer;font-weight:600;color:#2e7d32;">
+            <input type="checkbox" name="is_gift" id="is_gift" value="1" style="width:18px;height:18px;accent-color:#2e7d32;" {% if form.is_gift %}checked{% endif %} onchange="toggleGift()">
+            This is a gift subscription
+          </label>
+
+          <div id="gifter-section" style="display:{% if form.is_gift %}block{% else %}none{% endif %};background:#f0f7f0;border:1px solid #c8e6c9;border-radius:6px;padding:12px 14px;margin-bottom:14px;">
+            <p style="margin:0 0 10px;font-size:0.85em;color:#444;">You're purchasing this for someone else. Enter <strong>your</strong> contact info below so we can send you the receipt.</p>
+            <div class="field-row">
+              <div>
+                <label>Your Name *</label>
+                <input type="text" name="gifter_name" id="gifter_name" value="{{ form.gifter_name or '' }}" placeholder="Your full name">
+              </div>
+              <div>
+                <label>Your Email *</label>
+                <input type="email" name="gifter_email" id="gifter_email" value="{{ form.gifter_email or '' }}" placeholder="your@email.com">
+              </div>
+            </div>
+          </div>
+
+          <p id="recipient-label" style="display:{% if form.is_gift %}block{% else %}none{% endif %};font-size:0.85em;font-weight:600;color:#555;margin:0 0 8px;">Recipient's Information</p>
 
           <div class="field-row">
             <div>
@@ -150,6 +171,14 @@
 </div>
 
 <script>
+function toggleGift() {
+  const checked = document.getElementById('is_gift').checked;
+  document.getElementById('gifter-section').style.display = checked ? 'block' : 'none';
+  document.getElementById('recipient-label').style.display = checked ? 'block' : 'none';
+  document.getElementById('info-heading').textContent = checked ? 'Subscription Information' : 'Your Information';
+  document.getElementById('gifter_name').required = checked;
+  document.getElementById('gifter_email').required = checked;
+}
 const planPrices = { {% for code, label, price, desc in plans %}"{{ code }}": {{ price }}{% if not loop.last %}, {% endif %}{% endfor %} };
 function updatePlanDisplay() {
   const selected = document.querySelector('input[name=plan]:checked');
