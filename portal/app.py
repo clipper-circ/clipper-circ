@@ -630,12 +630,15 @@ def subscribe_new():
     zipcode    = request.form.get("zipcode", "").strip()
     plan_val     = request.form.get("plan", "LOCAL")
     pay_via      = request.form.get("pay_via", "stripe")
+    sys.stderr.write(f"[SUBSCRIBE] plan_val={plan_val!r} pay_via={pay_via!r} form_keys={sorted(request.form.keys())}\n")
+    sys.stderr.flush()
     is_gift          = bool(request.form.get("is_gift"))
     gifter_name      = request.form.get("gifter_name", "").strip()
     gifter_email     = request.form.get("gifter_email", "").strip()
     gift_renewal     = request.form.get("gift_renewal", "auto")
     gift_auto_renew  = (gift_renewal == "auto")
-    discount_code    = request.form.get("discount_code", "").strip().upper()
+    discount_code    = (request.form.get("discount_code", "").strip().upper() or
+                        request.form.get("discount_code_typed", "").strip().upper())
 
     if not all([first_name, last_name, address1, city, state, zipcode]) or (not is_gift and not email):
         flash("Please fill in all required fields.")
@@ -661,6 +664,40 @@ def subscribe_new():
         return render_template("subscribe.html", plans=plans, form=form,
                                paypal_client_id=PAYPAL_CLIENT_ID)
 
+    if pay_via == "paypal" and PAYPAL_CLIENT_ID:
+        paypal_price = PLAN_PRICES[plan_code]
+        if discount_code:
+            db_dc = SessionLocal()
+            dc = db_dc.query(DiscountCode).filter_by(code=discount_code, active=True).first()
+            if dc and (not dc.expires_at or dc.expires_at >= date.today()) and \
+                      (dc.max_uses is None or dc.use_count < dc.max_uses):
+                paypal_price = round(paypal_price * (1 - dc.discount_percent / 100), 2)
+            db_dc.close()
+        db = SessionLocal()
+        sub = Subscriber(
+            full_name=f"{first_name} {last_name}",
+            email=email,
+            phone=phone or None,
+            address1=address1,
+            address2=address2 or None,
+            city=city,
+            state=state,
+            zipcode=zipcode,
+            plan=plan_code,
+            status=SubscriberStatus.EXPIRED,
+            start_date=date.today(),
+            auto_renew=True,
+            payment_method=PaymentMethod.CREDIT_CARD,
+        )
+        db.add(sub)
+        db.commit()
+        sub_id = sub.id
+        db.close()
+        sys.stderr.write(f"[PAYPAL] plan={plan_code.value} price={paypal_price} discount={discount_code} sub_id={sub_id}\n")
+        sys.stderr.flush()
+        return redirect(url_for("subscribe_paypal", subscriber_id=sub_id,
+                                amount=f"{paypal_price:.2f}", code=discount_code))
+
     db = SessionLocal()
     sub = Subscriber(
         full_name=f"{first_name} {last_name}",
@@ -681,9 +718,6 @@ def subscribe_new():
     db.commit()
     sub_id = sub.id
     db.close()
-
-    if pay_via == "paypal" and PAYPAL_CLIENT_ID:
-        return redirect(url_for("subscribe_paypal", subscriber_id=sub_id, discount_code=discount_code))
 
     # Stripe checkout — always full price; discount applied via Stripe coupon (duration=once)
     price_cents = int(PLAN_PRICES[plan_code] * 100)
@@ -734,6 +768,16 @@ def subscribe_new():
 
 @app.route("/subscribe/success")
 def subscribe_success():
+    session_id = request.args.get("session_id", "")
+    if session_id and not session.get("subscriber_id"):
+        try:
+            sub_key = os.environ.get("STRIPE_SECRET_KEY", "")
+            cs = stripe.checkout.Session.retrieve(session_id, api_key=sub_key)
+            sub_id = int(cs.get("metadata", {}).get("subscriber_id", 0))
+            if sub_id:
+                session["subscriber_id"] = sub_id
+        except Exception:
+            pass
     return render_template("subscribe_success.html")
 
 
@@ -746,17 +790,19 @@ def subscribe_paypal(subscriber_id):
         db.close()
         return redirect(url_for("subscribe_new"))
     plan_code = sub.plan
-    base_price = PLAN_PRICES[plan_code]
-    discount_code = request.args.get("discount_code", "").strip().upper()
-    if discount_code:
-        dc = db.query(DiscountCode).filter_by(code=discount_code, active=True).first()
-        if dc and (not dc.expires_at or dc.expires_at >= date.today()) and \
-                  (dc.max_uses is None or dc.use_count < dc.max_uses):
-            base_price = round(base_price * (1 - dc.discount_percent / 100), 2)
-            dc.use_count += 1
-            db.commit()
+    discount_code = request.args.get("code", "").strip().upper()
+    try:
+        base_price = float(request.args.get("amount", "0"))
+        if base_price <= 0:
+            raise ValueError("non-positive amount")
+    except (ValueError, TypeError):
+        base_price = PLAN_PRICES[plan_code]
+    sys.stderr.write(f"[PAYPAL_ORDER] sub={subscriber_id} plan={plan_code.value} amount_arg={request.args.get('amount')!r} price={base_price} discount={discount_code}\n")
+    sys.stderr.flush()
     price = f"{base_price:.2f}"
     db.close()
+
+    custom_id = f"{subscriber_id}:{discount_code}" if discount_code else str(subscriber_id)
 
     base = "https://api-m.sandbox.paypal.com" if PAYPAL_MODE == "sandbox" else "https://api-m.paypal.com"
     r = req.post(f"{base}/v1/oauth2/token",
@@ -767,9 +813,21 @@ def subscribe_paypal(subscriber_id):
         headers={"Authorization": f"Bearer {access_token}", "Content-Type": "application/json"},
         json={
             "intent": "CAPTURE",
-            "purchase_units": [{"amount": {"currency_code": "USD", "value": price},
-                                "description": f"Duxbury Clipper — {PLAN_LABELS[plan_code]}",
-                                "custom_id": str(subscriber_id)}],
+            "purchase_units": [{
+                "amount": {
+                    "currency_code": "USD",
+                    "value": price,
+                    "breakdown": {"item_total": {"currency_code": "USD", "value": price}}
+                },
+                "items": [{
+                    "name": f"Duxbury Clipper — {PLAN_LABELS[plan_code]}",
+                    "description": f"Annual subscription · ${price}/yr",
+                    "unit_amount": {"currency_code": "USD", "value": price},
+                    "quantity": "1",
+                    "category": "DIGITAL_GOODS"
+                }],
+                "custom_id": custom_id
+            }],
             "application_context": {
                 "return_url": f"{BASE_URL}/subscribe-paypal-success",
                 "cancel_url": f"{BASE_URL}/subscribe",
@@ -799,7 +857,10 @@ def subscribe_paypal_success():
     order = r2.json()
 
     if order.get("status") == "COMPLETED":
-        sub_id = int(order["purchase_units"][0].get("custom_id", 0))
+        custom_id_val = order["purchase_units"][0].get("custom_id", "")
+        parts = custom_id_val.split(":", 1)
+        sub_id = int(parts[0]) if parts[0].isdigit() else 0
+        discount_code_used = parts[1].strip().upper() if len(parts) > 1 else ""
         amount = float(order["purchase_units"][0]["payments"]["captures"][0]["amount"]["value"])
         db = SessionLocal()
         sub = db.query(Subscriber).filter_by(id=sub_id).first()
@@ -821,15 +882,23 @@ def subscribe_paypal_success():
                 description=f"New subscription started via PayPal. Expiration set to {new_exp}.",
                 performed_by="PayPal",
             ))
+            if discount_code_used:
+                dc = db.query(DiscountCode).filter_by(code=discount_code_used, active=True).first()
+                if dc:
+                    dc.use_count += 1
+            if sub.notes and sub.notes.startswith("paypal_pending:"):
+                sub.notes = None
             db.commit()
+            session["subscriber_id"] = sub.id
             if sub.email:
                 try:
+                    login_url = make_portal_link(sub, db)
                     from_email = os.environ.get("FROM_EMAIL", "subscribe@duxburyclipper.net")
                     resend.Emails.send({
                         "from": f"Duxbury Clipper <{from_email}>",
                         "to": sub.email,
                         "subject": "Welcome to the Duxbury Clipper!",
-                        "html": _welcome_email_html(sub.full_name.split()[0], new_exp, BASE_URL),
+                        "html": _welcome_email_html(sub.full_name.split()[0], new_exp, BASE_URL, login_url),
                     })
                 except Exception as e:
                     sys.stderr.write(f"[EMAIL ERROR] new subscriber welcome: {e}\n")
@@ -840,14 +909,24 @@ def subscribe_paypal_success():
     return redirect(url_for("subscribe_new"))
 
 
-def _welcome_email_html(first_name, expiration, base_url):
+def _welcome_email_html(first_name, expiration, base_url, login_url=None):
+    login_btn = (
+        f"<p style='margin:24px 0;'>"
+        f"<a href='{login_url}' style='background:#2e7d32;color:#fff;padding:12px 24px;"
+        f"border-radius:4px;text-decoration:none;font-weight:bold;display:inline-block;'>"
+        f"Log In to My Account</a></p>"
+        f"<p style='font-size:0.85em;color:#888;'>This login link expires in 7 days. "
+        f"After that, visit <a href='{base_url}/login'>{base_url}/login</a> to request a new one.</p>"
+    ) if login_url else (
+        f"<p>You can manage your account at: <a href='{base_url}/login'>Log In</a></p>"
+    )
     return (
         f"<p>Dear {first_name},</p>"
         f"<p>Welcome to the Duxbury Clipper! Your home delivery subscription is now active.</p>"
         f"<p>You can expect your first delivery within 1–2 weeks. "
         f"Your subscription is active through <strong>{expiration.strftime('%B %d, %Y')}</strong>.</p>"
-        f"<p>You can manage your account, update your address, or pause delivery anytime at: "
-        f"<a href='{base_url}/account'>My Account</a>.</p>"
+        f"<p>You can manage your account, update your mailing address, or pause delivery anytime:</p>"
+        f"{login_btn}"
         f"<p>Questions? Call 781-934-2811 or reply to this email.</p>"
         f"<p>Thank you for subscribing to the Duxbury Clipper!</p>"
     )
@@ -1081,7 +1160,8 @@ def stripe_webhook():
                             is_new = meta.get("is_new_subscriber") == "true"
                             if is_new:
                                 subject = "Welcome to the Duxbury Clipper!"
-                                html = _welcome_email_html(first_name, new_exp, BASE_URL)
+                                login_url = make_portal_link(sub, db)
+                                html = _welcome_email_html(first_name, new_exp, BASE_URL, login_url)
                                 resend.Emails.send({
                                     "from": f"Duxbury Clipper <{from_email}>",
                                     "to": sub.email,
