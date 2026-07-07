@@ -30,7 +30,7 @@
       <form method="post" action="{{ url_for('subscribe_new') }}" id="subscribe-form">
 
         <div class="card" style="margin-bottom:20px;">
-          <h2 id="info-heading">Your Information</h2>
+          <h2 id="info-heading">👤 Your Information</h2>
 
           <label style="display:flex;align-items:center;gap:8px;margin-bottom:14px;cursor:pointer;font-weight:600;color:#2e7d32;">
             <input type="checkbox" name="is_gift" id="is_gift" value="1" style="width:18px;height:18px;accent-color:#2e7d32;" {% if form.is_gift %}checked{% endif %} onchange="toggleGift()">
@@ -86,7 +86,7 @@
         </div>
 
         <div class="card" style="margin-bottom:20px;">
-          <h2>Mailing Address</h2>
+          <h2>📬 Mailing Address</h2>
           <p style="font-size:0.85em;color:#888;margin-top:0;">Where should we mail your Clipper?</p>
 
           <label>Mailing Address *</label>
@@ -112,7 +112,7 @@
         </div>
 
         <div class="card" style="margin-bottom:20px;">
-          <h2>Subscription Plan</h2>
+          <h2>📋 Subscription Plan</h2>
 
           <div id="plan-state-warning" style="display:none;background:#fff3e0;border:1px solid #ffb74d;border-radius:6px;padding:10px 12px;margin-bottom:10px;font-size:0.85em;color:#e65100;">
             ⚠️ This plan is only available for Massachusetts addresses. Please select <strong>Out-of-County</strong> or correct your state.
@@ -145,7 +145,7 @@
       <div class="card">
         <img src="/static/mailbox3.png" alt="Duxbury Clipper delivered to your door"
              style="width:100%;display:block;border-radius:8px;margin-bottom:16px;">
-        <h2>Subscription Summary</h2>
+        <h2>🧾 Subscription Summary</h2>
         <table>
           <tr><th>Delivery</th><td>Every Wednesday</td></tr>
           <tr><th>Billing</th><td>Annual</td></tr>
@@ -219,7 +219,7 @@ function toggleGift() {
   const checked = document.getElementById('is_gift').checked;
   document.getElementById('gifter-section').style.display = checked ? 'block' : 'none';
   document.getElementById('recipient-label').style.display = checked ? 'block' : 'none';
-  document.getElementById('info-heading').textContent = checked ? 'Subscription Information' : 'Your Information';
+  document.getElementById('info-heading').textContent = checked ? '👤 Subscription Information' : '👤 Your Information';
   document.getElementById('gifter_name').required = checked;
   document.getElementById('gifter_email').required = checked;
   document.getElementById('phone-field').style.display = checked ? 'none' : 'block';
