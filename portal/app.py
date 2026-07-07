@@ -124,7 +124,7 @@ def email_lookup():
 
     if sub:
         link = make_portal_link(sub, db)
-        from_email = os.environ.get("FROM_EMAIL", "subscribe@duxburyclipper.net")
+        from_email = "noreply@duxburyclipper.net"
         try:
             resend.Emails.send({
                 "from": f"Duxbury Clipper <{from_email}>",
@@ -892,7 +892,7 @@ def subscribe_paypal_success():
             if sub.email:
                 try:
                     login_url = make_portal_link(sub, db)
-                    from_email = os.environ.get("FROM_EMAIL", "subscribe@duxburyclipper.net")
+                    from_email = "noreply@duxburyclipper.net"
                     resend.Emails.send({
                         "from": f"Duxbury Clipper <{from_email}>",
                         "to": sub.email,
@@ -1156,7 +1156,7 @@ def stripe_webhook():
                                 sys.stderr.flush()
                     if sub.email:
                         try:
-                            from_email = os.environ.get("FROM_EMAIL", "subscribe@duxburyclipper.net")
+                            from_email = "noreply@duxburyclipper.net"
                             first_name = sub.full_name.split()[0]
                             is_new = meta.get("is_new_subscriber") == "true"
                             if is_new:
@@ -1296,7 +1296,7 @@ def stripe_webhook():
         sub = db.query(Subscriber).filter_by(stripe_customer_id=customer_id).first()
         if sub and sub.email:
             try:
-                from_email = os.environ.get("FROM_EMAIL", "subscribe@duxburyclipper.net")
+                from_email = "noreply@duxburyclipper.net"
                 resend.Emails.send({
                     "from": f"Duxbury Clipper <{from_email}>",
                     "to": sub.email,
