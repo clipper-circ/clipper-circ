@@ -106,7 +106,8 @@ def login():
             session["subscriber_id"] = sub.id
             return redirect(url_for("account"))
         flash("Account not found. Please check your account number and zip code.")
-    return render_template("login.html")
+    plans = [(k, v, PLAN_PRICES[k], PLAN_DESCRIPTIONS.get(k, "")) for k, v in PLAN_LABELS.items()]
+    return render_template("login.html", plans=plans)
 
 
 @app.route("/email-lookup", methods=["POST"])

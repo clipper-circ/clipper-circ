@@ -40,6 +40,15 @@
       <a href="{{ url_for('subscribe_new') }}" class="btn" style="display:block;text-align:center;padding:12px;border-radius:4px;font-size:1em;">
         Start a New Subscription
       </a>
+
+      <div style="margin-top:18px;border-top:1px solid #c8e6c9;padding-top:14px;">
+        {% for code, label, price, desc in plans %}
+        <div style="display:flex;justify-content:space-between;align-items:baseline;padding:6px 0;border-bottom:1px solid #e8f5e9;font-size:0.88em;">
+          <span style="color:#333;font-weight:600;">{{ label }}</span>
+          <span style="color:#2e7d32;font-weight:700;">${{ "%.2f"|format(price) }}/yr</span>
+        </div>
+        {% endfor %}
+      </div>
     </div>
 
     <div class="card">
