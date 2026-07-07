@@ -43,9 +43,12 @@
 
       <div style="margin-top:18px;border-top:1px solid #c8e6c9;padding-top:14px;">
         {% for code, label, price, desc in plans %}
-        <div style="display:flex;justify-content:space-between;align-items:baseline;padding:6px 0;border-bottom:1px solid #e8f5e9;font-size:0.88em;">
-          <span style="color:#333;font-weight:600;">{{ label }}</span>
-          <span style="color:#2e7d32;font-weight:700;">${{ "%.2f"|format(price) }}/yr</span>
+        <div style="padding:8px 0;border-bottom:1px solid #e8f5e9;font-size:0.85em;">
+          <div style="display:flex;justify-content:space-between;align-items:baseline;">
+            <span style="color:#333;font-weight:700;">{{ label }}</span>
+            <span style="color:#2e7d32;font-weight:700;">${{ "%.2f"|format(price) }}/yr</span>
+          </div>
+          {% if desc %}<div style="color:#aaa;font-size:0.9em;margin-top:2px;">{{ desc }}</div>{% endif %}
         </div>
         {% endfor %}
       </div>
