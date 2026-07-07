@@ -81,7 +81,7 @@
             </div>
             <div style="flex:1;" id="phone-field">
               <label>Phone Number</label>
-              <input type="tel" name="phone" value="{{ form.phone or '' }}" placeholder="781-555-1234">
+              <input type="tel" name="phone" id="phone" value="{{ form.phone or '' }}" placeholder="(781) 555-1234" maxlength="14" oninput="formatPhone(this)">
             </div>
           </div>
         </div>
@@ -107,7 +107,8 @@
             </div>
             <div style="flex:1;">
               <label>Zip Code *</label>
-              <input type="text" name="zipcode" required value="{{ form.zipcode or '' }}" placeholder="02332">
+              <input type="text" name="zipcode" id="zipcode" required value="{{ form.zipcode or '' }}" placeholder="02332" maxlength="10" oninput="formatZip(this)" onblur="validateZip(this)">
+              <span id="zip-error" style="display:none;font-size:0.78em;color:#c62828;">Please enter a valid zip code (e.g. 02332)</span>
             </div>
           </div>
         </div>
@@ -258,6 +259,32 @@ function clearDiscount() {
   msg.style.display = 'none';
   msg.innerHTML = '';
   updatePlanDisplay();
+}
+
+function formatPhone(input) {
+  let digits = input.value.replace(/\D/g, '').slice(0, 10);
+  if (digits.length >= 7) {
+    input.value = '(' + digits.slice(0,3) + ') ' + digits.slice(3,6) + '-' + digits.slice(6);
+  } else if (digits.length >= 4) {
+    input.value = '(' + digits.slice(0,3) + ') ' + digits.slice(3);
+  } else if (digits.length > 0) {
+    input.value = '(' + digits;
+  }
+}
+
+function formatZip(input) {
+  let val = input.value.replace(/[^\d-]/g, '');
+  // auto-insert hyphen after 5 digits
+  if (val.replace('-','').length > 5 && !val.includes('-')) {
+    val = val.slice(0,5) + '-' + val.slice(5);
+  }
+  input.value = val;
+}
+
+function validateZip(input) {
+  const valid = /^\d{5}(-\d{4})?$/.test(input.value.trim());
+  document.getElementById('zip-error').style.display = valid || !input.value ? 'none' : 'block';
+  input.style.borderColor = valid || !input.value ? '' : '#e57373';
 }
 
 async function applyDiscount() {
