@@ -723,7 +723,6 @@ def subscribe_new():
     price_cents = int(PLAN_PRICES[plan_code] * 100)
     sub_key = os.environ.get("STRIPE_SECRET_KEY", "")
     checkout_params = {
-        "payment_method_types": ["card"],
         "mode": "subscription",
         "line_items": [{
             "price_data": {
@@ -949,7 +948,6 @@ def create_checkout():
     test_amount = request.form.get("test_amount")
     price_cents = 100 if test_amount else int(PLAN_PRICES[plan_code] * 100)
     checkout_params = {
-        "payment_method_types": ["card"],
         "mode": "subscription",
         "line_items": [{
             "price_data": {
