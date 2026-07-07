@@ -929,7 +929,7 @@ def _welcome_email_html(first_name, expiration, base_url, login_url=None):
         f"Your subscription is active through <strong>{expiration.strftime('%B %d, %Y')}</strong>.</p>"
         f"<p>You can manage your account, update your mailing address, or pause delivery anytime:</p>"
         f"{login_btn}"
-        f"<p>Questions? Call 781-934-2811 or reply to this email.</p>"
+        f"<p>Questions? Call 781-934-2811 or email <a href='mailto:subscribe@duxburyclipper.com'>subscribe@duxburyclipper.com</a> and talk to a real person. Please do not reply to this message — it is not monitored!</p>"
         f"<p>Thank you for subscribing to the Duxbury Clipper!</p>"
     )
 
