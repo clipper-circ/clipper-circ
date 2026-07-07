@@ -3,45 +3,33 @@
 {% block content %}
 
 <style>
-.login-wrap {
-  max-width:860px; margin:0 auto; display:flex; gap:40px;
-  align-items:flex-start; padding-top:10px;
-}
-.login-card-col { flex:1.0; min-width:0; }
-.login-image-col { flex:0.8; text-align:center; padding-top:10px; }
+.login-wrap { max-width:860px; margin:0 auto; padding-top:10px; }
+.login-hero { width:100%; max-height:260px; object-fit:cover; object-position:center 60%; border-radius:12px; box-shadow:0 4px 16px rgba(0,0,0,0.15); display:block; margin-bottom:28px; }
+.login-cards { display:flex; gap:24px; align-items:flex-start; }
+.login-cards > div { flex:1; min-width:0; }
 .login-fields-row { display:flex; gap:12px; }
 .login-fields-row > div { flex:1; }
 .login-fields-row > div:first-child { flex:1.4; }
 
-@media (max-width: 620px) {
-  .login-wrap { flex-direction:column; gap:24px; padding-top:6px; }
-  .login-image-col { order:-1; padding-top:0; width:100%; text-align:center; }
-  .login-image-col img.mailbox { max-width:180px !important; display:block; margin:0 auto; }
-  .login-image-col .welcome-text { font-size:1.3em !important; }
+@media (max-width:620px) {
+  .login-cards { flex-direction:column; gap:20px; }
   .login-fields-row { flex-direction:column; gap:0; }
 }
 </style>
 
 <div class="login-wrap">
 
-  {# Left: welcome image #}
-  <div class="login-image-col">
-    <img class="mailbox" src="/static/mailbox.jpg" alt="Duxbury Clipper delivered to your door"
-         style="width:90%;max-width:280px;border-radius:12px;box-shadow:0 4px 16px rgba(0,0,0,0.15);">
-    <div class="welcome-text" style="font-size:1.76em;font-weight:900;color:#1a3a1a;margin-top:14px;letter-spacing:1px;">Welcome!</div>
-    <div style="font-size:1em;font-weight:700;color:#222;margin-top:10px;">Home Delivery Portal</div>
-    <p style="color:#666;font-size:0.88em;margin-top:8px;line-height:1.6;">
-      Sign up for Clipper Home Delivery or manage your existing account.
-    </p>
-    <p style="color:#666;font-size:0.78em;margin-top:10px;line-height:1.6;">
-      Please note, this portal is for home delivery accounts. For digital access packages (website and eEdition) please visit your <a href="https://www.duxburyclipper.com/account/" style="color:#2e7d32;">My Account page here</a>.
-    </p>
+  <div style="text-align:center;margin-bottom:20px;">
+    <h1 style="font-size:1.5em;margin-bottom:6px;">Welcome to the Duxbury Clipper Portal</h1>
+    <p style="color:#666;font-size:0.92em;max-width:560px;margin:0 auto;">Sign up for Clipper Home Delivery or manage your existing account.</p>
+    <p style="color:#999;font-size:0.78em;max-width:560px;margin:8px auto 0;">This portal is for home delivery accounts. For digital access (website &amp; eEdition) visit your <a href="https://www.duxburyclipper.com/account/" style="color:#2e7d32;">My Account page here</a>.</p>
   </div>
 
-  {# Right: login card #}
-  <div class="login-card-col">
+  <img class="login-hero" src="/static/mailbox3.png" alt="Duxbury Clipper delivered to your door">
 
-    <div class="card" style="margin-bottom:20px;background:#f0f7f0;border:2px solid #2e7d32;">
+  <div class="login-cards">
+
+    <div class="card" style="background:#f0f7f0;border:2px solid #2e7d32;">
       <h2 style="text-align:center;border:none;padding-bottom:0;font-size:1.05em;color:#1a3a1a;">New to the Duxbury Clipper?</h2>
       <p style="font-size:0.88em;color:#444;text-align:center;margin-top:6px;margin-bottom:16px;">
         Subscribe to home delivery and start receiving the Clipper every Wednesday.
@@ -98,8 +86,8 @@
         </p>
       </div>
     </div>
-  </div>
 
+  </div>
 </div>
 
 {% endblock %}
