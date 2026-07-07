@@ -909,20 +909,23 @@ def subscribe_paypal_success():
 
 
 def _welcome_email_html(first_name, expiration, base_url, login_url=None):
+    first_name = first_name.capitalize()
     login_btn = (
         f"<p style='margin:24px 0;'>"
         f"<a href='{login_url}' style='background:#2e7d32;color:#fff;padding:12px 24px;"
         f"border-radius:4px;text-decoration:none;font-weight:bold;display:inline-block;'>"
         f"Log In to My Account</a></p>"
-        f"<p style='font-size:0.85em;color:#888;'>This login link expires in 7 days. "
-        f"After that, visit <a href='{base_url}/login'>{base_url}/login</a> to request a new one.</p>"
+        f"<p style='font-size:0.85em;color:#888;'>This login link expires in 7 days. After that, please "
+        f"visit <a href='{base_url}/login'>{base_url}/login</a> to request a new one.</p>"
+        f"<p style='font-size:0.85em;color:#888;'>You can log in using your email address or the account number on your Clipper mailing label.</p>"
     ) if login_url else (
         f"<p>You can manage your account at: <a href='{base_url}/login'>Log In</a></p>"
+        f"<p style='font-size:0.85em;color:#888;'>You can log in using your email address or the account number on your Clipper mailing label.</p>"
     )
     return (
         f"<p>Dear {first_name},</p>"
         f"<p>Welcome to the Duxbury Clipper! Your home delivery subscription is now active.</p>"
-        f"<p>You can expect your first delivery within 1–2 weeks. "
+        f"<p>It usually takes about a week for your first issue to arrive in your mailbox, depending on the day you subscribed. "
         f"Your subscription is active through <strong>{expiration.strftime('%B %d, %Y')}</strong>.</p>"
         f"<p>You can manage your account, update your mailing address, or pause delivery anytime:</p>"
         f"{login_btn}"
