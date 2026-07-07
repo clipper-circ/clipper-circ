@@ -122,7 +122,7 @@
           <label style="display:flex;align-items:center;gap:10px;padding:10px;border:1px solid #ddd;border-radius:6px;margin-bottom:8px;cursor:pointer;{% if loop.first %}border-color:#2e7d32;background:#f0f7f0;{% endif %}" id="plan-label-{{ code.value }}">
             <input type="radio" name="plan" value="{{ code.value }}" {% if form.plan == code.value or (not form.plan and loop.first) %}checked{% endif %}
                    onchange="updatePlanDisplay();checkPlanState();" style="width:18px;height:18px;accent-color:#2e7d32;">
-            <img src="/static/ClipperShip.png" alt="" style="width:22px;height:22px;object-fit:contain;opacity:0.7;flex-shrink:0;">
+            <img src="{{ url_for('static', filename='ClipperShip.png') }}" alt="" style="width:22px;height:22px;object-fit:contain;opacity:0.7;flex-shrink:0;">
             <span>
               <strong>{{ label }}</strong>
               <span style="color:#2e7d32;font-weight:700;margin-left:8px;">${{ "%.2f"|format(price) }}/yr</span>
