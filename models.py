@@ -66,7 +66,7 @@ PLAN_DESCRIPTIONS = {
     PlanCode.LOCAL: "For a mailing address in Duxbury or anywhere in Plymouth County",
     PlanCode.OUT_OF_COUNTY: "For a mailing address outside of Plymouth County",
     PlanCode.SENIOR: "For a mailing address in Duxbury for a senior citizen",
-    PlanCode.SNOWBIRD: "For a mailing address in Duxbury for a senior citizen who spends winter elsewhere. Enter your local Duxbury address when placing your order — you can add a second (winter) address in your account.",
+    PlanCode.SNOWBIRD: "For a Duxbury senior citizen who spends winter elsewhere. Enter your local Duxbury address when placing your order — you can add a second (winter) address in your account.",
 }
 
 
