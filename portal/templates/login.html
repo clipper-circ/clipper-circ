@@ -28,6 +28,12 @@
 
   <img class="login-hero" src="/static/postboxwide.png" alt="Duxbury Clipper delivered to your door" style="object-position:center center;">
 
+  {% if request.args.get('email_sent') %}
+  <div style="background:#e8f5e9;border:1px solid #a5d6a7;border-radius:6px;padding:12px 16px;text-align:center;font-size:0.88em;color:#2e7d32;font-weight:600;margin-bottom:16px;">
+    ✅ If we found an account with that email, we sent a login link. Check your inbox (and spam folder).
+  </div>
+  {% endif %}
+
   <div class="login-cards">
 
     <div class="card" style="background:#f0f7f0;border:2px solid #2e7d32;">
@@ -90,11 +96,6 @@
       <hr style="border:none;border-top:1px solid #eee;margin:16px 0;">
       <div style="text-align:center;margin:0 0 14px;color:#888;font-size:0.84em;font-weight:700;letter-spacing:0.5px;">OR, don't know your account number?</div>
 
-      {% if request.args.get('email_sent') %}
-      <div style="background:#e8f5e9;border:1px solid #a5d6a7;border-radius:6px;padding:12px 16px;text-align:center;font-size:0.88em;color:#2e7d32;font-weight:600;margin-bottom:10px;">
-        ✅ If we found an account with that email, we sent a login link. Check your inbox (and spam folder).
-      </div>
-      {% endif %}
       <div>
         <form method="post" action="{{ url_for('email_lookup') }}">
           <input type="email" name="email" placeholder="Your email address on file" required
