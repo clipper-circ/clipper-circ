@@ -125,9 +125,10 @@ def email_lookup():
     ).first()
 
     if sub:
-        link = make_portal_link(sub, db)
-        from_email = "noreply@duxburyclipper.net"
         try:
+            link = make_portal_link(sub, db)
+            from_email = "noreply@duxburyclipper.net"
+            zipcode_display = (sub.zipcode or "")[:5]
             resend.Emails.send({
                 "from": f"Duxbury Clipper <{from_email}>",
                 "to": sub.email,
@@ -145,15 +146,13 @@ def email_lookup():
                     f"<p style='font-size:0.85em;color:#888;'>Button not working? Copy this link:<br>{link}</p>"
                     f"<hr style='border:none;border-top:1px solid #eee;margin:20px 0;'>"
                     f"<p style='font-size:0.8em;color:#aaa;'>Your account number is <strong>{sub.simplecirc_id or sub.id}</strong>."
-                    f" You can use this with your zip code ({sub.zipcode[:5]}) to log in any time.</p>"
+                    f"{(' You can use this with your zip code (' + zipcode_display + ') to log in any time.') if zipcode_display else ''}</p>"
                     f"</div>"
                 ),
             })
         except Exception as e:
-            print(f"[EMAIL ERROR] {e}")
-        if False:
-            # Dev mode: just log the link
-            print(f"[DEV] Magic link for {sub.email}: {link}")
+            sys.stderr.write(f"[EMAIL-LOOKUP ERROR] {e}\n")
+            sys.stderr.flush()
 
     db.close()
     # Always show the same message to prevent email enumeration
