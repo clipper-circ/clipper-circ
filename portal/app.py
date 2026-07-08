@@ -155,9 +155,7 @@ def email_lookup():
             sys.stderr.flush()
 
     db.close()
-    # Always show the same message to prevent email enumeration
-    flash("If we found an account with that email, we sent a login link. Check your inbox (and spam folder).")
-    return redirect(url_for("login"))
+    return redirect(url_for("login") + "?email_sent=1")
 
 
 @app.route("/logout")

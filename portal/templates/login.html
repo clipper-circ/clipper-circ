@@ -90,6 +90,11 @@
       <hr style="border:none;border-top:1px solid #eee;margin:16px 0;">
       <div style="text-align:center;margin:0 0 14px;color:#888;font-size:0.84em;font-weight:700;letter-spacing:0.5px;">OR, don't know your account number?</div>
 
+      {% if request.args.get('email_sent') %}
+      <div style="background:#e8f5e9;border:1px solid #a5d6a7;border-radius:6px;padding:14px 16px;text-align:center;font-size:0.9em;color:#2e7d32;font-weight:600;">
+        ✅ If we found an account with that email, we sent a login link. Check your inbox (and spam folder).
+      </div>
+      {% else %}
       <div>
         <form method="post" action="{{ url_for('email_lookup') }}">
           <input type="email" name="email" placeholder="Your email address on file" required
@@ -102,6 +107,7 @@
           We'll send a one-click login link to your address on file.
         </p>
       </div>
+      {% endif %}
     </div>
 
   </div>
