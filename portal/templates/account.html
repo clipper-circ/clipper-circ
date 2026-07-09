@@ -256,8 +256,8 @@
 
   {# ════════ ORDER HISTORY ════════ #}
   <div class="tab-panel" id="panel-history">
-    {% set EVENT_ICONS = {'EMAIL_CHANGED':'✉️','ADDRESS_SWITCHED':'🔄','ADDRESS_UPDATED':'📬','NAME_UPDATED':'✏️','AUTO_RENEW_ENABLED':'✅','AUTO_RENEW_CANCELLED':'❌','SUBSCRIPTION_STARTED':'🔁','SUBSCRIPTION_RENEWED':'🔁'} %}
-    {% set EVENT_LABELS = {'EMAIL_CHANGED':'Email Changed','ADDRESS_SWITCHED':'Address Switched','ADDRESS_UPDATED':'Address Updated','NAME_UPDATED':'Name Updated','AUTO_RENEW_ENABLED':'Auto-Renew Enabled','AUTO_RENEW_CANCELLED':'Auto-Renew Cancelled','SUBSCRIPTION_STARTED':'Auto-Renew Started','SUBSCRIPTION_RENEWED':'Auto-Renewed'} %}
+    {% set EVENT_ICONS = {'EMAIL_CHANGED':'✉️','ADDRESS_SWITCHED':'🔄','ADDRESS_UPDATED':'📬','NAME_UPDATED':'✏️','AUTO_RENEW_ENABLED':'✅','AUTO_RENEW_CANCELLED':'❌','SUBSCRIPTION_STARTED':'🔁','SUBSCRIPTION_RENEWED':'🔁','HOLD_ADDED':'⏸️','HOLD_REMOVED':'▶️'} %}
+    {% set EVENT_LABELS = {'EMAIL_CHANGED':'Email Changed','ADDRESS_SWITCHED':'Address Switched','ADDRESS_UPDATED':'Address Updated','NAME_UPDATED':'Name Updated','AUTO_RENEW_ENABLED':'Auto-Renew Enabled','AUTO_RENEW_CANCELLED':'Auto-Renew Cancelled','SUBSCRIPTION_STARTED':'Auto-Renew Started','SUBSCRIPTION_RENEWED':'Auto-Renewed','HOLD_ADDED':'Delivery Hold Scheduled','HOLD_REMOVED':'Delivery Hold Removed'} %}
     {% if payments or events %}
     <table>
       <thead><tr><th>Date</th><th>Description</th><th>Amount</th><th>Detail</th></tr></thead>
@@ -297,7 +297,7 @@
     <p style="font-size:0.9em;color:#666;margin-top:0;">
       Going on vacation or snowbirding for the winter? Schedule a hold and we'll pause delivery for that period. <strong>Your subscription does not run down while on hold</strong> — the hold period is added back to your expiration date.
     </p>
-    <form method="post" action="/add-hold">
+    <form method="post" action="/confirm-hold">
       <div class="row">
         <div><label>Hold Start</label><input type="date" name="hold_start" required></div>
         <div><label>Hold End</label><input type="date" name="hold_end" required></div>
@@ -314,9 +314,7 @@
           <td>{{ hold.hold_start.strftime('%b %d, %Y') }}</td>
           <td>{{ hold.hold_end.strftime('%b %d, %Y') }}</td>
           <td style="text-align:right;">
-            <form method="post" action="/remove-hold/{{ hold.id }}" style="margin:0;">
-              <button type="submit" class="btn btn-danger btn-sm">Remove</button>
-            </form>
+            <a href="/confirm-remove-hold/{{ hold.id }}" class="btn btn-danger btn-sm">Remove</a>
           </td>
         </tr>
         {% endfor %}

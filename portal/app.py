@@ -490,6 +490,37 @@ def update_contact():
     return redirect(url_for("account") + "?tab=address")
 
 
+@app.route("/confirm-hold", methods=["POST"])
+def confirm_hold():
+    sub = current_subscriber()
+    if not sub:
+        return redirect(url_for("login"))
+    try:
+        hold_start = date.fromisoformat(request.form.get("hold_start", ""))
+        hold_end   = date.fromisoformat(request.form.get("hold_end", ""))
+    except ValueError:
+        flash("Invalid dates.")
+        return redirect(url_for("account") + "?tab=extras")
+    if hold_end <= hold_start:
+        flash("Hold end date must be after start date.")
+        return redirect(url_for("account") + "?tab=extras")
+    hold_days = (hold_end - hold_start).days
+    return render_template("confirm_hold.html", hold_start=hold_start, hold_end=hold_end, hold_days=hold_days)
+
+
+@app.route("/confirm-remove-hold/<int:hold_id>")
+def confirm_remove_hold(hold_id):
+    sub = current_subscriber()
+    if not sub:
+        return redirect(url_for("login"))
+    db = SessionLocal()
+    hold = db.query(DeliveryHold).filter_by(id=hold_id, subscriber_id=sub.id).first()
+    db.close()
+    if not hold:
+        return redirect(url_for("account") + "?tab=extras")
+    return render_template("confirm_remove_hold.html", hold=hold)
+
+
 @app.route("/add-hold", methods=["POST"])
 def add_hold():
     sub = current_subscriber()
@@ -500,10 +531,10 @@ def add_hold():
         hold_end   = date.fromisoformat(request.form.get("hold_end",""))
     except ValueError:
         flash("Invalid dates.")
-        return redirect(url_for("account"))
+        return redirect(url_for("account") + "?tab=extras")
     if hold_end <= hold_start:
         flash("Hold end date must be after start date.")
-        return redirect(url_for("account"))
+        return redirect(url_for("account") + "?tab=extras")
     db = SessionLocal()
     sub_db = db.query(Subscriber).filter_by(id=sub.id).first()
     hold_days = (hold_end - hold_start).days
@@ -512,10 +543,15 @@ def add_hold():
         sub_db.expiration_date += timedelta(days=hold_days)
     if hold_start <= date.today():
         sub_db.status = SubscriberStatus.ON_HOLD
+    db.add(SubscriberEventLog(
+        subscriber_id=sub.id, event_type="HOLD_ADDED",
+        description=f"Delivery hold scheduled: {hold_start} – {hold_end} ({hold_days} days). Expiration extended accordingly.",
+        performed_by="subscriber",
+    ))
     db.commit()
     db.close()
-    flash(f"Delivery hold added — expiration extended by {hold_days} days.")
-    return redirect(url_for("account"))
+    flash(f"Delivery hold scheduled for {hold_start.strftime('%b %d')} – {hold_end.strftime('%b %d, %Y')}. Your expiration date has been extended by {hold_days} days.")
+    return redirect(url_for("account") + "?tab=extras")
 
 
 @app.route("/remove-hold/<int:hold_id>", methods=["POST"])
@@ -528,6 +564,8 @@ def remove_hold(hold_id):
     if hold:
         sub_db = db.query(Subscriber).filter_by(id=sub.id).first()
         hold_days = (hold.hold_end - hold.hold_start).days
+        hold_start = hold.hold_start
+        hold_end = hold.hold_end
         db.delete(hold)
         db.flush()
         if sub_db.expiration_date:
@@ -539,10 +577,15 @@ def remove_hold(hold_id):
         ).count()
         if remaining == 0 and sub_db.status == SubscriberStatus.ON_HOLD:
             sub_db.status = SubscriberStatus.ACTIVE
+        db.add(SubscriberEventLog(
+            subscriber_id=sub.id, event_type="HOLD_REMOVED",
+            description=f"Delivery hold removed: {hold_start} – {hold_end} ({hold_days} days). Expiration adjusted accordingly.",
+            performed_by="subscriber",
+        ))
         db.commit()
     db.close()
-    flash("Hold removed.")
-    return redirect(url_for("account"))
+    flash("Hold removed. Your expiration date has been adjusted.")
+    return redirect(url_for("account") + "?tab=extras")
 
 
 # ── Renewal ────────────────────────────────────────────────────────────────────

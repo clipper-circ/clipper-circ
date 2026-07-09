@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block title %}Confirm Delivery Hold — Duxbury Clipper{% endblock %}
+{% block content %}
+
+<div style="max-width:480px;margin:40px auto;text-align:center;">
+  <div style="font-size:2.5em;margin-bottom:16px;">⏸️</div>
+  <h1 style="font-size:1.4em;margin-bottom:10px;">Confirm Delivery Hold</h1>
+  <p style="color:#555;font-size:0.95em;line-height:1.6;margin-bottom:8px;">
+    Please confirm you'd like to pause delivery for:
+  </p>
+  <div class="card" style="text-align:left;margin-bottom:24px;">
+    <table style="width:100%;font-size:0.93em;">
+      <tr><td style="color:#888;padding:5px 0;border:none;width:120px;">Hold Start:</td><td style="border:none;font-weight:700;">{{ hold_start.strftime('%B %d, %Y') }}</td></tr>
+      <tr><td style="color:#888;padding:5px 0;border:none;">Hold End:</td><td style="border:none;font-weight:700;">{{ hold_end.strftime('%B %d, %Y') }}</td></tr>
+      <tr><td style="color:#888;padding:5px 0;border:none;">Duration:</td><td style="border:none;font-weight:700;">{{ hold_days }} days</td></tr>
+    </table>
+    <p style="font-size:0.85em;color:#2e7d32;margin:12px 0 0;">✓ Your expiration date will be extended by {{ hold_days }} days — you won't lose any issues.</p>
+  </div>
+  <form method="post" action="{{ url_for('add_hold') }}">
+    <input type="hidden" name="hold_start" value="{{ hold_start }}">
+    <input type="hidden" name="hold_end" value="{{ hold_end }}">
+    <button type="submit" class="btn" style="padding:12px 28px;font-size:1em;margin-right:12px;">Yes, schedule hold</button>
+    <a href="{{ url_for('account') }}?tab=extras" class="btn btn-outline" style="padding:12px 28px;font-size:1em;">Never mind</a>
+  </form>
+</div>
+
+{% endblock %}

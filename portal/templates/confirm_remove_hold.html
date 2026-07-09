@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}Confirm Remove Hold — Duxbury Clipper{% endblock %}
+{% block content %}
+
+<div style="max-width:480px;margin:40px auto;text-align:center;">
+  <div style="font-size:2.5em;margin-bottom:16px;">🗑️</div>
+  <h1 style="font-size:1.4em;margin-bottom:10px;">Remove This Delivery Hold?</h1>
+  <p style="color:#555;font-size:0.95em;line-height:1.6;margin-bottom:8px;">
+    Are you sure you want to remove the following hold?
+  </p>
+  <div class="card" style="text-align:left;margin-bottom:24px;">
+    <table style="width:100%;font-size:0.93em;">
+      <tr><td style="color:#888;padding:5px 0;border:none;width:120px;">Hold Start:</td><td style="border:none;font-weight:700;">{{ hold.hold_start.strftime('%B %d, %Y') }}</td></tr>
+      <tr><td style="color:#888;padding:5px 0;border:none;">Hold End:</td><td style="border:none;font-weight:700;">{{ hold.hold_end.strftime('%B %d, %Y') }}</td></tr>
+      <tr><td style="color:#888;padding:5px 0;border:none;">Duration:</td><td style="border:none;font-weight:700;">{{ (hold.hold_end - hold.hold_start).days }} days</td></tr>
+    </table>
+    <p style="font-size:0.85em;color:#e65100;margin:12px 0 0;">⚠ Your expiration date will be shortened by {{ (hold.hold_end - hold.hold_start).days }} days.</p>
+  </div>
+  <form method="post" action="{{ url_for('remove_hold', hold_id=hold.id) }}">
+    <button type="submit" class="btn btn-danger" style="padding:12px 28px;font-size:1em;margin-right:12px;">Yes, remove hold</button>
+    <a href="{{ url_for('account') }}?tab=extras" class="btn btn-outline" style="padding:12px 28px;font-size:1em;">Never mind</a>
+  </form>
+</div>
+
+{% endblock %}
