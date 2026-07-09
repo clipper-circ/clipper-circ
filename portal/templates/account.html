@@ -102,12 +102,12 @@
       <div style="flex:1;min-width:200px;">
         <div style="font-size:0.78em;font-weight:700;color:#999;text-transform:uppercase;letter-spacing:1px;margin-bottom:10px;">Your Subscription Details</div>
         <table style="font-size:0.93em;">
-          <tr><td style="color:#888;padding:5px 0;border:none;padding-right:16px;">Plan</td><td style="border:none;font-weight:700;">{{ plan_label }}</td></tr>
-          <tr><td style="color:#888;padding:5px 0;border:none;padding-right:16px;">Start Date</td><td style="border:none;">{{ subscriber.start_date.strftime('%B %d, %Y') if subscriber.start_date else '—' }}</td></tr>
-          <tr><td style="color:#888;padding:5px 0;border:none;padding-right:16px;">Last Renewed</td><td style="border:none;">{{ payments[0].paid_at.strftime('%B %d, %Y') if payments else '—' }}</td></tr>
-          <tr><td style="color:#888;padding:5px 0;border:none;padding-right:16px;">Expiration Date</td><td style="border:none;">{{ subscriber.expiration_date.strftime('%B %d, %Y') if subscriber.expiration_date else '—' }}</td></tr>
-          <tr><td style="color:#888;padding:5px 0;border:none;padding-right:16px;">Issues left</td><td style="border:none;{% if issues_left < 5 %}color:#c62828;font-weight:700;{% endif %}">{{ issues_left }}</td></tr>
-          <tr><td style="color:#888;padding:5px 0;border:none;padding-right:16px;">Auto-renew</td>
+          <tr><td style="color:#888;padding:5px 0;border:none;padding-right:16px;">Plan:</td><td style="border:none;font-weight:700;">{{ plan_label }}</td></tr>
+          <tr><td style="color:#888;padding:5px 0;border:none;padding-right:16px;">Start Date:</td><td style="border:none;">{{ subscriber.start_date.strftime('%B %d, %Y') if subscriber.start_date else '—' }}</td></tr>
+          <tr><td style="color:#888;padding:5px 0;border:none;padding-right:16px;">Last Renewed:</td><td style="border:none;">{{ payments[0].paid_at.strftime('%B %d, %Y') if payments else '—' }}</td></tr>
+          <tr><td style="color:#888;padding:5px 0;border:none;padding-right:16px;">Expiration Date:</td><td style="border:none;">{{ subscriber.expiration_date.strftime('%B %d, %Y') if subscriber.expiration_date else '—' }}</td></tr>
+          <tr><td style="color:#888;padding:5px 0;border:none;padding-right:16px;">Issues left:</td><td style="border:none;{% if issues_left < 5 %}color:#c62828;font-weight:700;{% endif %}">{{ issues_left }}</td></tr>
+          <tr><td style="color:#888;padding:5px 0;border:none;padding-right:16px;">Auto-renew:</td>
               <td style="border:none;">
                 {% if subscriber.stripe_subscription_id and subscriber.auto_renew %}
                   <span style="color:#2e7d32;font-weight:700;">✓ Active</span>
