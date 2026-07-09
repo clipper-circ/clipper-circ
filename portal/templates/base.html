@@ -98,7 +98,8 @@
 </div>
 
 <div class="sitenav">
-  <a href="{{ url_for('index') }}">Portal Home</a>
+  <a href="https://www.duxburyclipper.com/" rel="noreferrer">Duxbury Clipper Website</a>
+  <a href="{{ url_for('login') }}">Home Delivery Portal</a>
   {% if session.subscriber_id %}
   <a href="{{ url_for('account') }}" {% if request.endpoint == 'account' %}class="active"{% endif %}>My Account</a>
   <a href="{{ url_for('renew_self') }}" {% if request.endpoint == 'renew_self' %}class="active"{% endif %}>Renew</a>
