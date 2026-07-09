@@ -74,7 +74,11 @@
       </div>
     </div>
     <div class="acct-profile-actions">
+      {% if issues_left > 15 %}
+      <a href="#" onclick="switchTab('renew');return false;" class="btn btn-sm" style="background:#aaa;cursor:default;" title="You have {{ issues_left }} issues remaining — renewing early is fine but not urgent">Renew</a>
+      {% else %}
       <a href="#" onclick="switchTab('renew');return false;" class="btn btn-sm">Renew</a>
+      {% endif %}
     </div>
   </div>
 
