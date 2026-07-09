@@ -120,12 +120,12 @@ def email_lookup():
         return redirect(url_for("login"))
 
     db = SessionLocal()
-    sub = db.query(Subscriber).filter(
-        Subscriber.email.ilike(email)
-    ).first()
+    try:
+        sub = db.query(Subscriber).filter(
+            Subscriber.email.ilike(email)
+        ).first()
 
-    if sub:
-        try:
+        if sub:
             link = make_portal_link(sub, db)
             from_email = "noreply@duxburyclipper.net"
             zipcode_display = (sub.zipcode or "")[:5]
@@ -151,11 +151,12 @@ def email_lookup():
                     f"</div>"
                 ),
             })
-        except Exception as e:
-            sys.stderr.write(f"[EMAIL-LOOKUP ERROR] {e}\n")
-            sys.stderr.flush()
+    except Exception as e:
+        sys.stderr.write(f"[EMAIL-LOOKUP ERROR] {type(e).__name__}: {e}\n")
+        sys.stderr.flush()
+    finally:
+        db.close()
 
-    db.close()
     return redirect(url_for("login") + "?email_sent=1")
 
 
