@@ -368,7 +368,7 @@ def request_email_change():
     db.close()
 
     verify_link = f"{BASE_URL}/verify-email/{token}"
-    from_email  = os.environ.get("FROM_EMAIL","subscribe@duxburyclipper.net")
+    from_email  = "noreply@duxburyclipper.net"
 
     sys.stderr.write(f"[EMAIL-CHANGE] key={resend.api_key[:10] if resend.api_key else 'EMPTY'} from={from_email} to={new_email}\n")
     sys.stderr.flush()
