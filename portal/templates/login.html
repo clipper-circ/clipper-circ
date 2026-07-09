@@ -83,11 +83,11 @@
         <div class="login-fields-row">
           <div>
             <label for="account_num">Account Number</label>
-            <input type="text" id="account_num" name="account_num" placeholder="e.g. 47408427" autofocus required>
+            <input type="text" id="account_num" name="account_num" placeholder="e.g. 47408427" autofocus required autocomplete="off">
           </div>
           <div>
             <label for="zipcode">Zip / Postal Code</label>
-            <input type="text" id="zipcode" name="zipcode" placeholder="e.g. 02331" required>
+            <input type="text" id="zipcode" name="zipcode" placeholder="e.g. 02331" required inputmode="numeric" autocomplete="postal-code">
           </div>
         </div>
         <button type="submit" class="btn" style="width:100%;margin-top:18px;border-radius:4px;padding:12px;font-size:1em;">🔑 &nbsp;Log In</button>
@@ -98,7 +98,7 @@
 
       <div>
         <form method="post" action="{{ url_for('email_lookup') }}">
-          <input type="email" name="email" placeholder="Your email address on file" required
+          <input type="email" name="email" placeholder="Your email address on file" required autocomplete="email"
                  style="width:100%;padding:9px 10px;border:1px solid #ccc;border-radius:4px;font-size:0.88em;box-sizing:border-box;">
           <button type="submit" class="btn btn-outline" style="width:100%;margin-top:10px;border-radius:4px;padding:12px;font-size:1em;">
             ✉️ &nbsp;Email me a link
