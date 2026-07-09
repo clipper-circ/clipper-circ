@@ -495,6 +495,9 @@ def confirm_hold():
     sub = current_subscriber()
     if not sub:
         return redirect(url_for("login"))
+    if sub.status.value in ("EXPIRED", "CANCELLED"):
+        flash("Delivery holds cannot be scheduled on an expired or cancelled subscription.")
+        return redirect(url_for("account") + "?tab=extras")
     try:
         hold_start = date.fromisoformat(request.form.get("hold_start", ""))
         hold_end   = date.fromisoformat(request.form.get("hold_end", ""))
