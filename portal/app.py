@@ -246,7 +246,7 @@ def update_address():
     db.commit()
     db.close()
     flash("Address updated successfully.")
-    return redirect(url_for("account"))
+    return redirect(url_for("account") + "?tab=address")
 
 
 @app.route("/save-alt-address", methods=["POST"])
