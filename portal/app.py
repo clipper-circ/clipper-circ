@@ -285,7 +285,7 @@ def toggle_address():
     ))
     db.commit()
     db.close()
-    flash(f"Delivery address switched to your {which} address.")
+    flash(f"Delivery switched to your {which} address: {active_addr}.")
     return redirect(url_for("account") + "?tab=address")
 
 
