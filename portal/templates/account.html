@@ -491,19 +491,37 @@
   }
 
   function validateZipForm(form, fieldName) {
-    var zip = form.elements[fieldName].value.trim();
-    if (!/^\d{5}(-\d{4})?$/.test(zip)) {
-      alert('Please enter a valid zip code (e.g. 02332 or 02332-1234).');
+    var zip = form.elements[fieldName].value.trim().slice(0,5);
+    if (!/^\d{5}$/.test(zip)) {
+      alert('Please enter a valid zip code (e.g. 02332).');
       form.elements[fieldName].focus();
       return false;
     }
-    var state = form.elements[fieldName.replace('zipcode','state').replace('alt_zipcode','alt_state')];
-    if (state && state.value.trim().length !== 2) {
+    var stateField = form.elements[fieldName.replace('zipcode','state').replace('alt_zipcode','alt_state')];
+    if (stateField && stateField.value.trim().length !== 2) {
       alert('Please enter a valid 2-letter state abbreviation (e.g. MA).');
-      state.focus();
+      stateField.focus();
       return false;
     }
-    return true;
+    var cityFieldName = fieldName.replace('zipcode','city').replace('alt_zipcode','alt_city');
+    var cityField = form.elements[cityFieldName];
+    var enteredCity = cityField ? cityField.value.trim().toLowerCase() : '';
+    // async zip check — hold submission, re-submit after
+    fetch('https://api.zippopotam.us/us/' + zip)
+      .then(function(r) { return r.ok ? r.json() : null; })
+      .then(function(data) {
+        if (data) {
+          var expectedCity = data.places[0]['place name'].toLowerCase();
+          if (enteredCity && enteredCity !== expectedCity) {
+            if (!confirm('The city "' + cityField.value.trim() + '" doesn\'t match zip code ' + zip + ' (expected "' + data.places[0]['place name'] + '"). Save anyway?')) {
+              return;
+            }
+          }
+        }
+        form.submit();
+      })
+      .catch(function() { form.submit(); });
+    return false; // hold submission until fetch completes
   }
 </script>
 
