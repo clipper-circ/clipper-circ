@@ -483,12 +483,16 @@
           msg.textContent='⚠ Zip code not found — please double-check.';
           return;
         }
-        var city = data.places[0]['place name'];
-        var state = data.places[0]['state abbreviation'];
-        document.getElementById(cityId).value = city;
-        document.getElementById(stateId).value = state;
-        msg.style.color='#2e7d32'; msg.style.display='block';
-        msg.textContent='✓ ' + city + ', ' + state + ' — auto-filled from zip code.';
+        var expectedCity = data.places[0]['place name'];
+        var expectedState = data.places[0]['state abbreviation'];
+        var enteredCity = document.getElementById(cityId).value.trim().toLowerCase();
+        var enteredState = document.getElementById(stateId).value.trim().toLowerCase();
+        if (enteredCity && enteredCity !== expectedCity.toLowerCase()) {
+          msg.style.color='#e65100'; msg.style.display='block';
+          msg.textContent='⚠ Zip ' + zip + ' is typically ' + expectedCity + ', ' + expectedState + ' — please verify your city.';
+        } else {
+          msg.style.display='none';
+        }
       })
       .catch(function() { msg.style.display='none'; });
   }
