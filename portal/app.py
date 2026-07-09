@@ -289,6 +289,16 @@ def toggle_address():
     return redirect(url_for("account") + "?tab=address")
 
 
+@app.route("/confirm-autorenew/<action>")
+def confirm_autorenew(action):
+    sub = current_subscriber()
+    if not sub:
+        return redirect(url_for("login"))
+    if action not in ("cancel", "enable"):
+        return redirect(url_for("account"))
+    return render_template("confirm_autorenew.html", action=action, subscriber=sub)
+
+
 @app.route("/toggle-autorenew", methods=["POST"])
 def toggle_autorenew():
     sub = current_subscriber()

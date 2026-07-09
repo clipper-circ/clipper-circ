@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block title %}Confirm Auto-Renew Change — Duxbury Clipper{% endblock %}
+{% block content %}
+
+<div style="max-width:480px;margin:40px auto;text-align:center;">
+
+  {% if action == 'cancel' %}
+  <div style="font-size:2.5em;margin-bottom:16px;">⚠️</div>
+  <h1 style="font-size:1.4em;margin-bottom:10px;">Cancel Auto-Renewal?</h1>
+  <p style="color:#555;font-size:0.95em;line-height:1.6;margin-bottom:24px;">
+    Your subscription will remain active until its expiration date
+    {% if subscriber.expiration_date %}<strong>({{ subscriber.expiration_date.strftime('%B %d, %Y') }})</strong>{% endif %},
+    but will <strong>not</strong> renew automatically after that. You would need to renew manually before it expires to avoid a gap in delivery.
+  </p>
+  <form method="post" action="{{ url_for('toggle_autorenew') }}">
+    <button type="submit" class="btn btn-danger" style="padding:12px 28px;font-size:1em;margin-right:12px;">Yes, cancel auto-renew</button>
+    <a href="{{ url_for('account') }}?tab=renew" class="btn btn-outline" style="padding:12px 28px;font-size:1em;">Never mind</a>
+  </form>
+
+  {% else %}
+  <div style="font-size:2.5em;margin-bottom:16px;">✅</div>
+  <h1 style="font-size:1.4em;margin-bottom:10px;">Re-enable Auto-Renewal?</h1>
+  <p style="color:#555;font-size:0.95em;line-height:1.6;margin-bottom:24px;">
+    Your subscription will automatically renew each year on your expiration date. Your saved payment method will be charged at the current plan rate.
+  </p>
+  <form method="post" action="{{ url_for('toggle_autorenew') }}">
+    <input type="hidden" name="auto_renew" value="1">
+    <button type="submit" class="btn" style="padding:12px 28px;font-size:1em;margin-right:12px;">Yes, re-enable auto-renew</button>
+    <a href="{{ url_for('account') }}?tab=renew" class="btn btn-outline" style="padding:12px 28px;font-size:1em;">Never mind</a>
+  </form>
+  {% endif %}
+
+</div>
+
+{% endblock %}
