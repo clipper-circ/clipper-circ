@@ -191,10 +191,11 @@
         <div><label>Address</label><input type="text" name="address1" value="{{ subscriber.address1 }}" required></div>
         <div><label>Address 2 (optional)</label><input type="text" name="address2" value="{{ subscriber.address2 or '' }}" placeholder="Apt, unit, etc."></div>
         <div class="row">
-          <div style="flex:3;"><label>City</label><input type="text" name="city" value="{{ subscriber.city }}" required></div>
-          <div style="flex:0.6;"><label>State</label><input type="text" name="state" value="{{ subscriber.state }}" maxlength="2" style="text-transform:uppercase;" required></div>
-          <div style="flex:1;"><label>Zip</label><input type="text" name="zipcode" value="{{ subscriber.zipcode }}" inputmode="numeric" pattern="\d{5}(-\d{4})?" placeholder="e.g. 02332" required></div>
+          <div style="flex:3;"><label>City</label><input type="text" id="city" name="city" value="{{ subscriber.city }}" required></div>
+          <div style="flex:0.6;"><label>State</label><input type="text" id="state" name="state" value="{{ subscriber.state }}" maxlength="2" style="text-transform:uppercase;" required></div>
+          <div style="flex:1;"><label>Zip</label><input type="text" id="zipcode" name="zipcode" value="{{ subscriber.zipcode }}" inputmode="numeric" pattern="\d{5}(-\d{4})?" placeholder="e.g. 02332" required oninput="lookupZip(this.value,'city','state')"></div>
         </div>
+        <div id="zip-msg" style="font-size:0.82em;margin-top:4px;display:none;"></div>
         <button type="submit" class="btn" style="margin-top:14px;">Save Primary Address</button>
       </form>
     </details>
@@ -207,10 +208,11 @@
         <div><label>Address</label><input type="text" name="alt_address1" value="{{ subscriber.alt_address1 or '' }}" required></div>
         <div><label>Address 2 (optional)</label><input type="text" name="alt_address2" value="{{ subscriber.alt_address2 or '' }}" placeholder="Apt, unit, etc."></div>
         <div class="row">
-          <div style="flex:3;"><label>City</label><input type="text" name="alt_city" value="{{ subscriber.alt_city or '' }}" required></div>
-          <div style="flex:0.6;"><label>State</label><input type="text" name="alt_state" value="{{ subscriber.alt_state or '' }}" maxlength="2" style="text-transform:uppercase;" required></div>
-          <div style="flex:1;"><label>Zip</label><input type="text" name="alt_zipcode" value="{{ subscriber.alt_zipcode or '' }}" inputmode="numeric" pattern="\d{5}(-\d{4})?" placeholder="e.g. 02332" required></div>
+          <div style="flex:3;"><label>City</label><input type="text" id="alt_city" name="alt_city" value="{{ subscriber.alt_city or '' }}" required></div>
+          <div style="flex:0.6;"><label>State</label><input type="text" id="alt_state" name="alt_state" value="{{ subscriber.alt_state or '' }}" maxlength="2" style="text-transform:uppercase;" required></div>
+          <div style="flex:1;"><label>Zip</label><input type="text" id="alt_zipcode" name="alt_zipcode" value="{{ subscriber.alt_zipcode or '' }}" inputmode="numeric" pattern="\d{5}(-\d{4})?" placeholder="e.g. 02332" required oninput="lookupZip(this.value,'alt_city','alt_state')"></div>
         </div>
+        <div id="alt-zip-msg" style="font-size:0.82em;margin-top:4px;display:none;"></div>
         <button type="submit" class="btn" style="margin-top:14px;">Save Alternate Address</button>
       </form>
     </details>
@@ -465,6 +467,28 @@
       setTimeout(function(){ bar.style.display='none'; }, 800);
     });
   })();
+
+  function lookupZip(zip, cityId, stateId) {
+    var msgId = cityId.startsWith('alt_') ? 'alt-zip-msg' : 'zip-msg';
+    var msg = document.getElementById(msgId);
+    if (!/^\d{5}$/.test(zip)) { msg.style.display='none'; return; }
+    fetch('https://api.zippopotam.us/us/' + zip)
+      .then(function(r) { return r.ok ? r.json() : null; })
+      .then(function(data) {
+        if (!data) {
+          msg.style.color='#c62828'; msg.style.display='block';
+          msg.textContent='⚠ Zip code not found — please double-check.';
+          return;
+        }
+        var city = data.places[0]['place name'];
+        var state = data.places[0]['state abbreviation'];
+        document.getElementById(cityId).value = city;
+        document.getElementById(stateId).value = state;
+        msg.style.color='#2e7d32'; msg.style.display='block';
+        msg.textContent='✓ ' + city + ', ' + state + ' — auto-filled from zip code.';
+      })
+      .catch(function() { msg.style.display='none'; });
+  }
 
   function validateZipForm(form, fieldName) {
     var zip = form.elements[fieldName].value.trim();
