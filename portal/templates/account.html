@@ -181,7 +181,7 @@
     {% if subscriber.alt_address1 %}
     <form method="post" action="/toggle-address" onsubmit="return confirm('Switch delivery to your {{ 'primary' if subscriber.using_alt_address else 'alternate' }} address?')">
       <button type="submit" class="btn btn-outline" style="width:100%;border-radius:4px;margin-bottom:20px;">
-        Switch to {{ 'Primary' if subscriber.using_alt_address else 'Alternate' }} Address
+        🔄 Switch to {{ 'Primary' if subscriber.using_alt_address else 'Alternate' }} Address
       </button>
     </form>
     {% endif %}
