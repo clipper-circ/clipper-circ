@@ -508,8 +508,8 @@ def confirm_hold():
     if hold_days < 7:
         flash("Delivery holds must be at least 1 week (7 days).")
         return redirect(url_for("account") + "?tab=extras")
-    if hold_days > 92:
-        flash("Delivery holds cannot exceed 3 months (92 days). Please contact us if you need a longer hold.")
+    if hold_days > 153:
+        flash("Delivery holds cannot exceed 5 months (153 days). Please contact us if you need a longer hold.")
         return redirect(url_for("account") + "?tab=extras")
     return render_template("confirm_hold.html", hold_start=hold_start, hold_end=hold_end, hold_days=hold_days)
 
