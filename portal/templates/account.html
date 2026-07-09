@@ -113,7 +113,10 @@
           <tr><td style="color:#888;padding:5px 0;border:none;padding-right:16px;">Issues left:</td><td style="border:none;{% if issues_left < 5 %}color:#c62828;font-weight:700;{% endif %}">{{ issues_left }}</td></tr>
           <tr><td style="color:#888;padding:5px 0;border:none;padding-right:16px;">Auto-renew:</td>
               <td style="border:none;">
-                {% if subscriber.stripe_subscription_id and subscriber.auto_renew %}
+                {% if subscriber.payment_method.value == 'PAYPAL' %}
+                  <span style="color:#2e7d32;font-weight:700;">On</span>
+                  <span style="font-size:0.82em;color:#888;margin-left:8px;">Managed through PayPal</span>
+                {% elif subscriber.stripe_subscription_id and subscriber.auto_renew %}
                   <span style="color:#2e7d32;font-weight:700;">✓ Active</span>
                   <a href="#" onclick="switchTab('renew');return false;" style="font-size:0.82em;color:#2e7d32;margin-left:8px;">Manage →</a>
                 {% elif subscriber.stripe_subscription_id and not subscriber.auto_renew %}
@@ -357,7 +360,12 @@
           ✓ Renewing adds one full year from your current expiration date.
         </div>
 
-        {% if subscriber.stripe_subscription_id and subscriber.auto_renew %}
+        {% if subscriber.payment_method.value == 'PAYPAL' %}
+        <div style="margin-top:16px;padding:14px;background:#e8f5e9;border-radius:4px;font-size:0.88em;color:#2e7d32;">
+          ✓ Your subscription renews automatically through PayPal each year — no action needed here.
+          <br><span style="color:#555;margin-top:4px;display:block;">To cancel auto-renewal, log in to your PayPal account and cancel the billing agreement for the Duxbury Clipper.</span>
+        </div>
+        {% elif subscriber.stripe_subscription_id and subscriber.auto_renew %}
         <div style="margin-top:16px;padding:14px;background:#e8f5e9;border-radius:4px;font-size:0.88em;color:#2e7d32;">
           ✓ Your subscription renews automatically each year — no action needed.
           <form method="post" action="/toggle-autorenew" style="display:inline;margin-left:8px;" onsubmit="return confirm('Are you sure you want to turn off auto-renew? Your subscription will remain active until {% if subscriber.expiration_date %}{{ subscriber.expiration_date.strftime("%B %d, %Y") }}{% else %}its expiration date{% endif %}, but will not renew after that.');">
