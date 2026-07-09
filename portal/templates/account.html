@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 {% block title %}My Account — Duxbury Clipper{% endblock %}
+{% block flash %}{% endblock %}
 {% block content %}
 
 <style>
@@ -48,6 +49,10 @@
 <div id="load-bar"></div>
 
 <p style="text-align:center;color:#2e7d32;font-style:italic;margin-bottom:16px;">Thank you for being a loyal subscriber to the Duxbury Clipper!</p>
+
+{% with messages = get_flashed_messages() %}
+  {% for msg in messages %}<div class="flash">{{ msg }}</div>{% endfor %}
+{% endwith %}
 
 <div class="acct-card">
 

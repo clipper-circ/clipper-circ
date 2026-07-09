@@ -109,9 +109,11 @@
 </div>
 
 <div class="page">
+  {% block flash %}
   {% with messages = get_flashed_messages() %}
     {% for msg in messages %}<div class="flash">{{ msg }}</div>{% endfor %}
   {% endwith %}
+  {% endblock %}
   {% block content %}{% endblock %}
 </div>
 
