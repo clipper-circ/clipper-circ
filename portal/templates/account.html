@@ -182,24 +182,24 @@
   {# ════════ ADDRESS ════════ #}
   <div class="tab-panel" id="panel-address">
 
-    <div style="display:flex;gap:12px;margin-bottom:12px;flex-wrap:wrap;">
-      <div style="flex:1;min-width:180px;padding:12px;border-radius:6px;border:2px solid {% if not subscriber.using_alt_address %}#2e7d32{% else %}#ddd{% endif %};background:{% if not subscriber.using_alt_address %}#e8f5e9{% else %}#f9f9f9{% endif %};">
-        <div style="font-size:0.78em;font-weight:700;color:{% if not subscriber.using_alt_address %}#2e7d32{% else %}#999{% endif %};text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">
-          🏠 {% if not subscriber.using_alt_address %}✓ Active — {% endif %}Primary Address
+    <div style="display:flex;gap:12px;margin-bottom:16px;flex-wrap:wrap;">
+      <div style="flex:1;min-width:180px;padding:14px;border-radius:6px;border:{% if not subscriber.using_alt_address %}3px solid #2e7d32{% else %}1px solid #ddd{% endif %};background:{% if not subscriber.using_alt_address %}#e8f5e9{% else %}#f9f9f9{% endif %};">
+        <div style="font-size:0.78em;font-weight:700;color:{% if not subscriber.using_alt_address %}#2e7d32{% else %}#bbb{% endif %};text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">
+          🏠 Primary Address{% if not subscriber.using_alt_address %} &nbsp;✓ Active{% endif %}
         </div>
-        <div style="font-size:0.88em;line-height:1.7;color:#444;">
+        <div style="font-size:{% if not subscriber.using_alt_address %}0.95em{% else %}0.88em{% endif %};line-height:1.7;color:{% if not subscriber.using_alt_address %}#222{% else %}#888{% endif %};">
           <strong>{{ subscriber.full_name }}</strong><br>
           {{ subscriber.address1 }}<br>
           {% if subscriber.address2 %}{{ subscriber.address2 }}<br>{% endif %}
           {{ subscriber.city }}, {{ subscriber.state }} {{ subscriber.zipcode }}
         </div>
       </div>
-      <div style="flex:1;min-width:180px;padding:12px;border-radius:6px;border:2px solid {% if subscriber.using_alt_address %}#2e7d32{% else %}#ddd{% endif %};background:{% if subscriber.using_alt_address %}#e8f5e9{% else %}#f9f9f9{% endif %};">
-        <div style="font-size:0.78em;font-weight:700;color:{% if subscriber.using_alt_address %}#2e7d32{% else %}#999{% endif %};text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">
-          {% if subscriber.using_alt_address %}✓ Active — {% endif %}Alternate Address
+      <div style="flex:1;min-width:180px;padding:14px;border-radius:6px;border:{% if subscriber.using_alt_address %}3px solid #2e7d32{% else %}1px solid #ddd{% endif %};background:{% if subscriber.using_alt_address %}#e8f5e9{% else %}#f9f9f9{% endif %};">
+        <div style="font-size:0.78em;font-weight:700;color:{% if subscriber.using_alt_address %}#2e7d32{% else %}#bbb{% endif %};text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">
+          Alternate Address{% if subscriber.using_alt_address %} &nbsp;✓ Active{% endif %}
         </div>
         {% if subscriber.alt_address1 %}
-        <div style="font-size:0.88em;line-height:1.7;color:#444;">
+        <div style="font-size:{% if subscriber.using_alt_address %}0.95em{% else %}0.88em{% endif %};line-height:1.7;color:{% if subscriber.using_alt_address %}#222{% else %}#888{% endif %};">
           <strong>{{ subscriber.full_name }}</strong><br>
           {{ subscriber.alt_address1 }}<br>
           {% if subscriber.alt_address2 %}{{ subscriber.alt_address2 }}<br>{% endif %}
@@ -209,17 +209,6 @@
         <div style="font-size:0.85em;color:#bbb;font-style:italic;">Not set — add one below</div>
         {% endif %}
       </div>
-    </div>
-
-    <div style="background:#1a3a1a;color:white;border-radius:6px;padding:12px 16px;margin-bottom:16px;font-size:0.9em;">
-      <strong>📦 Currently delivering to:</strong>
-      {% if subscriber.using_alt_address %}
-        {{ subscriber.alt_address1 }}{% if subscriber.alt_address2 %}, {{ subscriber.alt_address2 }}{% endif %}, {{ subscriber.alt_city }}, {{ subscriber.alt_state }} {{ subscriber.alt_zipcode }}
-        <span style="font-size:0.82em;opacity:0.7;margin-left:8px;">(Alternate Address)</span>
-      {% else %}
-        {{ subscriber.address1 }}{% if subscriber.address2 %}, {{ subscriber.address2 }}{% endif %}, {{ subscriber.city }}, {{ subscriber.state }} {{ subscriber.zipcode }}
-        <span style="font-size:0.82em;opacity:0.7;margin-left:8px;">(Primary Address)</span>
-      {% endif %}
     </div>
 
     {% if subscriber.alt_address1 %}
