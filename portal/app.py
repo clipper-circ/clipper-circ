@@ -19,13 +19,6 @@ from models import (Subscriber, Payment, DeliveryHold, PaymentAuditLog,
 from models import Base
 Base.metadata.create_all(bind=engine)  # ensure new tables exist on Railway
 
-# Auto-migrate: add columns that may not exist in older Railway DBs
-with engine.connect() as _conn:
-    for _stmt in [
-        "ALTER TABLE subscribers ADD COLUMN IF NOT EXISTS alt_name VARCHAR(200)",
-    ]:
-        _conn.execute(text(_stmt))
-    _conn.commit()
 
 app = Flask(__name__)
 app.secret_key = os.environ.get("SECRET_KEY", "dev-secret-change-me")
@@ -277,7 +270,6 @@ def save_alt_address():
         return redirect(url_for("login"))
     db = SessionLocal()
     s = db.query(Subscriber).filter_by(id=sub.id).first()
-    s.alt_name     = request.form.get("alt_name","").strip() or None
     s.alt_address1 = request.form.get("alt_address1","").strip() or None
     s.alt_address2 = request.form.get("alt_address2","").strip() or None
     s.alt_city     = request.form.get("alt_city","").strip() or None

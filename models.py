@@ -122,7 +122,6 @@ class Subscriber(Base):
     portal_token_expires  = Column(DateTime,    nullable=True)
 
     # Alternate delivery address (e.g. summer/winter home)
-    alt_name          = Column(String(200), nullable=True)
     alt_address1      = Column(String(200), nullable=True)
     alt_address2      = Column(String(200), nullable=True)
     alt_city          = Column(String(100), nullable=True)
