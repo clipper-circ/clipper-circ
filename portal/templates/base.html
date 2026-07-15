@@ -101,7 +101,9 @@
   {% if not session.subscriber_id %}
   <a href="https://www.duxburyclipper.com/" rel="noreferrer">Duxbury Clipper Website</a>
   {% endif %}
+  {% if not session.subscriber_id %}
   <a href="{{ url_for('login') }}" {% if request.endpoint == 'login' or request.endpoint == 'index' %}class="active"{% endif %}>Home Delivery Portal</a>
+  {% endif %}
   {% if session.subscriber_id %}
   <a href="{{ url_for('account') }}" {% if request.endpoint == 'account' %}class="active"{% endif %}>My Account</a>
   <a href="{{ url_for('logout') }}">Log Out</a>
