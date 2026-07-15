@@ -90,6 +90,8 @@ def index():
 
 @app.route("/login", methods=["GET", "POST"])
 def login():
+    if current_subscriber():
+        return redirect(url_for("account"))
     if request.method == "POST":
         account_num = request.form.get("account_num", "").strip()
         zipcode     = request.form.get("zipcode", "").strip().split("-")[0]  # accept 5+4
