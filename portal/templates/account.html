@@ -202,6 +202,7 @@
           🏠 {% if not subscriber.using_alt_address %}✓ Active — {% endif %}Primary Address
         </div>
         <div style="font-size:0.88em;line-height:1.7;color:#444;">
+          <strong>{{ subscriber.full_name }}</strong><br>
           {{ subscriber.address1 }}<br>
           {% if subscriber.address2 %}{{ subscriber.address2 }}<br>{% endif %}
           {{ subscriber.city }}, {{ subscriber.state }} {{ subscriber.zipcode }}
@@ -213,6 +214,7 @@
         </div>
         {% if subscriber.alt_address1 %}
         <div style="font-size:0.88em;line-height:1.7;color:#444;">
+          <strong>{{ subscriber.full_name }}</strong><br>
           {{ subscriber.alt_address1 }}<br>
           {% if subscriber.alt_address2 %}{{ subscriber.alt_address2 }}<br>{% endif %}
           {{ subscriber.alt_city }}, {{ subscriber.alt_state }} {{ subscriber.alt_zipcode }}
