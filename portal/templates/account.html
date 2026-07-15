@@ -155,29 +155,26 @@
 
     <div style="margin-top:24px;padding-top:20px;border-top:1px solid #eee;">
       <div style="font-size:0.78em;font-weight:700;color:#999;text-transform:uppercase;letter-spacing:1px;margin-bottom:14px;">Your Contact Info</div>
-      <div style="display:flex;gap:32px;flex-wrap:wrap;">
-        <div style="flex:1;min-width:200px;">
-          <label>Email:</label>
-          <form method="post" action="/request-email-change" style="margin-top:4px;display:flex;gap:8px;">
-            <input type="email" name="new_email" placeholder="{{ subscriber.email or 'None on file' }}" style="flex:1;">
-            <button type="submit" class="btn btn-outline btn-sm" style="white-space:nowrap;">Change Email</button>
-          </form>
-          {% if subscriber.pending_email %}
-          <div style="margin-top:6px;padding:7px 10px;background:#fff8e1;border:1px solid #ffe082;border-radius:4px;font-size:0.83em;color:#f57f17;">
-            ⏳ Change to <strong>{{ subscriber.pending_email }}</strong> pending — check that inbox for a confirmation link.
+      <div style="max-width:420px;">
+        <label>Email:</label>
+        <form method="post" action="/request-email-change" style="margin-top:4px;display:flex;gap:8px;">
+          <input type="email" name="new_email" placeholder="{{ subscriber.email or 'None on file' }}" style="flex:1;">
+          <button type="submit" class="btn btn-outline btn-sm" style="white-space:nowrap;">Change Email</button>
+        </form>
+        {% if subscriber.pending_email %}
+        <div style="margin-top:6px;padding:7px 10px;background:#fff8e1;border:1px solid #ffe082;border-radius:4px;font-size:0.83em;color:#f57f17;">
+          ⏳ Change to <strong>{{ subscriber.pending_email }}</strong> pending — check that inbox for a confirmation link.
+        </div>
+        {% endif %}
+        <p style="font-size:0.8em;color:#aaa;margin:4px 0 12px;">A confirmation link will be sent to the new address first.</p>
+
+        <form method="post" action="/update-contact">
+          <label>Phone:</label>
+          <div style="margin-top:4px;display:flex;gap:8px;">
+            <input type="tel" name="phone" id="phone-input" value="{{ subscriber.phone or '' }}" placeholder="(781) 555-1234" inputmode="tel" style="flex:1;" oninput="formatPhone(this)">
+            <button type="submit" class="btn btn-outline btn-sm" style="white-space:nowrap;">Save</button>
           </div>
-          {% endif %}
-          <p style="font-size:0.8em;color:#aaa;margin:4px 0 0;">A confirmation link will be sent to the new address first.</p>
-        </div>
-        <div style="flex:1;min-width:200px;">
-          <form method="post" action="/update-contact">
-            <label>Phone:</label>
-            <div style="display:flex;gap:8px;margin-top:4px;">
-              <input type="tel" name="phone" id="phone-input" value="{{ subscriber.phone or '' }}" placeholder="(781) 555-1234" inputmode="tel" style="width:160px;flex:none;" oninput="formatPhone(this)">
-              <button type="submit" class="btn btn-sm" style="white-space:nowrap;">Save</button>
-            </div>
-          </form>
-        </div>
+        </form>
       </div>
     </div>
   </div>
