@@ -172,8 +172,10 @@
         <div style="flex:1;min-width:200px;">
           <form method="post" action="/update-contact">
             <label>Phone:</label>
-            <input type="tel" name="phone" id="phone-input" value="{{ subscriber.phone or '' }}" placeholder="(781) 555-1234" inputmode="tel" style="margin-top:4px;" oninput="formatPhone(this)">
-            <button type="submit" class="btn btn-sm" style="margin-top:14px;">Save</button>
+            <div style="display:flex;gap:8px;margin-top:4px;">
+              <input type="tel" name="phone" id="phone-input" value="{{ subscriber.phone or '' }}" placeholder="(781) 555-1234" inputmode="tel" style="width:160px;flex:none;" oninput="formatPhone(this)">
+              <button type="submit" class="btn btn-sm" style="white-space:nowrap;">Save</button>
+            </div>
           </form>
         </div>
       </div>
