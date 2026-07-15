@@ -232,6 +232,16 @@ def update_address():
         return redirect(url_for("login"))
     db = SessionLocal()
     sub = db.query(Subscriber).filter_by(id=sub.id).first()
+    new_name = request.form.get("full_name","").strip()
+    if new_name and new_name != sub.full_name:
+        old_name = sub.full_name
+        sub.full_name = new_name
+        db.add(SubscriberEventLog(
+            subscriber_id=sub.id,
+            event_type="NAME_UPDATED",
+            description=f"Name changed from: {old_name} → {new_name}",
+            performed_by="subscriber",
+        ))
     old = f"{sub.address1}, {sub.city} {sub.state} {sub.zipcode}"
     sub.address1 = request.form.get("address1","").strip()
     sub.address2 = request.form.get("address2","").strip() or None
@@ -258,6 +268,7 @@ def save_alt_address():
         return redirect(url_for("login"))
     db = SessionLocal()
     s = db.query(Subscriber).filter_by(id=sub.id).first()
+    s.alt_name     = request.form.get("alt_name","").strip() or None
     s.alt_address1 = request.form.get("alt_address1","").strip() or None
     s.alt_address2 = request.form.get("alt_address2","").strip() or None
     s.alt_city     = request.form.get("alt_city","").strip() or None
@@ -345,7 +356,7 @@ def request_email_change():
     new_email = request.form.get("new_email","").strip().lower()
     if not new_email:
         flash("Please enter a new email address.")
-        return redirect(url_for("account") + "?tab=contact")
+        return redirect(url_for("account") + "?tab=subscription")
 
     db = SessionLocal()
     s = db.query(Subscriber).filter_by(id=sub.id).first()
@@ -358,7 +369,7 @@ def request_email_change():
     if existing:
         db.close()
         flash("That email address is already associated with another account.")
-        return redirect(url_for("account") + "?tab=contact")
+        return redirect(url_for("account") + "?tab=subscription")
 
     token = secrets.token_urlsafe(32)
     s.pending_email               = new_email
@@ -418,7 +429,7 @@ def request_email_change():
         sys.stderr.flush()
 
     flash(f"A confirmation link has been sent to {new_email}. Click it to complete the change.")
-    return redirect(url_for("account") + "?tab=contact")
+    return redirect(url_for("account") + "?tab=subscription")
 
 
 @app.route("/verify-email/<token>")
@@ -451,7 +462,7 @@ def verify_email(token):
 
     session["subscriber_id"] = sub_id
     flash("Your email address has been updated successfully.")
-    return redirect(url_for("account") + "?tab=contact")
+    return redirect(url_for("account") + "?tab=subscription")
 
 
 @app.route("/update-name", methods=["POST"])
@@ -474,7 +485,7 @@ def update_name():
         db.commit()
         flash("Name updated.")
     db.close()
-    return redirect(url_for("account") + "?tab=contact")
+    return redirect(url_for("account") + "?tab=address")
 
 
 @app.route("/update-contact", methods=["POST"])
