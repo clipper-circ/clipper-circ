@@ -12,11 +12,20 @@ load_dotenv()
 resend.api_key = os.environ.get("RESEND_API_KEY", "")
 
 from database import SessionLocal, engine
+from sqlalchemy import text
 from models import (Subscriber, Payment, DeliveryHold, PaymentAuditLog,
                     SubscriberEventLog, SubscriberStatus, PaymentMethod, PlanCode,
                     PLAN_LABELS, PLAN_PRICES, PLAN_DESCRIPTIONS, ObituarySubmission, Setting, DiscountCode)
 from models import Base
 Base.metadata.create_all(bind=engine)  # ensure new tables exist on Railway
+
+# Auto-migrate: add columns that may not exist in older Railway DBs
+with engine.connect() as _conn:
+    for _stmt in [
+        "ALTER TABLE subscribers ADD COLUMN IF NOT EXISTS alt_name VARCHAR(200)",
+    ]:
+        _conn.execute(text(_stmt))
+    _conn.commit()
 
 app = Flask(__name__)
 app.secret_key = os.environ.get("SECRET_KEY", "dev-secret-change-me")
