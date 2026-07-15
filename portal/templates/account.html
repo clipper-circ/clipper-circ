@@ -147,12 +147,7 @@
         </div>
         <div style="font-size:0.78em;font-weight:700;color:#999;text-transform:uppercase;letter-spacing:1px;margin-top:20px;margin-bottom:10px;">Your Contact Info</div>
         <div style="font-size:0.93em;line-height:1.6;color:#444;">
-          {% if subscriber.backup_email %}
-          <span style="color:#888;font-size:0.85em;">Primary Email:</span><br>{{ subscriber.email or 'No email on file' }}<br>
-          <span style="color:#888;font-size:0.85em;">Backup Email:</span><br>{{ subscriber.backup_email }}<br>
-          {% else %}
           {{ subscriber.email or 'No email on file' }}<br>
-          {% endif %}
           {{ subscriber.phone or 'No phone on file' }}
         </div>
       </div>
@@ -178,10 +173,7 @@
           <form method="post" action="/update-contact">
             <label>Phone:</label>
             <input type="text" name="phone" value="{{ subscriber.phone or '' }}" placeholder="e.g. 781-555-1234" style="margin-top:4px;">
-            <label style="margin-top:12px;">Backup Email: <span style="font-weight:normal;color:#999;">(recommended)</span></label>
-            <input type="text" name="backup_email" value="{{ subscriber.backup_email or '' }}" placeholder="e.g. spouse@example.com" style="margin-top:4px;">
-            <p style="font-size:0.8em;color:#aaa;margin:4px 0 0;">Used if we can't reach your primary address.</p>
-            <button type="submit" class="btn btn-sm" style="margin-top:14px;">Save Contact Info</button>
+            <button type="submit" class="btn btn-sm" style="margin-top:14px;">Save</button>
           </form>
         </div>
       </div>
