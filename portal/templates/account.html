@@ -91,7 +91,6 @@
   <div class="acct-tabs">
     <a onclick="switchTab('subscription')" id="tab-subscription" class="active">Subscription</a>
     <a onclick="switchTab('address')"      id="tab-address">Address</a>
-    <a onclick="switchTab('contact')"      id="tab-contact">Contact Info</a>
     <a onclick="switchTab('renew')"        id="tab-renew">Renew</a>
     <a onclick="switchTab('history')"      id="tab-history">Order History</a>
     <a onclick="switchTab('extras')"       id="tab-extras">Extras</a>
@@ -145,6 +144,45 @@
           {% if subscriber.address2 %}{{ subscriber.address2 }}<br>{% endif %}
           {{ subscriber.city }}, {{ subscriber.state }} {{ subscriber.zipcode }}
           <br><a href="#" onclick="switchTab('address');return false;" style="font-size:0.85em;color:#2e7d32;">Edit →</a>
+        </div>
+      </div>
+    </div>
+
+    <div style="margin-top:24px;padding-top:20px;border-top:1px solid #eee;">
+      <div style="font-size:0.78em;font-weight:700;color:#999;text-transform:uppercase;letter-spacing:1px;margin-bottom:14px;">Your Contact Info</div>
+      <div style="display:flex;gap:32px;flex-wrap:wrap;">
+        <div style="flex:1;min-width:200px;">
+          <form method="post" action="/update-name" style="margin-bottom:14px;">
+            <label>Name:</label>
+            <div style="display:flex;gap:8px;margin-top:4px;">
+              <input type="text" name="full_name" value="{{ subscriber.full_name }}" required style="flex:1;">
+              <button type="submit" class="btn btn-sm" style="white-space:nowrap;" onclick="return confirm('Update your subscriber name?')">Update</button>
+            </div>
+          </form>
+          <div style="margin-bottom:6px;">
+            <label>Email:</label>
+            <div style="margin-top:4px;padding:8px 10px;background:#f9f9f9;border:1px solid #ddd;border-radius:4px;font-size:0.93em;">{{ subscriber.email or 'None on file' }}</div>
+            {% if subscriber.pending_email %}
+            <div style="margin-top:6px;padding:7px 10px;background:#fff8e1;border:1px solid #ffe082;border-radius:4px;font-size:0.83em;color:#f57f17;">
+              ⏳ Change to <strong>{{ subscriber.pending_email }}</strong> pending — check that inbox for a confirmation link.
+            </div>
+            {% endif %}
+            <form method="post" action="/request-email-change" style="margin-top:8px;display:flex;gap:8px;">
+              <input type="email" name="new_email" placeholder="New email address" required style="flex:1;">
+              <button type="submit" class="btn btn-outline btn-sm" style="white-space:nowrap;">Change Email</button>
+            </form>
+            <p style="font-size:0.8em;color:#aaa;margin:4px 0 0;">A confirmation link will be sent to the new address first.</p>
+          </div>
+        </div>
+        <div style="flex:1;min-width:200px;">
+          <form method="post" action="/update-contact">
+            <label>Phone:</label>
+            <input type="text" name="phone" value="{{ subscriber.phone or '' }}" placeholder="e.g. 781-555-1234" style="margin-top:4px;">
+            <label style="margin-top:12px;">Backup Email: <span style="font-weight:normal;color:#999;">(recommended)</span></label>
+            <input type="text" name="backup_email" value="{{ subscriber.backup_email or '' }}" placeholder="e.g. spouse@example.com" style="margin-top:4px;">
+            <p style="font-size:0.8em;color:#aaa;margin:4px 0 0;">Used if we can't reach your primary address.</p>
+            <button type="submit" class="btn btn-sm" style="margin-top:14px;">Save Contact Info</button>
+          </form>
         </div>
       </div>
     </div>
@@ -233,49 +271,6 @@
       </div>
 
     </div>
-  </div>
-
-  {# ════════ CONTACT INFO ════════ #}
-  <div class="tab-panel" id="panel-contact">
-    <form method="post" action="/update-name" style="margin-bottom:20px;padding-bottom:20px;border-bottom:1px solid #eee;">
-      <label style="font-size:0.78em;font-weight:700;color:#999;text-transform:uppercase;letter-spacing:1px;">Subscriber Name</label>
-      <div style="display:flex;gap:8px;margin-top:6px;">
-        <input type="text" name="full_name" value="{{ subscriber.full_name }}" required style="flex:1;">
-        <button type="submit" class="btn btn-sm" style="border-radius:4px;white-space:nowrap;"
-                onclick="return confirm('Update your subscriber name?')">Update Name</button>
-      </div>
-    </form>
-
-    <div style="margin-bottom:20px;padding-bottom:20px;border-bottom:1px solid #eee;">
-      <div style="font-size:0.78em;font-weight:700;color:#999;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">Primary Email Address</div>
-      <div style="padding:10px 12px;background:#f9f9f9;border:1px solid #ddd;border-radius:4px;font-size:0.95em;">
-        {{ subscriber.email or 'None on file' }}
-      </div>
-      {% if subscriber.pending_email %}
-      <div style="margin-top:8px;padding:8px 12px;background:#fff8e1;border:1px solid #ffe082;border-radius:4px;font-size:0.85em;color:#f57f17;">
-        ⏳ Change to <strong>{{ subscriber.pending_email }}</strong> is pending — check that inbox for a confirmation link.
-      </div>
-      {% endif %}
-      <form method="post" action="/request-email-change" style="margin-top:10px;display:flex;gap:8px;">
-        <input type="email" name="new_email" placeholder="New email address" required style="flex:1;">
-        <button type="submit" class="btn btn-outline btn-sm" style="border-radius:4px;white-space:nowrap;">Change Email</button>
-      </form>
-      <p style="font-size:0.8em;color:#aaa;margin-top:6px;margin-bottom:0;">A confirmation link will be sent to the new address before any change is made.</p>
-    </div>
-    <form method="post" action="/update-contact">
-      <div class="row">
-        <div>
-          <label>Phone Number</label>
-          <input type="text" name="phone" value="{{ subscriber.phone or '' }}" placeholder="e.g. 781-555-1234">
-        </div>
-        <div>
-          <label>Backup Email <span style="font-weight:normal;color:#999;">(recommended)</span></label>
-          <input type="text" name="backup_email" value="{{ subscriber.backup_email or '' }}" placeholder="e.g. spouse@example.com">
-          <p style="font-size:0.8em;color:#aaa;margin-top:4px;margin-bottom:0;">Used if we can't reach your primary address.</p>
-        </div>
-      </div>
-      <button type="submit" class="btn" style="margin-top:16px;">Save Contact Info</button>
-    </form>
   </div>
 
   {# ════════ ORDER HISTORY ════════ #}
