@@ -145,6 +145,11 @@
           {{ subscriber.city }}, {{ subscriber.state }} {{ subscriber.zipcode }}
           <br><a href="#" onclick="switchTab('address');return false;" style="font-size:0.85em;color:#2e7d32;">Edit →</a>
         </div>
+        <div style="font-size:0.78em;font-weight:700;color:#999;text-transform:uppercase;letter-spacing:1px;margin-top:20px;margin-bottom:10px;">Your Contact Info</div>
+        <div style="font-size:0.93em;line-height:1.8;color:#444;">
+          {{ subscriber.email or 'No email on file' }}<br>
+          {{ subscriber.phone or 'No phone on file' }}
+        </div>
       </div>
     </div>
 
