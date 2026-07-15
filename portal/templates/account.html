@@ -157,20 +157,17 @@
       <div style="font-size:0.78em;font-weight:700;color:#999;text-transform:uppercase;letter-spacing:1px;margin-bottom:14px;">Your Contact Info</div>
       <div style="display:flex;gap:32px;flex-wrap:wrap;">
         <div style="flex:1;min-width:200px;">
-          <div style="margin-bottom:6px;">
-            <label>Email:</label>
-            <div style="margin-top:4px;padding:8px 10px;background:#f9f9f9;border:1px solid #ddd;border-radius:4px;font-size:0.93em;">{{ subscriber.email or 'None on file' }}</div>
-            {% if subscriber.pending_email %}
-            <div style="margin-top:6px;padding:7px 10px;background:#fff8e1;border:1px solid #ffe082;border-radius:4px;font-size:0.83em;color:#f57f17;">
-              ⏳ Change to <strong>{{ subscriber.pending_email }}</strong> pending — check that inbox for a confirmation link.
-            </div>
-            {% endif %}
-            <form method="post" action="/request-email-change" style="margin-top:8px;display:flex;gap:8px;">
-              <input type="email" name="new_email" placeholder="New email address" required style="flex:1;">
-              <button type="submit" class="btn btn-outline btn-sm" style="white-space:nowrap;">Change Email</button>
-            </form>
-            <p style="font-size:0.8em;color:#aaa;margin:4px 0 0;">A confirmation link will be sent to the new address first.</p>
+          <label>Email:</label>
+          <form method="post" action="/request-email-change" style="margin-top:4px;display:flex;gap:8px;">
+            <input type="email" name="new_email" placeholder="{{ subscriber.email or 'None on file' }}" style="flex:1;">
+            <button type="submit" class="btn btn-outline btn-sm" style="white-space:nowrap;">Change Email</button>
+          </form>
+          {% if subscriber.pending_email %}
+          <div style="margin-top:6px;padding:7px 10px;background:#fff8e1;border:1px solid #ffe082;border-radius:4px;font-size:0.83em;color:#f57f17;">
+            ⏳ Change to <strong>{{ subscriber.pending_email }}</strong> pending — check that inbox for a confirmation link.
           </div>
+          {% endif %}
+          <p style="font-size:0.8em;color:#aaa;margin:4px 0 0;">A confirmation link will be sent to the new address first.</p>
         </div>
         <div style="flex:1;min-width:200px;">
           <form method="post" action="/update-contact">
