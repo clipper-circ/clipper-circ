@@ -152,13 +152,6 @@
       <div style="font-size:0.78em;font-weight:700;color:#999;text-transform:uppercase;letter-spacing:1px;margin-bottom:14px;">Your Contact Info</div>
       <div style="display:flex;gap:32px;flex-wrap:wrap;">
         <div style="flex:1;min-width:200px;">
-          <form method="post" action="/update-name" style="margin-bottom:14px;">
-            <label>Name:</label>
-            <div style="display:flex;gap:8px;margin-top:4px;">
-              <input type="text" name="full_name" value="{{ subscriber.full_name }}" required style="flex:1;">
-              <button type="submit" class="btn btn-sm" style="white-space:nowrap;" onclick="return confirm('Update your subscriber name?')">Update</button>
-            </div>
-          </form>
           <div style="margin-bottom:6px;">
             <label>Email:</label>
             <div style="margin-top:4px;padding:8px 10px;background:#f9f9f9;border:1px solid #ddd;border-radius:4px;font-size:0.93em;">{{ subscriber.email or 'None on file' }}</div>
@@ -237,6 +230,14 @@
       </button>
     </form>
     {% endif %}
+    <form method="post" action="/update-name" style="margin-bottom:16px;display:flex;gap:8px;align-items:flex-end;">
+      <div style="flex:1;">
+        <label>Subscriber Name:</label>
+        <input type="text" name="full_name" value="{{ subscriber.full_name }}" required style="margin-top:4px;">
+      </div>
+      <button type="submit" class="btn btn-sm" style="white-space:nowrap;margin-bottom:1px;" onclick="return confirm('Update your subscriber name?')">Update Name</button>
+    </form>
+
     <p style="font-size:0.85em;color:#666;margin:0 0 16px;">🔍 Formatting your address correctly helps ensure prompt delivery. If you're not sure, <a href="https://tools.usps.com/zip-code-lookup.htm" target="_blank" rel="noreferrer" style="color:#2e7d32;">check your address with this USPS tool here</a> before entering.</p>
     <div style="display:flex;gap:24px;align-items:flex-start;flex-wrap:wrap;">
 
