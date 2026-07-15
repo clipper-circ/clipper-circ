@@ -172,7 +172,7 @@
         <div style="flex:1;min-width:200px;">
           <form method="post" action="/update-contact">
             <label>Phone:</label>
-            <input type="text" name="phone" value="{{ subscriber.phone or '' }}" placeholder="e.g. 781-555-1234" style="margin-top:4px;">
+            <input type="tel" name="phone" id="phone-input" value="{{ subscriber.phone or '' }}" placeholder="(781) 555-1234" inputmode="tel" style="margin-top:4px;" oninput="formatPhone(this)">
             <button type="submit" class="btn btn-sm" style="margin-top:14px;">Save</button>
           </form>
         </div>
@@ -432,6 +432,18 @@
 </div>{# /acct-card #}
 
 <script>
+  function formatPhone(input) {
+    var digits = input.value.replace(/\D/g, '').slice(0, 10);
+    if (digits.length >= 7)
+      input.value = '(' + digits.slice(0,3) + ') ' + digits.slice(3,6) + '-' + digits.slice(6);
+    else if (digits.length >= 4)
+      input.value = '(' + digits.slice(0,3) + ') ' + digits.slice(3);
+    else if (digits.length > 0)
+      input.value = '(' + digits;
+    else
+      input.value = '';
+  }
+
   // Renew tab: update price display when plan changes
   var planSelect = document.getElementById('plan-select');
   if (planSelect) {
