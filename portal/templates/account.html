@@ -80,20 +80,20 @@
     </div>
     <div class="acct-profile-actions">
       {% if issues_left > 15 %}
-      <a href="#" onclick="switchTab('renew');return false;" class="btn btn-sm" style="background:#aaa;cursor:default;" title="You have {{ issues_left }} issues remaining — renewing early is fine but not urgent">Renew</a>
+      <a href="#" onclick="switchTab('renew',true);return false;" class="btn btn-sm" style="background:#aaa;cursor:default;" title="You have {{ issues_left }} issues remaining — renewing early is fine but not urgent">Renew</a>
       {% else %}
-      <a href="#" onclick="switchTab('renew');return false;" class="btn btn-sm">Renew</a>
+      <a href="#" onclick="switchTab('renew',true);return false;" class="btn btn-sm">Renew</a>
       {% endif %}
     </div>
   </div>
 
   {# ── Tab strip ── #}
   <div class="acct-tabs">
-    <a onclick="switchTab('subscription')" id="tab-subscription" class="active">Subscription</a>
-    <a onclick="switchTab('address')"      id="tab-address">Address</a>
-    <a onclick="switchTab('renew')"        id="tab-renew">Renew</a>
-    <a onclick="switchTab('extras')"       id="tab-extras">Extras</a>
-    <a onclick="switchTab('history')"      id="tab-history">Order History</a>
+    <a onclick="switchTab('subscription',true)" id="tab-subscription" class="active">Subscription</a>
+    <a onclick="switchTab('address',true)"      id="tab-address">Address</a>
+    <a onclick="switchTab('renew',true)"        id="tab-renew">Renew</a>
+    <a onclick="switchTab('extras',true)"       id="tab-extras">Extras</a>
+    <a onclick="switchTab('history',true)"      id="tab-history">Order History</a>
   </div>
 
   {# ── Tab panels (all rendered, JS toggles visibility) ── #}
@@ -122,15 +122,15 @@
                   <span style="font-size:0.82em;color:#888;margin-left:8px;">Managed through PayPal</span>
                 {% elif subscriber.stripe_subscription_id and subscriber.auto_renew %}
                   <span style="color:#2e7d32;font-weight:700;">✓ Active</span>
-                  <a href="#" onclick="switchTab('renew');return false;" style="font-size:0.82em;color:#2e7d32;margin-left:8px;">Manage →</a>
+                  <a href="#" onclick="switchTab('renew',true);return false;" style="font-size:0.82em;color:#2e7d32;margin-left:8px;">Manage →</a>
                 {% elif subscriber.stripe_subscription_id and not subscriber.auto_renew %}
                   <span style="color:#e65100;font-weight:700;">Cancels at period end</span>
-                  <a href="#" onclick="switchTab('renew');return false;" style="font-size:0.82em;color:#2e7d32;margin-left:8px;">Re-enable →</a>
+                  <a href="#" onclick="switchTab('renew',true);return false;" style="font-size:0.82em;color:#2e7d32;margin-left:8px;">Re-enable →</a>
                 {% elif subscriber.auto_renew %}
                   <span style="color:#2e7d32;font-weight:700;">On</span>
                 {% else %}
                   <span style="color:#c62828;font-weight:700;">Off</span>
-                  <a href="#" onclick="switchTab('renew');return false;" style="font-size:0.82em;color:#2e7d32;margin-left:8px;">Set up →</a>
+                  <a href="#" onclick="switchTab('renew',true);return false;" style="font-size:0.82em;color:#2e7d32;margin-left:8px;">Set up →</a>
                 {% endif %}
               </td>
           </tr>
@@ -145,7 +145,7 @@
           {{ subscriber.city }}, {{ subscriber.state }} {{ subscriber.zipcode }}
         </div>
         <div style="text-align:right;margin-top:4px;">
-          <a href="#" onclick="switchTab('address');return false;" style="font-size:0.85em;color:#2e7d32;">Edit →</a>
+          <a href="#" onclick="switchTab('address',true);return false;" style="font-size:0.85em;color:#2e7d32;">Edit →</a>
         </div>
 
         <div style="margin-top:20px;padding-top:16px;border-top:1px solid #eee;">
@@ -471,19 +471,19 @@
     });
   }
 
-  function switchTab(name) {
+  function switchTab(name, clearFlash) {
     document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
     document.querySelectorAll('.acct-tabs a').forEach(a => a.classList.remove('active'));
     document.getElementById('panel-' + name).classList.add('active');
     document.getElementById('tab-' + name).classList.add('active');
-    document.querySelectorAll('.flash').forEach(f => f.remove());
+    if (clearFlash) document.querySelectorAll('.flash').forEach(f => f.remove());
   }
 
-  // Activate tab from URL parameter on page load
+  // Activate tab from URL parameter on page load (don't clear flash — user needs to see it)
   (function() {
     var params = new URLSearchParams(window.location.search);
     var tab = params.get('tab');
-    if (tab && document.getElementById('tab-' + tab)) switchTab(tab);
+    if (tab && document.getElementById('tab-' + tab)) switchTab(tab, false);
   })();
 
   // Loading bar on initial page load
