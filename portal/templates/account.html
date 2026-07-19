@@ -92,8 +92,8 @@
     <a onclick="switchTab('subscription')" id="tab-subscription" class="active">Subscription</a>
     <a onclick="switchTab('address')"      id="tab-address">Address</a>
     <a onclick="switchTab('renew')"        id="tab-renew">Renew</a>
-    <a onclick="switchTab('history')"      id="tab-history">Order History</a>
     <a onclick="switchTab('extras')"       id="tab-extras">Extras</a>
+    <a onclick="switchTab('history')"      id="tab-history">Order History</a>
   </div>
 
   {# ── Tab panels (all rendered, JS toggles visibility) ── #}
@@ -143,49 +143,48 @@
           {{ subscriber.address1 }}<br>
           {% if subscriber.address2 %}{{ subscriber.address2 }}<br>{% endif %}
           {{ subscriber.city }}, {{ subscriber.state }} {{ subscriber.zipcode }}
-          <br><a href="#" onclick="switchTab('address');return false;" style="font-size:0.85em;color:#2e7d32;">Edit →</a>
         </div>
-      </div>
-    </div>
+        <div style="text-align:right;margin-top:4px;">
+          <a href="#" onclick="switchTab('address');return false;" style="font-size:0.85em;color:#2e7d32;">Edit →</a>
+        </div>
 
-    <div style="margin-top:24px;padding-top:20px;border-top:1px solid #eee;">
-      <div style="font-size:0.78em;font-weight:700;color:#999;text-transform:uppercase;letter-spacing:1px;margin-bottom:14px;">Your Contact Info</div>
-      <div style="max-width:420px;">
+        <div style="margin-top:20px;padding-top:16px;border-top:1px solid #eee;">
+          <div style="font-size:0.78em;font-weight:700;color:#999;text-transform:uppercase;letter-spacing:1px;margin-bottom:12px;">Your Contact Info</div>
 
-        {# Email row #}
-        <div style="display:flex;align-items:center;gap:12px;margin-bottom:10px;">
-          <div style="font-size:0.93em;color:#444;flex:1;">
-            <span style="color:#888;font-size:0.85em;">Email: </span>{{ subscriber.email or 'None on file' }}
+          {# Email row #}
+          <div style="display:flex;align-items:center;gap:12px;margin-bottom:10px;">
+            <div style="font-size:0.93em;color:#444;flex:1;">
+              <span style="color:#888;font-size:0.85em;">Email: </span>{{ subscriber.email or 'None on file' }}
+            </div>
+            <a href="#" onclick="toggleContactEdit('email-edit');return false;" style="font-size:0.85em;color:#2e7d32;white-space:nowrap;">Edit →</a>
           </div>
-          <a href="#" onclick="toggleContactEdit('email-edit');return false;" style="font-size:0.85em;color:#2e7d32;white-space:nowrap;">Edit →</a>
-        </div>
-        <div id="email-edit" style="display:none;margin-bottom:4px;">
-          <form method="post" action="/request-email-change" style="display:flex;gap:8px;">
-            <input type="email" name="new_email" placeholder="New email address" style="flex:1;">
-            <button type="submit" class="btn btn-outline btn-sm" style="white-space:nowrap;">Change Email</button>
-          </form>
-          {% if subscriber.pending_email %}
-          <div style="margin-top:6px;padding:7px 10px;background:#fff8e1;border:1px solid #ffe082;border-radius:4px;font-size:0.83em;color:#f57f17;">
-            ⏳ Change to <strong>{{ subscriber.pending_email }}</strong> pending — check that inbox for a confirmation link.
+          <div id="email-edit" style="display:none;margin-bottom:4px;">
+            <form method="post" action="/request-email-change" style="display:flex;gap:8px;">
+              <input type="email" name="new_email" placeholder="New email address" style="flex:1;">
+              <button type="submit" class="btn btn-outline btn-sm" style="white-space:nowrap;">Change Email</button>
+            </form>
+            {% if subscriber.pending_email %}
+            <div style="margin-top:6px;padding:7px 10px;background:#fff8e1;border:1px solid #ffe082;border-radius:4px;font-size:0.83em;color:#f57f17;">
+              ⏳ Change to <strong>{{ subscriber.pending_email }}</strong> pending — check that inbox for a confirmation link.
+            </div>
+            {% endif %}
+            <p style="font-size:0.8em;color:#aaa;margin:4px 0 0;">A confirmation link will be sent to the new address first.</p>
           </div>
-          {% endif %}
-          <p style="font-size:0.8em;color:#aaa;margin:4px 0 0;">A confirmation link will be sent to the new address first.</p>
-        </div>
 
-        {# Phone row #}
-        <div style="display:flex;align-items:center;gap:12px;margin-bottom:10px;">
-          <div style="font-size:0.93em;color:#444;flex:1;">
-            <span style="color:#888;font-size:0.85em;">Phone: </span>{{ subscriber.phone or 'None on file' }}
+          {# Phone row #}
+          <div style="display:flex;align-items:center;gap:12px;margin-bottom:10px;">
+            <div style="font-size:0.93em;color:#444;flex:1;">
+              <span style="color:#888;font-size:0.85em;">Phone: </span>{{ subscriber.phone or 'None on file' }}
+            </div>
+            <a href="#" onclick="toggleContactEdit('phone-edit');return false;" style="font-size:0.85em;color:#2e7d32;white-space:nowrap;">Edit →</a>
           </div>
-          <a href="#" onclick="toggleContactEdit('phone-edit');return false;" style="font-size:0.85em;color:#2e7d32;white-space:nowrap;">Edit →</a>
+          <div id="phone-edit" style="display:none;margin-bottom:4px;">
+            <form method="post" action="/update-contact" style="display:flex;gap:8px;">
+              <input type="tel" name="phone" id="phone-input" value="{{ subscriber.phone or '' }}" placeholder="(781) 555-1234" inputmode="tel" style="flex:1;" oninput="formatPhone(this)">
+              <button type="submit" class="btn btn-outline btn-sm" style="white-space:nowrap;">Save</button>
+            </form>
+          </div>
         </div>
-        <div id="phone-edit" style="display:none;margin-bottom:4px;">
-          <form method="post" action="/update-contact" style="display:flex;gap:8px;">
-            <input type="tel" name="phone" id="phone-input" value="{{ subscriber.phone or '' }}" placeholder="(781) 555-1234" inputmode="tel" style="flex:1;" oninput="formatPhone(this)">
-            <button type="submit" class="btn btn-outline btn-sm" style="white-space:nowrap;">Save</button>
-          </form>
-        </div>
-
       </div>
     </div>
   </div>
