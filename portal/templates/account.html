@@ -336,6 +336,13 @@
 
   {# ════════ RENEW ════════ #}
   <div class="tab-panel" id="panel-renew">
+    {% if issues_left > 52 %}
+    <div style="padding:24px;text-align:center;background:#f9f9f7;border:1px solid #ddd;border-radius:6px;">
+      <div style="font-size:2em;margin-bottom:12px;">📅</div>
+      <p style="font-size:1em;font-weight:700;color:#333;margin:0 0 8px;">Your subscription is paid through {{ subscriber.expiration_date.strftime('%B %d, %Y') if subscriber.expiration_date else '—' }}</p>
+      <p style="color:#666;font-size:0.9em;margin:0;">You have {{ issues_left }} issues remaining — more than 12 months. Please check back closer to your expiration date.</p>
+    </div>
+    {% else %}
     {% if issues_left > 8 %}
     <div style="margin-bottom:20px;padding:14px 18px;background:#fff8e1;border:2px solid #f9a825;border-radius:6px;display:flex;gap:14px;align-items:flex-start;font-size:0.9em;">
       <div style="font-size:1.6em;line-height:1;">⚠️</div>
@@ -423,6 +430,7 @@
       </div>
 
     </div>
+    {% endif %}
   </div>
 
   </div>{# /acct-body #}
