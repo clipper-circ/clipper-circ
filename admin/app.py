@@ -431,7 +431,9 @@ if _nav_to and _nav_to in nav_options:
     st.session_state["_current_page"] = _nav_to
 
 if "_current_page" not in st.session_state:
-    st.session_state["_current_page"] = nav_options[0]
+    # Restore page from URL param on WebSocket reconnect
+    _url_page = st.query_params.get("_page", "")
+    st.session_state["_current_page"] = _url_page if _url_page in nav_options else nav_options[0]
 
 for _nav_item in nav_options:
     _is_active = st.session_state["_current_page"] == _nav_item
@@ -439,6 +441,7 @@ for _nav_item in nav_options:
     st.sidebar.markdown(f'<div class="{_cls}">', unsafe_allow_html=True)
     if st.sidebar.button(_nav_item, key=f"nav_{_nav_item}", use_container_width=True):
         st.session_state["_current_page"] = _nav_item
+        st.query_params["_page"] = _nav_item
         st.rerun()
     st.sidebar.markdown('</div>', unsafe_allow_html=True)
 
