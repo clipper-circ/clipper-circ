@@ -474,6 +474,11 @@ if st.sidebar.button("🚪 Log Out", use_container_width=True):
         cookie_manager.delete(COOKIE_NAME)
     except Exception:
         pass
+    # Also clear via JS since stx delete is unreliable
+    components.html(
+        f'<script>document.cookie="{COOKIE_NAME}=;expires=Thu,01 Jan 1970 00:00:00 GMT;path=/;SameSite=Lax";</script>',
+        height=0,
+    )
     log_id = st.session_state.get("login_log_id")
     if log_id:
         _db = SessionLocal()
