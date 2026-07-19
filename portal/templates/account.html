@@ -270,8 +270,9 @@
     {% set EVENT_ICONS = {'EMAIL_CHANGED':'✉️','ADDRESS_SWITCHED':'🔄','ADDRESS_UPDATED':'📬','NAME_UPDATED':'✏️','AUTO_RENEW_ENABLED':'✅','AUTO_RENEW_CANCELLED':'❌','SUBSCRIPTION_STARTED':'🔁','SUBSCRIPTION_RENEWED':'🔁','HOLD_ADDED':'⏸️','HOLD_REMOVED':'▶️'} %}
     {% set EVENT_LABELS = {'EMAIL_CHANGED':'Email Changed','ADDRESS_SWITCHED':'Address Switched','ADDRESS_UPDATED':'Address Updated','NAME_UPDATED':'Name Updated','AUTO_RENEW_ENABLED':'Auto-Renew Enabled','AUTO_RENEW_CANCELLED':'Auto-Renew Cancelled','SUBSCRIPTION_STARTED':'Auto-Renew Started','SUBSCRIPTION_RENEWED':'Auto-Renewed','HOLD_ADDED':'Delivery Hold Scheduled','HOLD_REMOVED':'Delivery Hold Removed'} %}
     {% if payments or events %}
-    <table>
-      <thead><tr><th>Date</th><th>Description</th><th>Amount</th><th>Detail</th></tr></thead>
+    <div style="max-height:340px;overflow-y:auto;border:1px solid #eee;border-radius:4px;">
+    <table style="margin-bottom:0;">
+      <thead style="position:sticky;top:0;background:#fff;z-index:1;"><tr><th>Date</th><th>Description</th><th>Amount</th><th>Detail</th></tr></thead>
       <tbody>
         {% set rows = [] %}
         {% for p in payments %}{% set _ = rows.append({'date': p.paid_at, 'type': 'payment', 'obj': p}) %}{% endfor %}
@@ -297,6 +298,7 @@
         {% endfor %}
       </tbody>
     </table>
+    </div>
     {% else %}
     <p style="color:#888;font-size:0.9em;">No history yet.</p>
     {% endif %}
