@@ -476,6 +476,7 @@
     document.querySelectorAll('.acct-tabs a').forEach(a => a.classList.remove('active'));
     document.getElementById('panel-' + name).classList.add('active');
     document.getElementById('tab-' + name).classList.add('active');
+    document.querySelectorAll('.flash').forEach(f => f.remove());
   }
 
   // Activate tab from URL parameter on page load
