@@ -22,7 +22,6 @@ from models import (
 )
 import bcrypt
 import hashlib
-import extra_streamlit_components as stx
 import streamlit.components.v1 as components
 
 SETTINGS_FILE = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "settings.json")
@@ -274,11 +273,6 @@ hr { border-color: var(--border) !important; }
 
 # ── Auth ──────────────────────────────────────────────────────────────────────
 
-cookie_manager = stx.CookieManager(key="clipper_cookies")
-
-COOKIE_NAME = "clipper_auth"
-COOKIE_DAYS = 30
-
 def _token_for(user):
     """Deterministic token tied to user id + password hash — invalidates on password change."""
     raw = f"{user.id}:{user.password_hash}:{os.environ.get('SECRET_KEY','')}"
@@ -356,7 +350,9 @@ def check_login(email, password, pin, ip=None, browser=None):
     db.close()
     return user_data
 
-def user_from_cookie(token):
+def user_from_token(token):
+    if not token:
+        return None
     db = SessionLocal()
     for user in db.query(StaffUser).filter_by(is_active=True).all():
         if _token_for(user) == token:
@@ -378,7 +374,6 @@ def login_screen():
             pc1, pc2 = st.columns([3, 1])
             password = pc1.text_input("Password", type="password")
             pin = pc2.text_input("PIN", type="password")
-            remember = st.checkbox("Remember me for 30 days", value=True)
             if st.form_submit_button("Log In", use_container_width=True):
                 result = check_login(email, password, pin, browser=_get_browser())
                 if result == "locked":
@@ -387,30 +382,25 @@ def login_screen():
                     st.session_state.user = result
                     st.session_state["login_time"] = datetime.now().isoformat()
                     st.session_state["login_log_id"] = result.get("log_id")
-                    if remember:
-                        db2 = SessionLocal()
-                        u = db2.query(StaffUser).filter_by(id=result["id"]).first()
-                        cookie_manager.set(
-                            COOKIE_NAME,
-                            _token_for(u),
-                            expires_at=datetime.now() + timedelta(days=COOKIE_DAYS),
-                        )
-                        db2.close()
+                    db2 = SessionLocal()
+                    u = db2.query(StaffUser).filter_by(id=result["id"]).first()
+                    st.query_params["_auth"] = _token_for(u)
+                    db2.close()
                     st.rerun()
                 else:
                     st.error("Invalid username, password, or PIN.")
 
 
-# ── Check cookie before showing login ─────────────────────────────────────────
+# ── Restore session from URL token (survives WebSocket reconnects) ─────────────
 if "user" not in st.session_state:
-    token = cookie_manager.get(COOKIE_NAME)
-    if token:
-        remembered_user = user_from_cookie(token)
-        if remembered_user:
+    _auth_token = st.query_params.get("_auth", "")
+    if _auth_token:
+        _remembered = user_from_token(_auth_token)
+        if _remembered:
             st.session_state.user = {
-                "id": remembered_user.id,
-                "name": remembered_user.name,
-                "is_admin": remembered_user.is_admin,
+                "id": _remembered.id,
+                "name": _remembered.name,
+                "is_admin": _remembered.is_admin,
             }
 
 if "user" not in st.session_state:
@@ -423,10 +413,7 @@ if "login_time" in st.session_state:
     if datetime.now() - login_dt > timedelta(hours=SESSION_TIMEOUT_HOURS):
         del st.session_state["user"]
         st.session_state.pop("login_time", None)
-        try:
-            cookie_manager.delete(COOKIE_NAME)
-        except Exception:
-            pass
+        st.query_params.clear()
         st.warning("Your session has expired. Please log in again.")
         st.stop()
 
@@ -453,9 +440,11 @@ nav_options = [
 _nav_to = st.session_state.pop("_nav_to", None)
 if _nav_to and _nav_to in nav_options:
     st.session_state["_current_page"] = _nav_to
+    st.query_params["_page"] = _nav_to
 
 if "_current_page" not in st.session_state:
-    st.session_state["_current_page"] = nav_options[0]
+    _page_from_url = st.query_params.get("_page", nav_options[0])
+    st.session_state["_current_page"] = _page_from_url if _page_from_url in nav_options else nav_options[0]
 
 for _nav_item in nav_options:
     _is_active = st.session_state["_current_page"] == _nav_item
@@ -463,6 +452,7 @@ for _nav_item in nav_options:
     st.sidebar.markdown(f'<div class="{_cls}">', unsafe_allow_html=True)
     if st.sidebar.button(_nav_item, key=f"nav_{_nav_item}", use_container_width=True):
         st.session_state["_current_page"] = _nav_item
+        st.query_params["_page"] = _nav_item
         st.rerun()
     st.sidebar.markdown('</div>', unsafe_allow_html=True)
 
@@ -470,15 +460,6 @@ page = st.session_state["_current_page"]
 
 st.sidebar.divider()
 if st.sidebar.button("🚪 Log Out", use_container_width=True):
-    try:
-        cookie_manager.delete(COOKIE_NAME)
-    except Exception:
-        pass
-    # Also clear via JS since stx delete is unreliable
-    components.html(
-        f'<script>document.cookie="{COOKIE_NAME}=;expires=Thu,01 Jan 1970 00:00:00 GMT;path=/;SameSite=Lax";</script>',
-        height=0,
-    )
     log_id = st.session_state.get("login_log_id")
     if log_id:
         _db = SessionLocal()
@@ -489,6 +470,7 @@ if st.sidebar.button("🚪 Log Out", use_container_width=True):
         _db.close()
     del st.session_state.user
     st.session_state.pop("login_log_id", None)
+    st.query_params.clear()
     st.rerun()
 
 db = SessionLocal()
