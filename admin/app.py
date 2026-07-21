@@ -12,7 +12,19 @@ import streamlit as st
 import pandas as pd
 import json
 from datetime import date, datetime, timedelta
+from zoneinfo import ZoneInfo
 from sqlalchemy import or_
+
+# DB stores timestamps in UTC; display them in the newspaper's local time.
+_EASTERN = ZoneInfo("America/New_York")
+
+def _to_local(dt):
+    """Convert a naive-UTC (or tz-aware) datetime to Eastern time for display."""
+    if dt is None:
+        return None
+    if dt.tzinfo is None:
+        dt = dt.replace(tzinfo=ZoneInfo("UTC"))
+    return dt.astimezone(_EASTERN)
 
 from database import SessionLocal
 from models import (
@@ -2724,7 +2736,7 @@ Dear Jane,
                 else:
                     duration = "—"
                 log_rows.append({
-                    "Time": l.event_at.strftime("%Y-%m-%d %H:%M") if l.event_at else "",
+                    "Time": _to_local(l.event_at).strftime("%Y-%m-%d %I:%M %p") if l.event_at else "",
                     "Username": l.email or "",
                     "Result": "✅ Success" if l.success else "❌ Failed",
                     "Reason": l.reason or "",
