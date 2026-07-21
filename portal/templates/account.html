@@ -112,7 +112,7 @@
         <table style="font-size:0.93em;">
           <tr><td style="color:#888;padding:5px 0;border:none;padding-right:16px;">Plan:</td><td style="border:none;font-weight:700;">{{ plan_label }}</td></tr>
           <tr><td style="color:#888;padding:5px 0;border:none;padding-right:16px;">Start Date:</td><td style="border:none;">{{ subscriber.start_date.strftime('%B %d, %Y') if subscriber.start_date else '—' }}</td></tr>
-          <tr><td style="color:#888;padding:5px 0;border:none;padding-right:16px;">Last Renewed:</td><td style="border:none;">{{ payments[0].paid_at.strftime('%B %d, %Y') if payments else '—' }}</td></tr>
+          <tr><td style="color:#888;padding:5px 0;border:none;padding-right:16px;">Last Renewed:</td><td style="border:none;">{{ (payments[0].paid_at | to_local).strftime('%B %d, %Y') if payments else '—' }}</td></tr>
           <tr><td style="color:#888;padding:5px 0;border:none;padding-right:16px;">Expiration Date:</td><td style="border:none;">{{ subscriber.expiration_date.strftime('%B %d, %Y') if subscriber.expiration_date else '—' }}</td></tr>
           <tr><td style="color:#888;padding:5px 0;border:none;padding-right:16px;">Issues left:</td><td style="border:none;{% if issues_left < 5 %}color:#c62828;font-weight:700;{% endif %}">{{ issues_left }}</td></tr>
           <tr><td style="color:#888;padding:5px 0;border:none;padding-right:16px;">Auto-renew:</td>
@@ -280,7 +280,7 @@
         {% for row in rows | sort(attribute='date', reverse=True) %}
           {% if row.type == 'payment' %}{% set p = row.obj %}
           <tr>
-            <td style="white-space:nowrap;">{{ p.paid_at.strftime('%b %d, %Y') if p.paid_at else '—' }}</td>
+            <td style="white-space:nowrap;">{{ (p.paid_at | to_local).strftime('%b %d, %Y') if p.paid_at else '—' }}</td>
             <td>💳 Renewal — {{ plan_label }}
               {% if p.period_start and p.period_end %}<span style="color:#888;font-size:0.85em;display:block;">{{ p.period_start }} – {{ p.period_end }}</span>{% endif %}
             </td>
@@ -289,7 +289,7 @@
           </tr>
           {% else %}{% set e = row.obj %}
           <tr style="background:#fafafa;">
-            <td style="white-space:nowrap;">{{ e.event_at.strftime('%b %d, %Y') }}</td>
+            <td style="white-space:nowrap;">{{ (e.event_at | to_local).strftime('%b %d, %Y') }}</td>
             <td>{{ EVENT_ICONS.get(e.event_type, '📋') }} {{ EVENT_LABELS.get(e.event_type, e.event_type.replace('_',' ').title()) }}</td>
             <td style="color:#aaa;">—</td>
             <td style="color:#666;font-size:0.85em;">{{ e.description }}</td>

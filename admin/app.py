@@ -1084,7 +1084,7 @@ setTimeout(function() {
                 hdr_l, hdr_r = st.columns([3, 1])
                 with hdr_l:
                     acct_num = sub.simplecirc_id or sub.id
-                    created_str = sub.created_at.strftime('%b %d, %Y') if sub.created_at else '—'
+                    created_str = _to_local(sub.created_at).strftime('%b %d, %Y') if sub.created_at else '—'
                     exp_hdr = sub.expiration_date.strftime('%m/%d/%Y') if sub.expiration_date else '—'
                     ar_hdr = '<span style="color:#2e7d32;font-weight:700;">On</span>' if sub.auto_renew else '<span style="color:#c62828;font-weight:700;">Off</span>'
                     addr_line = sub.address1
@@ -1176,7 +1176,7 @@ setTimeout(function() {
                             .filter_by(subscriber_id=sub.id)
                             .order_by(Payment.paid_at.desc()).first())
                         lp_amount = f"${last_pmt.amount:.2f}" if last_pmt else "—"
-                        lp_date   = last_pmt.paid_at.strftime("%m/%d/%Y") if last_pmt else "—"
+                        lp_date   = _to_local(last_pmt.paid_at).strftime("%m/%d/%Y") if last_pmt else "—"
                         lp1, lp2, lp3 = st.columns(3)
                         lp1.text_input("Last Payment", value=lp_amount, disabled=True, key=f"e_lpa_{eid}")
                         lp2.text_input("Last Payment Date", value=lp_date, disabled=True, key=f"e_lpd_{eid}")
@@ -1302,7 +1302,7 @@ setTimeout(function() {
                         st.divider()
                         for p in payments_list:
                             pc1, pc2, pc3, pc4 = st.columns([2, 2, 3, 2])
-                            pc1.write(p.paid_at.strftime("%b %d, %Y") if p.paid_at else "—")
+                            pc1.write(_to_local(p.paid_at).strftime("%b %d, %Y") if p.paid_at else "—")
                             pc2.write(f"**${p.amount:.2f}**")
                             pc3.write(p.payment_method.value.replace('_', ' ').title() +
                                 (f" — Check #{p.check_number}" if p.check_number else ""))
@@ -1603,7 +1603,7 @@ document.getElementById('charge-btn').addEventListener('click', async function()
                             if row["type"] == "payment":
                                 p = row["obj"]
                                 c1, c2, c3, c4 = st.columns([2, 1, 3, 2])
-                                c1.write(p.paid_at.strftime("%b %d, %Y  %I:%M %p") if p.paid_at else "—")
+                                c1.write(_to_local(p.paid_at).strftime("%b %d, %Y  %I:%M %p") if p.paid_at else "—")
                                 c2.write(f"**${p.amount:.2f}**")
                                 c3.write(f"💳 {p.payment_method.value.replace('_',' ').title()}" +
                                     (f" — Check #{p.check_number}" if p.check_number else ""))
@@ -1612,7 +1612,7 @@ document.getElementById('charge-btn').addEventListener('click', async function()
                                 e = row["obj"]
                                 icon = EVENT_ICONS.get(e.event_type, "📋")
                                 c1, c2, c3, c4 = st.columns([2, 1, 3, 2])
-                                c1.write(e.event_at.strftime("%b %d, %Y  %I:%M %p"))
+                                c1.write(_to_local(e.event_at).strftime("%b %d, %Y  %I:%M %p"))
                                 c2.write("")
                                 c3.write(f"{icon} {e.event_type.replace('_', ' ').title()}")
                                 c4.caption(e.description or "")
@@ -2360,7 +2360,7 @@ elif page == "🧾 Payment Log":
             if name_filter and name_filter.lower() not in (l.subscriber_name or "").lower():
                 continue
             rows.append({
-                "Date/Time": l.event_at.strftime("%Y-%m-%d %H:%M"),
+                "Date/Time": _to_local(l.event_at).strftime("%Y-%m-%d %H:%M"),
                 "Action": l.action,
                 "Subscriber": l.subscriber_name or "—",
                 "Sub ID": l.subscriber_id,
@@ -2408,7 +2408,7 @@ elif page == "📋 Hold Log":
             if name_filter and name_filter.lower() not in (l.subscriber_name or "").lower():
                 continue
             rows.append({
-                "Date/Time": l.event_at.strftime("%Y-%m-%d %H:%M"),
+                "Date/Time": _to_local(l.event_at).strftime("%Y-%m-%d %H:%M"),
                 "Action": l.action,
                 "Subscriber": l.subscriber_name or "—",
                 "Sub ID": l.subscriber_id,
@@ -2446,7 +2446,7 @@ elif page == "📰 Obituaries":
                     search.lower() in f"{s.submitter_first_name} {s.submitter_last_name}".lower()]
         st.caption(f"{len(filtered)} submission{'s' if len(filtered) != 1 else ''}")
         for s in filtered:
-            label = f"{s.deceased_name}  —  submitted {s.submitted_at.strftime('%b %d, %Y %I:%M %p')}  —  ${float(s.amount_paid or 0):.2f}"
+            label = f"{s.deceased_name}  —  submitted {_to_local(s.submitted_at).strftime('%b %d, %Y %I:%M %p')}  —  ${float(s.amount_paid or 0):.2f}"
             with st.expander(label):
                 c1, c2 = st.columns(2)
                 c1.markdown(f"**Deceased:** {s.deceased_name}")

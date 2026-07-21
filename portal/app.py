@@ -22,6 +22,19 @@ Base.metadata.create_all(bind=engine)  # ensure new tables exist on Railway
 
 app = Flask(__name__)
 app.secret_key = os.environ.get("SECRET_KEY", "dev-secret-change-me")
+
+# DB stores timestamps in UTC; display them in the newspaper's local time.
+from zoneinfo import ZoneInfo
+_EASTERN = ZoneInfo("America/New_York")
+
+@app.template_filter("to_local")
+def _to_local(dt):
+    """Jinja filter: convert a naive-UTC (or tz-aware) datetime to Eastern time."""
+    if dt is None:
+        return None
+    if dt.tzinfo is None:
+        dt = dt.replace(tzinfo=ZoneInfo("UTC"))
+    return dt.astimezone(_EASTERN)
 app.config["SESSION_COOKIE_SECURE"]   = os.environ.get("FLASK_ENV") == "production"
 app.config["SESSION_COOKIE_HTTPONLY"] = True
 app.config["SESSION_COOKIE_SAMESITE"] = "Lax"
