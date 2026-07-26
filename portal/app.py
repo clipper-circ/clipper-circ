@@ -730,14 +730,22 @@ def subscribe_new():
     discount_code    = (request.form.get("discount_code", "").strip().upper() or
                         request.form.get("discount_code_typed", "").strip().upper())
 
-    if not all([first_name, last_name, address1, city, state, zipcode]) or (not is_gift and not email):
-        flash("Please fill in all required fields.")
-        form = request.form.to_dict()
-        return render_template("subscribe.html", plans=plans, form=form,
-                               paypal_client_id=PAYPAL_CLIENT_ID)
-
-    if is_gift and not (gifter_name and gifter_email):
-        flash("Please fill in all required fields.")
+    missing = []
+    if not first_name:             missing.append("First Name")
+    if not last_name:              missing.append("Last Name")
+    if not is_gift and not email:  missing.append("Email Address")
+    if not address1:               missing.append("Mailing Address")
+    if not city:                   missing.append("City")
+    if not state:                  missing.append("State")
+    if not zipcode:                missing.append("ZIP Code")
+    if is_gift:
+        if not gifter_name:   missing.append("Gift Giver's Name")
+        if not gifter_email:  missing.append("Gift Giver's Email")
+    if missing:
+        if len(missing) == 1:
+            flash(f"Please fill in the required field: {missing[0]}.")
+        else:
+            flash("Please fill in these required fields: " + ", ".join(missing) + ".")
         form = request.form.to_dict()
         return render_template("subscribe.html", plans=plans, form=form,
                                paypal_client_id=PAYPAL_CLIENT_ID)
