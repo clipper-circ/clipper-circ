@@ -954,13 +954,20 @@ def subscribe_paypal_success():
     order = r2.json()
 
     if order.get("status") == "COMPLETED":
-        custom_id_val = order["purchase_units"][0].get("custom_id", "")
+        pu = order["purchase_units"][0]
+        capture0 = pu.get("payments", {}).get("captures", [{}])[0]
+        # custom_id can come back on the purchase unit OR on the capture object
+        custom_id_val = pu.get("custom_id") or capture0.get("custom_id") or ""
         parts = custom_id_val.split(":", 1)
-        sub_id = int(parts[0]) if parts[0].isdigit() else 0
+        sub_id = int(parts[0]) if parts and parts[0].isdigit() else 0
         discount_code_used = parts[1].strip().upper() if len(parts) > 1 else ""
-        amount = float(order["purchase_units"][0]["payments"]["captures"][0]["amount"]["value"])
+        amount = float(capture0["amount"]["value"])
         db = SessionLocal()
         sub = db.query(Subscriber).filter_by(id=sub_id).first()
+        sys.stderr.write(f"[PAYPAL_CAPTURE] token={token} custom_id={custom_id_val!r} "
+                         f"sub_id={sub_id} amount={amount} sub_found={bool(sub)} "
+                         f"sub_email={(sub.email if sub else None)!r}\n")
+        sys.stderr.flush()
         if sub:
             sub.status = SubscriberStatus.ACTIVE
             sub.payment_method = PaymentMethod.PAYPAL
@@ -991,14 +998,29 @@ def subscribe_paypal_success():
                 try:
                     login_url = make_portal_link(sub, db)
                     from_email = "noreply@duxburyclipper.net"
+                    _name_parts = (sub.full_name or "").split()
+                    _first = _name_parts[0] if _name_parts else "there"
                     resend.Emails.send({
                         "from": f"Duxbury Clipper <{from_email}>",
                         "to": sub.email,
                         "subject": "Welcome to the Duxbury Clipper!",
-                        "html": _welcome_email_html(sub.full_name.split()[0], new_exp, BASE_URL, login_url),
+                        "html": _welcome_email_html(_first, new_exp, BASE_URL, login_url),
                     })
+                    sys.stderr.write(f"[PAYPAL_CAPTURE] welcome email sent to {sub.email}\n")
+                    sys.stderr.flush()
                 except Exception as e:
-                    sys.stderr.write(f"[EMAIL ERROR] new subscriber welcome: {e}\n")
+                    import traceback
+                    sys.stderr.write(f"[EMAIL ERROR] new subscriber welcome: {e}\n{traceback.format_exc()}\n")
+                    sys.stderr.flush()
+            else:
+                sys.stderr.write(f"[PAYPAL_CAPTURE] sub {sub.id} has no email — welcome not sent\n")
+                sys.stderr.flush()
+            db.close()
+        else:
+            sys.stderr.write(f"[PAYPAL_CAPTURE] ERROR: payment captured but no subscriber "
+                             f"found for sub_id={sub_id} (custom_id={custom_id_val!r}) — "
+                             f"subscription NOT activated, no email sent!\n")
+            sys.stderr.flush()
             db.close()
         return render_template("subscribe_success.html")
 
